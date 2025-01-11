@@ -8,15 +8,6 @@
 	<strong>A powerful Windows toolkit that quickly configures your system</strong>
 </p>
 
-<!-- <p align="center">
-<a href="https://github.com/emylfy/simplify11/stargazers">
-	<img src="https://img.shields.io/github/stars/emylfy/simplify11?style=flat-square" alt="GitHub Stars"></a>
-<a href="https://github.com/emylfy/simplify11/network/members">
-	<img src="https://img.shields.io/github/forks/emylfy/simplify11?style=flat-square" alt="GitHub Forks"></a>
-<a href="https://github.com/emylfy/simplify11/issues">
-	<img src="https://img.shields.io/github/issues/emylfy/simplify11?style=flat-square" alt="GitHub Issues"></a>
-</p> -->
-
 <p align="center">
 	<a href="#-features">Features</a> •
 	<a href="#-installation">Installation</a> •
@@ -82,10 +73,18 @@ iwr "https://dub.sh/s11install" | iex
 <details>
 <summary>📦 Software Installation</summary>
 
-**Supports package search and installation by using Winget**
-**But also contains a preset of apps such as:**
+**Package System**
+- Windows Package Manager integration
+- Multiple manager support (Winget, UniGetUI)
+- Essential software collection:
 
-<img src="src/media/menu.png" width="60%">
+**Categories:**
+- Development (VS Code, Python, Git)
+- Web Browsers (Arc, Thorium, Zen)
+- System Tools (PowerToys, NanaZip)
+- Productivity Suite
+- Gaming Essentials
+- Microsoft Core Apps
 
 </details>
 
@@ -165,5 +164,5 @@ iwr "https://dub.sh/s11install" | iex
 
 ### ⭐ Love this project? Show your support by giving it a star!
 
-#### ✨ If you have specific recommendations on how to improve or change this project or any suggestions and wishes, you can write everything in [**Issues**](https://github.com/emylfy/simplify11/issues/).
+#### 📫 If you have specific recommendations on how to improve or change this project or any suggestions and wishes, you can write everything in [**Issues**](https://github.com/emylfy/simplify11/issues/).
 </div>

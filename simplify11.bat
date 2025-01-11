@@ -16,7 +16,7 @@ set cGrey=[38;5;250m
 set cReset=[0m
 
 :main
-title Simplify11
+title Simplify11 v25.01
 cls
 echo.
 echo %cMauve% +--------------------------------------------------------+%cReset%
@@ -27,8 +27,8 @@ echo %cMauve% '%cGrey% [2] Free Up Space                                      %c
 echo %cMauve% '%cGrey% [3] WinUtil - Install Programs, Tweaks and Fixes       %cMauve%'%cReset%
 echo %cMauve% '%cGrey% [4] Privacy.Sexy - Tool to enforce privacy in clicks   %cMauve%'%cReset%
 echo %cMauve% '%cGrey% [5] Install programs without browser                   %cMauve%'%cReset%
-echo %cMauve% '%cGrey% [6] Visit PC/Laptop Manufacturers (Soft and drivers)   %cMauve%'%cReset%
-echo %cMauve% '%cGrey% [7] System settings and Customization stuff            %cMauve%'%cReset%
+echo %cMauve% '%cGrey% [6] Check PC/Laptop Manufacturers (Soft and drivers)   %cMauve%'%cReset%
+echo %cMauve% '%cGrey% [7] Customization stuff                                %cMauve%'%cReset%
 echo %cMauve% +--------------------------------------------------------+%cReset%
 choice /C 1234567 /N /M ">"
 set /a "menuChoice=!errorlevel!"
@@ -692,53 +692,53 @@ if !errorlevel! equ 0 (
     )
 )
 
-cls
-echo %cMauve% +--------------------------------------------------------+%cReset%
-echo %cMauve% '%cGrey% Would you like to install additional package managers?   %cMauve%'%cReset%
-echo %cMauve% +--------------------------------------------------------+%cReset%
-echo %cMauve% '%cGrey% [1] Install Scoop                                       %cMauve%'%cReset%
-echo %cMauve% '%cGrey% [2] Install Chocolatey                                  %cMauve%'%cReset%
-echo %cMauve% '%cGrey% [3] Install Both                                        %cMauve%'%cReset%
-echo %cMauve% '%cGrey% [4] Skip                                                %cMauve%'%cReset%
-echo %cMauve% +--------------------------------------------------------+%cReset%
-choice /C 1234 /N /M ">"
-if !errorlevel! equ 1 (
-    if !errorlevel! equ 1 (
-        echo %cGrey%Installing Scoop...%cReset%
-        start cmd /c powershell -Command "& { irm get.scoop.sh -outfile 'install.ps1'; if (Test-Path 'install.ps1') { .\install.ps1; Remove-Item 'install.ps1' } else { Write-Host 'Failed to download Scoop installer' } }"
-        pause
-        goto main
-    )
+@REM cls
+@REM echo %cMauve% +--------------------------------------------------------+%cReset%
+@REM echo %cMauve% '%cGrey% Would you like to install additional package managers?   %cMauve%'%cReset%
+@REM echo %cMauve% +--------------------------------------------------------+%cReset%
+@REM echo %cMauve% '%cGrey% [1] Install Scoop                                       %cMauve%'%cReset%
+@REM echo %cMauve% '%cGrey% [2] Install Chocolatey                                  %cMauve%'%cReset%
+@REM echo %cMauve% '%cGrey% [3] Install Both                                        %cMauve%'%cReset%
+@REM echo %cMauve% '%cGrey% [4] Skip                                                %cMauve%'%cReset%
+@REM echo %cMauve% +--------------------------------------------------------+%cReset%
+@REM choice /C 1234 /N /M ">"
+@REM if !errorlevel! equ 1 (
+@REM     if !errorlevel! equ 1 (
+@REM         echo %cGrey%Installing Scoop...%cReset%
+        
+@REM         pause
+@REM         goto main
+@REM     )
 
-) else if !errorlevel! equ 2 (
-    echo %cGrey%Checking for Chocolatey installation...%cReset%
-    where choco >nul 2>nul
-    if !errorlevel! equ 0 (
-        echo %cGrey%Chocolatey is already installed.%cReset%
-        timeout /t 2
-    ) else (
-        echo %cGrey%Installing Chocolatey...%cReset%
-        powershell -Command "Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))"
-    )
-) else if !errorlevel! equ 3 (
-    echo %cGrey%Installing Scoop...%cReset%
-    powershell -Command "& {Set-ExecutionPolicy RemoteSigned -Scope CurrentUser -Force; if (Get-Command scoop -ErrorAction SilentlyContinue) { Write-Host 'Scoop is already installed.' } else { try { Invoke-RestMethod get.scoop.sh | Invoke-Expression; Write-Host 'Scoop installed successfully.' } catch { Write-Host 'Failed to install Scoop. Error:' $_.Exception.Message } }}"
-    if !errorlevel! equ 0 (
-        echo %cGreen%Scoop installation completed.%cReset%
-    ) else (
-        echo %cRed%Failed to install Scoop. Please check PowerShell execution policy and internet connection.%cReset%
-        pause
-    )
-    echo %cGrey%Checking for Chocolatey installation...%cReset%
-    where choco >nul 2>nul
-    if !errorlevel! equ 0 (
-        echo %cGrey%Chocolatey is already installed.%cReset%
-        timeout /t 2
-    ) else (
-        echo %cGrey%Installing Chocolatey...%cReset%
-        powershell -Command "Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))"
-    )
-)
+@REM ) else if !errorlevel! equ 2 (
+@REM     echo %cGrey%Checking for Chocolatey installation...%cReset%
+@REM     where choco >nul 2>nul
+@REM     if !errorlevel! equ 0 (
+@REM         echo %cGrey%Chocolatey is already installed.%cReset%
+@REM         timeout /t 2
+@REM     ) else (
+@REM         echo %cGrey%Installing Chocolatey...%cReset%
+@REM         powershell -Command "Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))"
+@REM     )
+@REM ) else if !errorlevel! equ 3 (
+@REM     echo %cGrey%Installing Scoop...%cReset%
+
+@REM     if !errorlevel! equ 0 (
+@REM         echo %cGreen%Scoop installation completed.%cReset%
+@REM     ) else (
+@REM         echo %cRed%Failed to install Scoop. Please check PowerShell execution policy and internet connection.%cReset%
+@REM         pause
+@REM     )
+@REM     echo %cGrey%Checking for Chocolatey installation...%cReset%
+@REM     where choco >nul 2>nul
+@REM     if !errorlevel! equ 0 (
+@REM         echo %cGrey%Chocolatey is already installed.%cReset%
+@REM         timeout /t 2
+@REM     ) else (
+@REM         echo %cGrey%Installing Chocolatey...%cReset%
+@REM         powershell -Command "Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))"
+@REM     )
+@REM )
 
 goto main
 
