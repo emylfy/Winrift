@@ -2,18 +2,11 @@
 setlocal EnableDelayedExpansion
 net session >nul 2>&1 || (powershell start -verb runas '%~0' & exit)
 
-:: Define colors
-set cRosewater=[38;5;224m
-set cFlamingo=[38;5;210m
 set cMauve=[38;5;141m
-set cRed=[38;5;203m
-set cGreen=[38;5;120m
-set cTeal=[38;5;116m
-set cSky=[38;5;111m
-set cSapphire=[38;5;69m
-set cBlue=[38;5;75m
 set cGrey=[38;5;250m
 set cReset=[0m
+set cRed=[38;5;203m
+set cGreen=[38;5;120m
 
 :freeUpSpace
 
@@ -72,71 +65,71 @@ if !wu_choice!==1 (
     echo %cGreen%Windows Update folder has been cleared successfully.%cReset%
 )
 
-:: Advanced disk cleaner
-echo.
-echo %cMauve% +--------------------------------------------------------+%cReset%
-echo %cMauve% '%cGrey% Advanced Disk Cleaner                                  %cMauve%'%cReset%
-echo %cMauve% +--------------------------------------------------------+%cReset%
-echo %cMauve% '%cGrey% This will clean:                                       %cMauve%'%cReset%
-echo %cMauve% '%cGrey% - Windows temporary files                              %cMauve%'%cReset%
-echo %cMauve% '%cGrey% - System error memory dump files                       %cMauve%'%cReset%
-echo %cMauve% '%cGrey% - Windows upgrade log files                            %cMauve%'%cReset%
-echo %cMauve% '%cGrey% - Windows Defender Antivirus files                     %cMauve%'%cReset%
-echo %cMauve% '%cGrey% - Delivery Optimization Files                          %cMauve%'%cReset%
-echo %cMauve% '%cGrey% - Device driver packages                               %cMauve%'%cReset%
-echo %cMauve% +--------------------------------------------------------+%cReset%
-choice /C 12 /N /M "[1] Run Cleaner or [2] Skip : "
-set /a "cleaner_choice=%errorlevel%"
-if !cleaner_choice!==1 (
-    echo %cGrey%Preparing disk cleanup utility...%cReset%
+@REM :: Advanced disk cleaner
+@REM echo.
+@REM echo %cMauve% +--------------------------------------------------------+%cReset%
+@REM echo %cMauve% '%cGrey% Advanced Disk Cleaner                                  %cMauve%'%cReset%
+@REM echo %cMauve% +--------------------------------------------------------+%cReset%
+@REM echo %cMauve% '%cGrey% This will clean:                                       %cMauve%'%cReset%
+@REM echo %cMauve% '%cGrey% - Windows temporary files                              %cMauve%'%cReset%
+@REM echo %cMauve% '%cGrey% - System error memory dump files                       %cMauve%'%cReset%
+@REM echo %cMauve% '%cGrey% - Windows upgrade log files                            %cMauve%'%cReset%
+@REM echo %cMauve% '%cGrey% - Windows Defender Antivirus files                     %cMauve%'%cReset%
+@REM echo %cMauve% '%cGrey% - Delivery Optimization Files                          %cMauve%'%cReset%
+@REM echo %cMauve% '%cGrey% - Device driver packages                               %cMauve%'%cReset%
+@REM echo %cMauve% +--------------------------------------------------------+%cReset%
+@REM choice /C 12 /N /M "[1] Run Cleaner or [2] Skip : "
+@REM set /a "cleaner_choice=%errorlevel%"
+@REM if !cleaner_choice!==1 (
+@REM     echo %cGrey%Preparing disk cleanup utility...%cReset%
     
-    :: Create registry keys for auto-selection of all cleanup options
-    call :reg "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\VolumeCaches\Active Setup Temp Folders" "StateFlags65535" "REG_DWORD" "2" "Enabled Active Setup Temp Folders cleanup"
-    call :reg "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\VolumeCaches\BranchCache" "StateFlags65535" "REG_DWORD" "2" "Enabled BranchCache cleanup"
-    call :reg "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\VolumeCaches\D3D Shader Cache" "StateFlags65535" "REG_DWORD" "2" "Enabled D3D Shader Cache cleanup"
-    call :reg "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\VolumeCaches\Delivery Optimization Files" "StateFlags65535" "REG_DWORD" "2" "Enabled Delivery Optimization Files cleanup"
-    call :reg "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\VolumeCaches\Device Driver Packages" "StateFlags65535" "REG_DWORD" "2" "Enabled Device Driver Packages cleanup"
-    call :reg "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\VolumeCaches\Downloaded Program Files" "StateFlags65535" "REG_DWORD" "2" "Enabled Downloaded Program Files cleanup"
-    call :reg "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\VolumeCaches\Internet Cache Files" "StateFlags65535" "REG_DWORD" "2" "Enabled Internet Cache Files cleanup"
-    call :reg "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\VolumeCaches\Language Pack" "StateFlags65535" "REG_DWORD" "2" "Enabled Language Pack cleanup"
-    call :reg "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\VolumeCaches\Offline Pages Files" "StateFlags65535" "REG_DWORD" "2" "Enabled Offline Pages Files cleanup"
-    call :reg "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\VolumeCaches\Old ChkDsk Files" "StateFlags65535" "REG_DWORD" "2" "Enabled Old ChkDsk Files cleanup"
-    call :reg "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\VolumeCaches\Previous Installations" "StateFlags65535" "REG_DWORD" "2" "Enabled Previous Installations cleanup"
-    call :reg "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\VolumeCaches\Recycle Bin" "StateFlags65535" "REG_DWORD" "2" "Enabled Recycle Bin cleanup"
-    call :reg "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\VolumeCaches\RetailDemo Offline Content" "StateFlags65535" "REG_DWORD" "2" "Enabled RetailDemo Offline Content cleanup"
-    call :reg "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\VolumeCaches\Service Pack Cleanup" "StateFlags65535" "REG_DWORD" "2" "Enabled Service Pack Cleanup"
-    call :reg "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\VolumeCaches\Setup Log Files" "StateFlags65535" "REG_DWORD" "2" "Enabled Setup Log Files cleanup"
-    call :reg "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\VolumeCaches\System error memory dump files" "StateFlags65535" "REG_DWORD" "2" "Enabled System error memory dump files cleanup"
-    call :reg "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\VolumeCaches\System error minidump files" "StateFlags65535" "REG_DWORD" "2" "Enabled System error minidump files cleanup"
-    call :reg "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\VolumeCaches\Temporary Files" "StateFlags65535" "REG_DWORD" "2" "Enabled Temporary Files cleanup"
-    call :reg "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\VolumeCaches\Thumbnail Cache" "StateFlags65535" "REG_DWORD" "2" "Enabled Thumbnail Cache cleanup"
-    call :reg "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\VolumeCaches\Update Cleanup" "StateFlags65535" "REG_DWORD" "2" "Enabled Update Cleanup"
-    call :reg "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\VolumeCaches\Upgrade Discarded Files" "StateFlags65535" "REG_DWORD" "2" "Enabled Upgrade Discarded Files cleanup"
-    call :reg "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\VolumeCaches\User file versions" "StateFlags65535" "REG_DWORD" "2" "Enabled User file versions cleanup"
-    call :reg "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\VolumeCaches\Windows Defender" "StateFlags65535" "REG_DWORD" "2" "Enabled Windows Defender cleanup"
-    call :reg "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\VolumeCaches\Windows Error Reporting Files" "StateFlags65535" "REG_DWORD" "2" "Enabled Windows Error Reporting Files cleanup"
-    call :reg "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\VolumeCaches\Windows ESD installation files" "StateFlags65535" "REG_DWORD" "2" "Enabled Windows ESD installation files cleanup"
-    call :reg "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\VolumeCaches\Windows Upgrade Log Files" "StateFlags65535" "REG_DWORD" "2" "Enabled Windows Upgrade Log Files cleanup"
+@REM     :: Create registry keys for auto-selection of all cleanup options
+@REM     call :reg "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\VolumeCaches\Active Setup Temp Folders" "StateFlags65535" "REG_DWORD" "2" "Enabled Active Setup Temp Folders cleanup"
+@REM     call :reg "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\VolumeCaches\BranchCache" "StateFlags65535" "REG_DWORD" "2" "Enabled BranchCache cleanup"
+@REM     call :reg "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\VolumeCaches\D3D Shader Cache" "StateFlags65535" "REG_DWORD" "2" "Enabled D3D Shader Cache cleanup"
+@REM     call :reg "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\VolumeCaches\Delivery Optimization Files" "StateFlags65535" "REG_DWORD" "2" "Enabled Delivery Optimization Files cleanup"
+@REM     call :reg "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\VolumeCaches\Device Driver Packages" "StateFlags65535" "REG_DWORD" "2" "Enabled Device Driver Packages cleanup"
+@REM     call :reg "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\VolumeCaches\Downloaded Program Files" "StateFlags65535" "REG_DWORD" "2" "Enabled Downloaded Program Files cleanup"
+@REM     call :reg "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\VolumeCaches\Internet Cache Files" "StateFlags65535" "REG_DWORD" "2" "Enabled Internet Cache Files cleanup"
+@REM     call :reg "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\VolumeCaches\Language Pack" "StateFlags65535" "REG_DWORD" "2" "Enabled Language Pack cleanup"
+@REM     call :reg "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\VolumeCaches\Offline Pages Files" "StateFlags65535" "REG_DWORD" "2" "Enabled Offline Pages Files cleanup"
+@REM     call :reg "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\VolumeCaches\Old ChkDsk Files" "StateFlags65535" "REG_DWORD" "2" "Enabled Old ChkDsk Files cleanup"
+@REM     call :reg "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\VolumeCaches\Previous Installations" "StateFlags65535" "REG_DWORD" "2" "Enabled Previous Installations cleanup"
+@REM     call :reg "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\VolumeCaches\Recycle Bin" "StateFlags65535" "REG_DWORD" "2" "Enabled Recycle Bin cleanup"
+@REM     call :reg "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\VolumeCaches\RetailDemo Offline Content" "StateFlags65535" "REG_DWORD" "2" "Enabled RetailDemo Offline Content cleanup"
+@REM     call :reg "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\VolumeCaches\Service Pack Cleanup" "StateFlags65535" "REG_DWORD" "2" "Enabled Service Pack Cleanup"
+@REM     call :reg "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\VolumeCaches\Setup Log Files" "StateFlags65535" "REG_DWORD" "2" "Enabled Setup Log Files cleanup"
+@REM     call :reg "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\VolumeCaches\System error memory dump files" "StateFlags65535" "REG_DWORD" "2" "Enabled System error memory dump files cleanup"
+@REM     call :reg "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\VolumeCaches\System error minidump files" "StateFlags65535" "REG_DWORD" "2" "Enabled System error minidump files cleanup"
+@REM     call :reg "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\VolumeCaches\Temporary Files" "StateFlags65535" "REG_DWORD" "2" "Enabled Temporary Files cleanup"
+@REM     call :reg "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\VolumeCaches\Thumbnail Cache" "StateFlags65535" "REG_DWORD" "2" "Enabled Thumbnail Cache cleanup"
+@REM     call :reg "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\VolumeCaches\Update Cleanup" "StateFlags65535" "REG_DWORD" "2" "Enabled Update Cleanup"
+@REM     call :reg "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\VolumeCaches\Upgrade Discarded Files" "StateFlags65535" "REG_DWORD" "2" "Enabled Upgrade Discarded Files cleanup"
+@REM     call :reg "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\VolumeCaches\User file versions" "StateFlags65535" "REG_DWORD" "2" "Enabled User file versions cleanup"
+@REM     call :reg "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\VolumeCaches\Windows Defender" "StateFlags65535" "REG_DWORD" "2" "Enabled Windows Defender cleanup"
+@REM     call :reg "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\VolumeCaches\Windows Error Reporting Files" "StateFlags65535" "REG_DWORD" "2" "Enabled Windows Error Reporting Files cleanup"
+@REM     call :reg "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\VolumeCaches\Windows ESD installation files" "StateFlags65535" "REG_DWORD" "2" "Enabled Windows ESD installation files cleanup"
+@REM     call :reg "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\VolumeCaches\Windows Upgrade Log Files" "StateFlags65535" "REG_DWORD" "2" "Enabled Windows Upgrade Log Files cleanup"
     
-    :: First try running directly
-    cleanmgr /sagerun:65535
+@REM     :: First try running directly
+@REM     cleanmgr /sagerun:65535
     
-    :: If direct execution fails, try with full path
-    if !errorlevel! neq 0 (
-        echo Retrying with full path...
-        %SystemRoot%\System32\cleanmgr.exe /sagerun:65535
-    )
+@REM     :: If direct execution fails, try with full path
+@REM     if !errorlevel! neq 0 (
+@REM         echo Retrying with full path...
+@REM         %SystemRoot%\System32\cleanmgr.exe /sagerun:65535
+@REM     )
     
-    :: Check final execution status
-    if !errorlevel! equ 0 (
-        echo Disk cleanup completed successfully.
-    ) else (
-        echo Error: Disk cleanup failed with code !errorlevel!
-        echo Attempting to launch Disk Cleanup manually...
-        start cleanmgr.exe
-    )
-    pause
-)
+@REM     :: Check final execution status
+@REM     if !errorlevel! equ 0 (
+@REM         echo Disk cleanup completed successfully.
+@REM     ) else (
+@REM         echo Error: Disk cleanup failed with code !errorlevel!
+@REM         echo Attempting to launch Disk Cleanup manually...
+@REM         start cleanmgr.exe
+@REM     )
+@REM     pause
+@REM )
 
 :: Install and Launch PC Manager
 echo.

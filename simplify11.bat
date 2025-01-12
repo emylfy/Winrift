@@ -3,17 +3,19 @@ setlocal EnableDelayedExpansion
 net session >nul 2>&1 || (powershell start -verb runas '%~0' & exit)
 
 set cMauve=[38;5;141m
+set cGrey=[38;5;250m
 set cReset=[0m
+set cRed=[38;5;203m
+set cGreen=[38;5;120m
+
+title Creating Restore Point directly coming soon
+echo This is Pre-release, and not fully tested
+echo Please, create restore point before Applying Tweaks
+pause
 
 :main
 title Simplify11 v25.01
-echo This is Pre-release, and not fully tested
-echo Please, create restore point before Applying Tweaks
-echo.
-echo (Creating Restore Point from here directly coming soon)
-start rstrui.exe
 cls
-pause
 echo.
 echo %cMauve% +--------------------------------------------------------+%cReset%
 echo %cMauve% '%cMauve%  Tired of System Setup After Reinstall? Simplify It!    %cMauve%'%cReset%

@@ -2,25 +2,18 @@
 setlocal EnableDelayedExpansion
 net session >nul 2>&1 || (powershell start -verb runas '%~0' & exit)
 
-:: Define colors
-set cRosewater=[38;5;224m
-set cFlamingo=[38;5;210m
 set cMauve=[38;5;141m
-set cRed=[38;5;203m
-set cGreen=[38;5;120m
-set cTeal=[38;5;116m
-set cSky=[38;5;111m
-set cSapphire=[38;5;69m
-set cBlue=[38;5;75m
 set cGrey=[38;5;250m
 set cReset=[0m
+set cRed=[38;5;203m
+set cGreen=[38;5;120m
 
 :coolStuff
 cls
 echo %cMauve% +--------------------------------------------------------+%cReset%
 echo %cMauve% '%cGrey% Customization Options                                  %cMauve%'%cReset%
 echo %cMauve% +--------------------------------------------------------+%cReset%
-echo %cMauve% '%cGrey% [1] Open Night Light Settings                        %cMauve%'%cReset%
+echo %cMauve% '%cGrey% [1] Open Night Light Settings                          %cMauve%'%cReset%
 echo %cMauve% '%cGrey% [2] Set Short Date Format (d MMM yy)                   %cMauve%'%cReset%
 echo %cMauve% '%cGrey% [3] Rename System Drive to Win 11                      %cMauve%'%cReset%
 echo %cMauve% '%cGrey% [4] Visit Cool Stuff Page (Themes and More)            %cMauve%'%cReset%
@@ -68,21 +61,21 @@ reg add "%key%" /f >nul 2>&1
 
 :: Handle different value types
 if /i "%valueType%"=="REG_DWORD" (
-    reg add "%key%" /v "%valueName%" /t REG_DWORD /d "%valueData%" /f >nul 2>&1
+	reg add "%key%" /v "%valueName%" /t REG_DWORD /d "%valueData%" /f >nul 2>&1
 ) else if /i "%valueType%"=="REG_SZ" (
-    reg add "%key%" /v "%valueName%" /t REG_SZ /d "%valueData%" /f >nul 2>&1
+	reg add "%key%" /v "%valueName%" /t REG_SZ /d "%valueData%" /f >nul 2>&1
 ) else if /i "%valueType%"=="REG_BINARY" (
-    reg add "%key%" /v "%valueName%" /t REG_BINARY /d "%valueData%" /f >nul 2>&1
+	reg add "%key%" /v "%valueName%" /t REG_BINARY /d "%valueData%" /f >nul 2>&1
 ) else (
-    echo %cRed%[FAILED]%cReset% Unsupported registry value type: %valueType%
-    exit /b 1
+	echo %cRed%[FAILED]%cReset% Unsupported registry value type: %valueType%
+	exit /b 1
 )
 
 if %errorlevel% equ 0 (
-    echo %cGreen%[SUCCESS]%cReset% %comment%
+	echo %cGreen%[SUCCESS]%cReset% %comment%
 ) else (
-    echo %cRed%[FAILED]%cReset% Failed to set %valueName%
-    exit /b 1
+	echo %cRed%[FAILED]%cReset% Failed to set %valueName%
+	exit /b 1
 )
 
 exit /b 0
