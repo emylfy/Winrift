@@ -20,13 +20,14 @@ echo %cMauve% '%cGrey% [3] Power-Intensive Tweaks             %cMauve%'%cReset%
 echo %cMauve% '%cGrey% [4] Universal System Tweaks            %cMauve%'%cReset%
 echo %cMauve% '%cGrey% [5] Exit                               %cMauve%'%cReset%
 echo %cMauve% +----------------------------------------+%cReset%
-
+cls
+echo Temporary disabled due to unexpected system breaking in bootloop!
 choice /C 123456 /N /M "Select an option: "
 if errorlevel 5 goto :eof
-if errorlevel 4 goto universal
-if errorlevel 3 goto powerIntensive
-if errorlevel 2 goto gpu
-if errorlevel 1 goto storage
+if errorlevel 4 goto :eof
+if errorlevel 3 goto :eof
+if errorlevel 2 goto :eof
+if errorlevel 1 goto :eof
 
 :storage
 cls
