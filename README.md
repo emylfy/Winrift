@@ -131,12 +131,9 @@ iwr "https://dub.sh/s11install" | iex
 
 ## 🪄 Cool Stuff
 
-<details>
-<summary>Customization</summary>
-
-  - [Rectify11 Installer](https://github.com/Rectify11/Installer) - Modern UI redesign for Windows 11
-  - [Autounattend.xml](https://gist.github.com/emylfy/d53ba22c2c8c00fe3f98887290d763e5) - Customizable Answer file to perform automated windows installation
-  - [WinDynamicDesktop](https://github.com/t1m0thyj/WinDynamicDesktop) - Port of macOS Dynamic Desktop Wallpapers feature
+- [Rectify11 Installer](https://github.com/Rectify11/Installer) - Modern UI redesign for Windows 11
+- [Simplify11 Unattended](https://github.com/emylfy/simplify11/blob/main/src/docs/autounattend_guide.md) - Automated Windows installation with customizable configurations
+- [WinDynamicDesktop](https://github.com/t1m0thyj/WinDynamicDesktop) - Port of macOS Dynamic Desktop Wallpapers feature
 </details>
 
 ## 🌟 Credits
