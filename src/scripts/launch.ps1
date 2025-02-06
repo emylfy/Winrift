@@ -33,18 +33,6 @@ try {
     # Use native PowerShell commands for extraction
     Expand-Archive -Path $zipPath -DestinationPath $tempPath -Force
 
-    # Copy icon safely
-    Copy-Item "$tempPath\simplify11-main\src\media\icon.ico" "$env:APPDATA\icon.ico" -Force
-
-    Write-Progress -Activity "Installing Simplify11" -Status "Creating shortcut..." -PercentComplete 75
-
-    # Create shortcut
-    $WshShell = New-Object -comObject WScript.Shell
-    $Shortcut = $WshShell.CreateShortcut("$env:USERPROFILE\Desktop\Simplify11.lnk")
-    $Shortcut.TargetPath = "$tempPath\simplify11-main\simplify11.bat"
-    $Shortcut.IconLocation = "$env:APPDATA\icon.ico"
-    $Shortcut.Save()
-
     Write-Progress -Activity "Installing Simplify11" -Status "Complete" -PercentComplete 100
 
     Write-Host @"
