@@ -58,11 +58,26 @@ This XML configuration file automates the Windows installation process, providin
 
 ## 📥 Installation Guide
 
+### 🚀 Automated Script Method
+Use our PowerShell script to automate the ISO customization process:
+
+```powershell
+iwr "https://dub.sh/iso-builder" | iex
+```
+
+**What It Does:**
+1. Asks for your Windows ISO file
+2. Lets you choose answer file (autounattend.xml)
+3. Suggests save location for new ISO
+
+### 🛠️ Manual Method
+
+For manual creation:  
 1. Open AnyBurn and select "Edit Image File"
 2. Choose your Windows ISO file
 3. Paste the [autounattend.xml](https://github.com/emylfy/simplify11/blob/main/src/docs/autounattend.xml) file into ISO root
 4. Complete the burning process to create your bootable media
-5. Start the Windows installation process, the script will be applied automatically
+5. Start installation - script will apply automatically
 
 > 📥 **Download XML File:** [autounattend.xml](https://github.com/emylfy/simplify11/blob/main/src/docs/autounattend.xml)
 
@@ -86,14 +101,11 @@ The configuration will be applied automatically during installation.
 - Logs: Various `.log` files for debugging
 </details>
 
-## ⚠️ Important Notes
+## ⚠️ Important Note
 
-- Backup your data before using
-- Requires Windows 11 ISO
-- Internet connection recommended
 - Some settings may vary by Windows version
 
----
+![](https://github.com/emylfy/simplify11/blob/main/src/media/separator.png)
 
 <div align="center">
   <p>Made with ❤️ for the Windows community</p>
