@@ -97,17 +97,17 @@ try {
     # XML Configuration
     Show-Section "STEP 4: ANSWER FILE SETUP"
     Write-Host "Enter the path to the XML file" -ForegroundColor DarkCyan
-    Write-Host "[Press Enter to use default from github.com/emylfy/simplify11]" -ForegroundColor DarkGray
+    Write-Host "[Press Enter to use pre-made from github.com/emylfy/simplify11]" -ForegroundColor DarkGray
     $xmlPath = Read-Host " "
 
     try {
         if ([string]::IsNullOrWhiteSpace($xmlPath)) {
-            Show-Status "Downloading default autounattend.xml..." "info"
+            Show-Status "Downloading pre-made autounattend.xml..." "info"
             
             try {
                 Invoke-WebRequest -Uri "https://raw.githubusercontent.com/emylfy/simplify11/main/src/docs/autounattend.xml" -OutFile "autounattend.xml" -ErrorAction Stop
                 Move-Item -Path "autounattend.xml" -Destination $extractDir -Force
-                Show-Status "Default XML downloaded successfully" "success"
+                Show-Status "XML downloaded successfully" "success"
             }
             catch {
                 Show-Status "Download failed: $($_.Exception.Message)" "error"
