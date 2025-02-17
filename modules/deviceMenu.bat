@@ -10,7 +10,7 @@ set cGreen=[38;5;120m
 
 :deviceMenu
 cls
-:: Define URLs for modern device manufacturers
+
 set "url[0]=https://support.hp.com/us-en/drivers"
 set "url[1]=https://support.lenovo.com"
 set "url[2]=https://www.asus.com/support/download-center/"
@@ -58,29 +58,16 @@ cls
 echo.
 echo %cMauve% +--------------------------------------------+%cReset%
 echo %cMauve% '%cGrey% [1] Install Lenovo Vantage                 %cMauve%'%cReset%
-echo %cMauve% '%cGrey% [2] Install Dolby Access                   %cMauve%'%cReset%
-echo %cMauve% '%cGrey% [3] Open Lenovo Driver Page                %cMauve%'%cReset%
+echo %cMauve% '%cGrey% [2] Open Lenovo Driver Page                %cMauve%'%cReset%
 echo %cMauve% +--------------------------------------------+%cReset%
-echo %cMauve% '%cGrey% [4] Back to Manufacturer Selection         %cMauve%'%cReset%
+echo %cMauve% '%cGrey% [3] Back to Manufacturer Selection         %cMauve%'%cReset%
 echo %cMauve% +--------------------------------------------+%cReset%
 
-choice /C 1234 /N /M ">"
+choice /C 123 /N /M ">"
 set /a "lenovo_choice=%errorlevel%"
-if !lenovo_choice! equ 4 goto deviceMenu
-if !lenovo_choice! equ 3 (
-    start "" "https://support.lenovo.com"
-    goto lenovoMenu
-)
+if !lenovo_choice! equ 3 goto deviceMenu
 if !lenovo_choice! equ 2 (
-    echo %cGrey%Installing Dolby Access...%cReset%
-    winget install "9NBLGGH4XDB3" --accept-package-agreements --accept-source-agreements
-    if !errorlevel! equ 0 (
-        echo %cGreen%Successfully installed Dolby Access.%cReset%
-    ) else (
-        echo %cRed%Failed to install Dolby Access. Please install manually from the Microsoft Store.%cReset%
-         start "" "ms-windows-store://pdp?hl=en-us&gl=us&ocid=pdpshare&referrer=storeforweb&productid=9N0866FS04W8&storecid=storeweb-pdp-open-cta"
-    )
-    timeout /t 2
+    start "" "https://support.lenovo.com"
     goto lenovoMenu
 )
 if errorlevel 1 (

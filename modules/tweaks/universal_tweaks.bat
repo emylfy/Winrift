@@ -5,8 +5,10 @@ net session >nul 2>&1 || (powershell start -verb runas '%~0' & exit)
 set cMauve=[38;5;141m
 set cGrey=[38;5;250m
 set cReset=[0m
+set cRed=[38;5;203m
+set cGreen=[38;5;120m
 
-:skipPowerTweaks
+:universalTweaks
 :: Changing Interrupts behavior for lower latency
 : source - https://youtu.be/Gazv0q3njYU
 call :reg "HKLM\SYSTEM\CurrentControlSet\Control\Session Manager\kernel" "InterruptSteeringDisabled" "REG_DWORD" "1" "Disabled interrupt steering for lower latency"
@@ -33,6 +35,21 @@ call :reg "HKCU\Control Panel\Accessibility\Keyboard Response" "AutoRepeatRate" 
 call :reg "HKCU\Control Panel\Accessibility\Keyboard Response" "AutoRepeatDelay" "REG_SZ" "0" "Removed key repeat delay"
 call :reg "HKCU\Control Panel\Accessibility\Keyboard Response" "Flags" "REG_SZ" "122" "Modified keyboard response flags"
 
+:: SSD/NVMe Tweaks
+powershell -command "Get-PhysicalDisk | Where-Object { $_.MediaType -eq 'SSD' -or $_.BusType -eq 'NVMe' } | Measure-Object | ForEach-Object { if ($_.Count -gt 0) { exit 0 } else { exit 1 } }"
+if %errorlevel% equ 0 (
+    echo Enable and optimize TRIM for SSD
+    fsutil behavior set DisableDeleteNotify 0
+
+    echo Disable defragmentation for SSDs
+    schtasks /Change /TN "\Microsoft\Windows\Defrag\ScheduledDefrag" /Disable
+		
+    echo Disable NTFS last access time updates
+    fsutil behavior set disablelastaccess 1
+    call :reg "HKLM\SYSTEM\CurrentControlSet\Control\FileSystem" "NtfsDisable8dot3NameCreation" "REG_DWORD" "1" "Disabled legacy 8.3 filename creation for better SSD performance"
+) else (
+    echo No SSD or NVMe detected. Skipping tweaks.
+)
 
 :: GPU Performance Tweaks
 :: The HwSchMode parameter optimizes hardware-level computation scheduling (Hardware Accelerated GPU Scheduling), reducing latency on lower-end GPUs.
@@ -147,7 +164,7 @@ call :reg "HKLM\SOFTWARE\Microsoft\DirectX" "D3D12_RESIDENCY_MANAGEMENT_ENABLED"
 
 :: Serialize Timer Expiration mechanism, officially documented in Windows Internals 7th E2
 :: Improves system timing and interrupt handling
-:: source - https://youtu.be/wil-09_5H0M
+: source - https://youtu.be/wil-09_5H0M
 call :reg "HKLM\SYSTEM\CurrentControlSet\Control\Session Manager\kernel" "SerializeTimerExpiration" "REG_DWORD" "1" "Enabled timer serialization for better system timing"
 
 pause

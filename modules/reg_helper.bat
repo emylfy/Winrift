@@ -1,7 +1,4 @@
 :reg
-call "%~dp0\..\reg_helper.bat" %*
-
-:reg
 setlocal
 set "key=%~1"
 set "valueName=%~2"

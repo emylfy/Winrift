@@ -6,60 +6,37 @@
 
 ## ✨ Overview
 
-This XML configuration file automates the Windows installation process, providing a streamlined setup experience with pre-configured system settings, bloatware removal, and optimized user preferences.
+This XML configuration file automates the Windows installation process, ensuring a clean, optimized, and user-friendly setup. It removes unnecessary bloatware, configures system settings, enhances the user interface, and applies various optimizations to improve performance and privacy
 
 > 🛠️ **Configure Your Own:** Visit [Unattend-Generator](https://schneegans.de/windows/unattend-generator/) to customize settings
 
 > 🔧 **Integrated with [Simplify11](https://github.com/emylfy/simplify11) shorcut in Start Menu**
 
-## 🚀 Key Features
+## 🎯 What It Does  
 
-<div align="center">
-  <table>
-    <tr>
-      <td align="center">
-        <img src="https://raw.githubusercontent.com/microsoft/fluentui-emoji/main/assets/Gear/3D/gear_3d.png" width="60px" alt="Settings">
-        <br/><b>System Settings</b>
-        <br/><small>Language, Locale & Input</small>
-      </td>
-      <td align="center">
-        <img src="https://raw.githubusercontent.com/microsoft/fluentui-emoji/main/assets/Wastebasket/3D/wastebasket_3d.png" width="60px" alt="Cleanup">
-        <br/><b>Bloatware Removal</b>
-        <br/><small>20+ Pre-installed Apps</small>
-      </td>
-      <td align="center">
-        <img src="https://raw.githubusercontent.com/microsoft/fluentui-emoji/main/assets/Sparkles/3D/sparkles_3d.png" width="60px" alt="Customization">
-        <br/><b>UI Customization</b>
-        <br/><small>Taskbar & Desktop</small>
-      </td>
-    </tr>
-  </table>
-</div>
+### 🧹 **Bloatware Removal**  
+- Removes over 20 pre-installed apps and unnecessary Windows features like Quick Assist and Steps Recorder.  
 
-## 🎯 What It Does
+### ⚙️ **System Optimizations**  
+- Bypasses TPM 2.0 and Secure Boot for broader compatibility
+- Disables telemetry, Cortana, Bing search, and other data collection
+- Customizes File Explorer, Start Menu, and Taskbar for a cleaner experience
+- Disables system sounds, removes OneDrive, and optimizes Windows Update settings
 
-### 🧹 Removes Bloatware
-- Microsoft 3D Viewer, Bing apps
-- Clipchamp, Maps, Mixed Reality
-- OneNote, Outlook, Teams
-- And many more...
+### 🎨 **UI Enhancements**  
+- Hides default desktop icons
+- Customizes the Taskbar and Start Menu for a clutter-free look
 
-### ⚙️ System Optimizations
-- Disables system sounds
-- Removes OneDrive integration
-- Configures privacy settings
-- Customizes Explorer settings
-
-### 🎨 UI Enhancements
-- Sets solid color background
-- Removes taskbar clutter
-- Shows file extensions
-- Optimizes default view settings
+### 🔒 **Security and Privacy**  
+- Disables SmartScreen and unnecessary Windows Defender notifications
+- Turns off Edge’s first-run experience and consumer features like ads and suggestions
 
 ## 📥 Installation Guide
 
 ### 🚀 Automated Script Method
-Use our PowerShell script to automate the ISO customization process:
+
+Work in Progress.
+<!-- Use our PowerShell script to automate the ISO customization process:
 
 ```powershell
 iwr "https://dub.sh/iso-builder" | iex
@@ -68,7 +45,7 @@ iwr "https://dub.sh/iso-builder" | iex
 **What It Does:**
 1. Asks for your Windows ISO file
 2. Lets you choose answer file (autounattend.xml)
-3. Suggests save location for new ISO
+3. Suggests save location for new ISO -->
 
 ### 🛠️ Manual Method
 

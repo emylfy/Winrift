@@ -8,7 +8,6 @@ set cReset=[0m
 set cRed=[38;5;203m
 set cGreen=[38;5;120m
 
-:: Start of launchWinUtil content
 cls
 echo.
 echo %cMauve% +-----------------------------------+%cReset%

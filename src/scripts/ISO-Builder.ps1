@@ -205,26 +205,61 @@ try {
         Show-Status "Using system OSCDIMG" "success"
     }
 
-    # ISO Building
-    Show-Section "STEP 7: ISO CONSTRUCTION"
-    try {
-        $bootFile = @("boot\etfsboot.com", "efi\microsoft\boot\efisys.bin") | 
-            Where-Object { Test-Path (Join-Path $extractDir $_) } | 
-            Select-Object -First 1
-        if (-not $bootFile) {
-            throw "Boot file not found in extracted ISO"
-        }
-        $bootPath = Join-Path $extractDir $bootFile
-        Show-Status "Boot file located: $bootFile" "success"
+# ISO Building
+Show-Section "STEP 7: ISO CONSTRUCTION"
+try {
+    # Verify boot files exist
+    $biosBootFile = Join-Path $extractDir "boot\etfsboot.com"
+    $uefiBootFile = Join-Path $extractDir "efi\microsoft\boot\efisys.bin"
+    if (-not (Test-Path $biosBootFile) -and -not (Test-Path $uefiBootFile)) {
+        throw "No boot files found in extracted ISO contents!"
+    }
 
-        Write-Host "Building ISO with: $oscdimg" -ForegroundColor Cyan
-        & "$oscdimg" -m -n -b"$bootPath" -lWin11 "$extractDir" "$newIsoPath"
-        
-        if ($LASTEXITCODE -ne 0) {
-            throw "OSCDIMG failed with code $LASTEXITCODE"
-        }
-        Write-Host "`nISO successfully created: " -NoNewline -ForegroundColor Green
-        Write-Host $newIsoPath -ForegroundColor White
+    # Build oscdimg command
+    $oscArgs = @(
+        "-m",    # Max ISO9660 filename length
+        "-o"     # Optimize storage
+    )
+
+    # Add UDF support if UEFI boot is detected
+    $uefiDetected = Test-Path $uefiBootFile
+    if ($uefiDetected) {
+        $oscArgs += "-udfver102"  # Enable UDF for long filenames with UEFI
+    } else {
+        $oscArgs += "-n"          # Use Joliet only if no UEFI
+    }
+
+    # Add BIOS boot sector if exists
+    if (Test-Path $biosBootFile) {
+        $oscArgs += "-b`"$biosBootFile`""
+        Show-Status "Added BIOS boot support" "success"
+    }
+
+    # Add UEFI boot sector if exists
+    if ($uefiDetected) {
+        $oscArgs += @(
+            "-u2",             # REQUIRED for UEFI boot
+            "-uefi`"$uefiBootFile`""
+        )
+        Show-Status "Added UEFI boot support" "success"
+    }
+
+    # Add source and destination paths
+    $oscArgs += @(
+        "-lWIN11",            # Volume label
+        "`"$extractDir`"",
+        "`"$newIsoPath`""
+    )
+
+    Write-Host "`nExecuting command:" -ForegroundColor DarkCyan
+    Write-Host "$oscdimg $($oscArgs -join ' ')" -ForegroundColor DarkGray
+    & $oscdimg $oscArgs
+    if ($LASTEXITCODE -ne 0) {
+        throw "OSCDIMG failed with exit code $LASTEXITCODE"
+    }
+
+    Write-Host "`nISO successfully created: " -NoNewline -ForegroundColor Green
+    Write-Host $newIsoPath -ForegroundColor White
     }
     catch {
         Show-Status "ISO creation failed: $_" "error"
@@ -235,7 +270,6 @@ try {
         Remove-Item -Path $extractDir -Recurse -Force -ErrorAction SilentlyContinue
         Show-Status "Cleaned temporary workspace" "success"
     }
-
     pause
 }
 catch {

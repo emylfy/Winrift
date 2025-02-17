@@ -1,18 +1,17 @@
-# Simplify11 ⚡
-
-<p align="center">
-	<img src="src/media/logo.png" alt="Simplify11 Logo">
-</p>
+# Simplify11
 
 <p align="center">
 	<strong>A powerful Windows toolkit that quickly configures your system</strong>
 </p>
 
 <p align="center">
-	<a href="#-features">Features</a> •
-	<a href="#-installation">Installation</a> •
+	<img src="src/media/logo.png" alt="Simplify11 Logo" width="80%">
+</p>
+
+<p align="center">
 	<a href="#-quick-start">Usage</a> •
-	<a href="#-cool-stuff">Cool Stuff</a> •
+	<a href="#-installation">Installation</a> •
+	<a href="#-features">Features</a> •
 	<a href="#-credits">Credits</a>
 </p>
 
@@ -66,8 +65,6 @@ iwr "https://dub.sh/s11install" | iex
 	- Reserved storage management
 	- WinSxS component cleanup
 	- Virtual memory optimization
-	- Windows Update cache cleanup
-	- Advanced disk cleaning utilities
 </details>
 
 <details>
@@ -79,17 +76,14 @@ iwr "https://dub.sh/s11install" | iex
 - Essential software collection:
 
 **Categories:**
-- Development (VS Code, Python, Git)
-- Web Browsers (Arc, Thorium, Zen)
-- System Tools (PowerToys, NanaZip)
+- Development
+- Web Browsers
+- System Tools
 - Productivity Suite
 - Gaming Essentials
 - Microsoft Core Apps
 
 </details>
-
-### Security Note
-> 🛡️ Always create a system restore point before making system changes. Simplify11 will prompt you to create one automatically.
 
 ## 🔄 Integrations
 
@@ -98,7 +92,12 @@ iwr "https://dub.sh/s11install" | iex
 <td align="center">
 <img src="https://github.com/ChrisTitusTech/winutil/blob/main/docs/assets/favicon.png?raw=true" width="60px" alt="WinUtil"><br/>
 <b><a href="https://github.com/ChrisTitusTech/winutil">WinUtil</a></b><br/>
-<sub>Best Windows Utility</sub>
+<sub>Chris Titus Windows Utility</sub>
+</td>
+<td align="center">
+<img src="https://raw.githubusercontent.com/flick9000/winscript/refs/heads/main/icons/logo.svg" width="60px" alt="Winscript"><br/>
+<b><a href="https://github.com/flick9000/winscript">Winscript</a></b><br/>
+<sub>Tool to build your script</sub>
 </td>
 <td align="center">
 <img src="https://raw.githubusercontent.com/undergroundwires/privacy.sexy/refs/heads/master/img/logo.svg" width="60px" alt="Privacy.sexy"><br/>
@@ -106,25 +105,9 @@ iwr "https://dub.sh/s11install" | iex
 <sub>Privacy enhancement</sub>
 </td>
 <td align="center">
-<img src="https://raw.githubusercontent.com/microsoft/winget-cli/refs/heads/master/.github/images/WindowsPackageManager_Assets/ICO/PNG/_64.png" width="60px" alt="Winget"><br/>
-<b><a href="https://github.com/microsoft/winget-cli">Winget</a></b><br/>
-<sub>Package manager</sub>
-</td>
-<td align="center">
-<picture>
-  <source
-    srcset="https://assets.dub.co/brand/logo-dark.svg"
-    media="(prefers-color-scheme: dark)"
-  />
-  <source
-    srcset="https://assets.dub.co/brand/logo.svg"
-    media="(prefers-color-scheme: light), (prefers-color-scheme: no-preference)"
-  />
-  <img src="https://assets.dub.co/brand/logo.svg" width="60px" />
-</picture>
-
-<b><a href="https://app.dub.co">Dub.co</a></b><br/>
-<sub>Link managment</sub>
+<img src="https://raw.githubusercontent.com/marticliment/UniGetUI/refs/heads/main/media/icon.svg" width="60px" alt="UniGetUI"><br/>
+<b><a href="https://github.com/marticliment/UniGetUI">UniGetUI</a></b><br/>
+<sub>Graphical Package manager</sub>
 </td>
 </tr>
 </table>
@@ -149,9 +132,9 @@ iwr "https://dub.sh/s11install" | iex
 | Project | Description |
 |:---:|:---|
 | [Win11Tweaks](https://github.com/SysadminWorld/Win11Tweaks) | My first project |
-| [Latency Optimization](https://github.com/denis-g/windows10-latency-optimization) | Informative guide to optimizing Windows |
+| [Latency Optimization](https://github.com/denis-g/windows10-latency-optimization) | Informative guide to optimize Windows |
 | [Verified Tweaks](https://github.com/AlchemyTweaks/Verified-Tweaks) | Modifications that have been tested in videos |
-| [QuickBoost](https://github.com/SanGraphic/QuickBoost) • [CoutX](https://github.com/UnLovedCookie/CoutX) • [SyncOS](https://github.com/Snowfliger/SyncOS) | Most accurate optimization projects |
+| [QuickBoost](https://github.com/SanGraphic/QuickBoost) • [CoutX](https://github.com/UnLovedCookie/CoutX) • [SyncOS](https://github.com/Snowfliger/SyncOS) | Most accurate batch optimization projects |
 
 </div>
 

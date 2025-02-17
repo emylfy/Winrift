@@ -13,8 +13,8 @@ cls
 echo %cMauve% +--------------------------------------------------------+%cReset%
 echo %cMauve% '%cGrey% Privacy.Sexy Settings                                  %cMauve%'%cReset%
 echo %cMauve% +--------------------------------------------------------+%cReset%
-echo %cMauve% '%cGrey% [1] Open Privacy.Sexy Website (Customizable)           %cMauve%'%cReset%
-echo %cMauve% '%cGrey% [2] Download and Run Script (Standard Preset)          %cMauve%'%cReset%
+echo %cMauve% '%cGrey% [1] Build your own batch from privacy.sexy website     %cMauve%'%cReset%
+echo %cMauve% '%cGrey% [2] Download and Run Standart preset (for most users)  %cMauve%'%cReset%
 echo %cMauve% '%cGrey% [3] Back to Main Menu                                  %cMauve%'%cReset%
 echo %cMauve% +--------------------------------------------------------+%cReset%
 
