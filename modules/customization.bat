@@ -1,6 +1,19 @@
+: Install cursor
+: Windows terminal preset
+: Disable automatic addition of folders to Quick Access
+
 @echo off
 setlocal EnableDelayedExpansion
-net session >nul 2>&1 || (powershell start -verb runas '%~0' & exit)
+net session >nul 2>&1 || (
+    echo Not running as admin. Elevating...
+    where wt.exe >nul 2>&1
+    if %errorlevel% equ 0 (
+        powershell -Command "Start-Process -FilePath 'wt.exe' -ArgumentList 'cmd /k \"%~0\"' -Verb runAs"
+    ) else (
+        powershell -Command "Start-Process -FilePath 'cmd.exe' -ArgumentList '/k \"%~0\"' -Verb runAs"
+    )
+    exit /b
+)
 
 set cMauve=[38;5;141m
 set cGrey=[38;5;250m
@@ -14,12 +27,12 @@ echo %cMauve% +--------------------------------------------------------+%cReset%
 echo %cMauve% '%cGrey% Customization Options                                  %cMauve%'%cReset%
 echo %cMauve% +--------------------------------------------------------+%cReset%
 echo %cMauve% '%cGrey% [1] Set Short Date and Hours Format - Feb 17, 17:57    %cMauve%'%cReset%
-echo %cMauve% '%cGrey% [2] Back to Main Menu                                  %cMauve%'%cReset%
+echo %cMauve% '%cGrey% [2] Back to Menu                                       %cMauve%'%cReset%
 echo %cMauve% +--------------------------------------------------------+%cReset%
 
 choice /C 12345 /N /M ">"
 set /a "customization_choice=%errorlevel%"
-if !customization_choice! equ 2 goto main
+if !customization_choice! equ 2 exit
 if errorlevel 1 (
     @REM call :reg "HKEY_CURRENT_USER\Control Panel\International" "sShortDate" "REG_SZ" "d MMM yy" "Set short date format to d MMM yy"
 		reg add "HKCU\Control Panel\International" /v sShortDate /t REG_SZ /d "dd MMM yyyy" /f

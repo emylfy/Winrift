@@ -1,6 +1,15 @@
 @echo off
 setlocal EnableDelayedExpansion
-net session >nul 2>&1 || (powershell start -verb runas '%~0' & exit)
+net session >nul 2>&1 || (
+    echo Not running as admin. Elevating...
+    where wt.exe >nul 2>&1
+    if %errorlevel% equ 0 (
+        powershell -Command "Start-Process -FilePath 'wt.exe' -ArgumentList 'cmd /k \"%~0\"' -Verb runAs"
+    ) else (
+        powershell -Command "Start-Process -FilePath 'cmd.exe' -ArgumentList '/k \"%~0\"' -Verb runAs"
+    )
+    exit /b
+)
 
 set cMauve=[38;5;141m
 set cGrey=[38;5;250m
@@ -46,6 +55,7 @@ if !pcmanager_choice!==1 (
     winget install Microsoft.PCManager --accept-package-agreements --accept-source-agreements
     if !errorlevel! equ 0 (
         echo Successfully installed PC Manager.
+        timeout /t 2
         start "" "shell:AppsFolder\Microsoft.MicrosoftPCManager_8wekyb3d8bbwe!App"
     ) else if !errorlevel! equ -1978335189 (
         echo %cGrey%PC Manager is already installed. Launching...%cReset%
@@ -57,4 +67,4 @@ if !pcmanager_choice!==1 (
     )
 )
 
-goto main
+exit

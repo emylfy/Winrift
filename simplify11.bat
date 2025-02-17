@@ -9,11 +9,11 @@ set cRed=[38;5;203m
 set cGreen=[38;5;120m
 
 :main
-title Simplify11 v25.01
+title Simplify11 v25.02
 cls
 echo.
 echo %cMauve% +--------------------------------------------------------+%cReset%
-echo %cMauve% '%cMauve%  Tired of System Setup After Reinstall? Simplify It!    %cMauve%'%cReset%
+echo %cMauve% '%cMauve%   Tired of System Setup After Reinstall? Simplify It!   %cMauve%'%cReset%
 echo %cMauve% +--------------------------------------------------------+%cReset%
 echo %cMauve% '%cGrey% [0] Configure Your Windows Installation Answer File    %cMauve%'%cReset%
 echo %cMauve% +--------------------------------------------------------+%cReset%
@@ -26,9 +26,13 @@ echo %cMauve% '%cGrey% [5] System Tweaks - SSD, GPU, CPU, Storage and etc     %c
 echo %cMauve% '%cGrey% [6] Install Drivers - Nvidia, AMD, Device Manufacturer %cMauve%'%cReset%
 echo %cMauve% '%cGrey% [7] Customization stuff, windots                       %cMauve%'%cReset%
 echo %cMauve% +--------------------------------------------------------+%cReset%
-choice /C 1234567 /N /M ">"
-set /a "menuChoice=%errorlevel%"
+choice /C 01234567 /N /M ">"
+set /a "menuChoice=%errorlevel%-1"
 goto s!menuChoice!
+
+:s0
+start "" https://github.com/emylfy/simplify11/blob/main/src/docs/autounattend_guide.md
+goto main
 
 :s1
 start cmd /c "%~dp0modules\launchWinUtil.bat"

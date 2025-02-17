@@ -1,6 +1,7 @@
+: Add Nvidia App & AMD
+
 @echo off
 setlocal EnableDelayedExpansion
-net session >nul 2>&1 || (powershell start -verb runas '%~0' & exit)
 
 set cMauve=[38;5;141m
 set cGrey=[38;5;250m
@@ -21,23 +22,21 @@ set "url[6]=https://www.xiaomi.com/global/support"
 set "url[7]=https://www.alienware.com/support"
 set "url[8]=https://www.gigabyte.com/support/consumer"
 
-echo %cMauve% +-----------------------------------------------------+%cReset%
-echo %cMauve% '%cGrey% Select your device manufacturer to install drivers: %cMauve%'%cReset%
-echo %cMauve% +-----------------------------------------------------+%cReset%
-echo %cMauve% '%cGrey% [0] HP                                              %cMauve%'%cReset%
-echo %cMauve% '%cGrey% [1] Lenovo                                          %cMauve%'%cReset%
-echo %cMauve% '%cGrey% [2] Asus                                            %cMauve%'%cReset%
-echo %cMauve% '%cGrey% [3] Acer                                            %cMauve%'%cReset%
-echo %cMauve% '%cGrey% [4] MSI                                             %cMauve%'%cReset%
-echo %cMauve% '%cGrey% [5] Huawei                                          %cMauve%'%cReset%
-echo %cMauve% '%cGrey% [6] Xiaomi                                          %cMauve%'%cReset%
-echo %cMauve% '%cGrey% [7] Alienware                                       %cMauve%'%cReset%
-echo %cMauve% '%cGrey% [8] Gigabyte                                        %cMauve%'%cReset%
-echo %cMauve% +-----------------------------------------------------+%cReset%
-echo %cMauve% '%cGrey% [9] Back to menu                                    %cMauve%'%cReset%
-echo %cMauve% +-----------------------------------------------------+%cReset%
+echo %cMauve% +------------------------+%cReset%
+echo %cMauve% '%cGrey% [0] HP                 %cMauve%'%cReset%
+echo %cMauve% '%cGrey% [1] Lenovo             %cMauve%'%cReset%
+echo %cMauve% '%cGrey% [2] Asus               %cMauve%'%cReset%
+echo %cMauve% '%cGrey% [3] Acer               %cMauve%'%cReset%
+echo %cMauve% '%cGrey% [4] MSI                %cMauve%'%cReset%
+echo %cMauve% '%cGrey% [5] Huawei             %cMauve%'%cReset%
+echo %cMauve% '%cGrey% [6] Xiaomi             %cMauve%'%cReset%
+echo %cMauve% '%cGrey% [7] Alienware          %cMauve%'%cReset%
+echo %cMauve% '%cGrey% [8] Gigabyte           %cMauve%'%cReset%
+echo %cMauve% +------------------------+%cReset%
+echo %cMauve% '%cGrey% [9] Back to menu       %cMauve%'%cReset%
+echo %cMauve% +------------------------+%cReset%
 
-choice /C 0123456789 /N /M "Select a number: "
+choice /C 0123456789 /N /M "Select your device manufacturer to install drivers: "
 set /a "manufacturer_choice=%errorlevel%-1"
 
 if !manufacturer_choice!==1 (

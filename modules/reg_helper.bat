@@ -31,5 +31,3 @@ if %errorlevel% equ 0 (
 	echo %cRed%[FAILED]%cReset% Failed to set %valueName%
 	exit /b 1
 )
-
-exit /b 0

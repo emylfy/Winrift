@@ -1,6 +1,15 @@
 @echo off
 setlocal EnableDelayedExpansion
-net session >nul 2>&1 || (powershell start -verb runas '%~0' & exit)
+net session >nul 2>&1 || (
+    echo Not running as admin. Elevating...
+    where wt.exe >nul 2>&1
+    if %errorlevel% equ 0 (
+        powershell -Command "Start-Process -FilePath 'wt.exe' -ArgumentList 'cmd /k \"%~0\"' -Verb runAs"
+    ) else (
+        powershell -Command "Start-Process -FilePath 'cmd.exe' -ArgumentList '/k \"%~0\"' -Verb runAs"
+    )
+    exit /b
+)
 
 set cMauve=[38;5;141m
 set cGrey=[38;5;250m
