@@ -1,13 +1,10 @@
-# Create temp directory
 $tempPath = "$env:TEMP\simplify11"
 $zipPath = "$tempPath\simplify11.zip"
 
-# Create directory if it doesn't exist
 if (!(Test-Path $tempPath)) {
     New-Item -ItemType Directory -Path $tempPath | Out-Null
 }
 
-# Try to add exclusion if running as admin
 try {
     Add-MpPreference -ExclusionPath $tempPath -ErrorAction SilentlyContinue
 } catch {
@@ -18,7 +15,6 @@ Write-Host "Downloading Simplify11..." -ForegroundColor Cyan
 Write-Progress -Activity "Downloading Simplify11" -Status "Initializing..." -PercentComplete 0
 
 try {
-    # Download using Start-BitsTransfer (native Windows command)
     Start-BitsTransfer -Source "https://github.com/emylfy/simplify11/archive/refs/heads/main.zip" `
                       -Destination $zipPath `
                       -DisplayName "Downloading Simplify11" `
@@ -30,7 +26,6 @@ try {
     Write-Host "Extracting files..." -ForegroundColor Cyan
     Write-Progress -Activity "Installing Simplify11" -Status "Extracting..." -PercentComplete 50
 
-    # Use native PowerShell commands for extraction
     Expand-Archive -Path $zipPath -DestinationPath $tempPath -Force
 
     Write-Progress -Activity "Installing Simplify11" -Status "Complete" -PercentComplete 100
@@ -46,7 +41,6 @@ try {
 
     Write-Host "Installation complete! Starting Simplify11..." -ForegroundColor Green
 
-    # Launch the script
     Start-Process "$tempPath\simplify11-main\simplify11.bat"
 }
 catch {

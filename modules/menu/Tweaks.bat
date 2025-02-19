@@ -11,8 +11,6 @@ set cGreen=[38;5;120m
 cls
 echo.
 echo %cMauve% +----------------------------------------+%cReset%
-echo %cMauve% '%cGrey%           System Tweaks Menu           %cMauve%'%cReset%
-echo %cMauve% +----------------------------------------+%cReset%
 echo %cMauve% '%cGrey% [1] SSD/NVMe Tweaks                    %cMauve%'%cReset%
 echo %cMauve% '%cGrey% [2] GPU Performance Tweaks             %cMauve%'%cReset%
 echo %cMauve% '%cGrey% [3] Universal System Tweaks            %cMauve%'%cReset%
@@ -27,20 +25,20 @@ if errorlevel 1 goto :ssd
 :ssd
 cls
 echo %cGreen%Applying Storage Device Tweaks...%cReset%
-start cmd /c "%~dp0\tweaks\storage_tweaks.bat"
+start cmd /c "%~dp0\tweaks\SSD.bat"
 pause
 goto :eof
 
 :gpu
 cls
 echo %cGreen%Applying GPU Performance Tweaks...%cReset%
-start cmd /c "%~dp0\tweaks\gpu_tweaks.bat"
+start cmd /c "%~dp0\tweaks\Gpu.bat"
 pause
 goto :eof
 
 :universal
 cls
 echo %cGreen%Applying Universal System Tweaks...%cReset%
-start cmd /c "%~dp0\tweaks\universal_tweaks.bat"
+start cmd /c "%~dp0\tweaks\Universal.bat"
 pause
 goto :eof

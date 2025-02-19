@@ -81,4 +81,4 @@ pause
 exit
 
 :reg
-call "%~dp0..\..\modules\reg_helper.bat" %*
+call "%~dp0\..\reg_helper.bat" %*

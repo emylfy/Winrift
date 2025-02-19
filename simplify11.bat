@@ -1,6 +1,5 @@
 @echo off
 setlocal EnableDelayedExpansion
-:: net session >nul 2>&1 || (powershell start -verb runas '%~0' & exit)
 
 set cMauve=[38;5;141m
 set cGrey=[38;5;250m
@@ -35,31 +34,31 @@ start "" https://github.com/emylfy/simplify11/blob/main/src/docs/autounattend_gu
 goto main
 
 :s1
-start cmd /c "%~dp0modules\launchWinUtil.bat"
+start cmd /c "%~dp0modules\launch\WinUtil.bat"
 goto main
 
 :s2
-start cmd /c "%~dp0modules\launchWinscript.bat"
+start cmd /c "%~dp0modules\launch\WinScript.bat"
 goto main
 
 :s3
-start cmd /c "%~dp0modules\launchPrivacySexy.bat"
+start cmd /c "%~dp0modules\launch\PrivacySexy.bat"
 goto main
 
 :s4
-start cmd /c "%~dp0modules\wingetInstall.bat"
+start cmd /c "%~dp0modules\launch\UniGetUI.bat"
 goto main
 
 :s5
-start cmd /c "%~dp0modules\applyTweaks.bat"
+start cmd /c "%~dp0modules\menu\Tweaks.bat"
 goto main
 
 :s6
-start cmd /c "%~dp0modules\deviceMenu.bat"
+start cmd /c "%~dp0modules\menu\Drivers.bat"
 goto main
 
 :s7
-start cmd /c "%~dp0modules\customization.bat"
+start cmd /c "%~dp0modules\menu\Customization.bat"
 goto main
 
 exit /b 0

@@ -7,7 +7,7 @@ set cReset=[0m
 set cRed=[38;5;203m
 set cGreen=[38;5;120m
 
-:wingetInstall
+:UniGetUI
 cls
 echo %cMauve% +------------------------------------------+%cReset%
 echo %cMauve% '%cGrey% UniGetUI (formerly WingetUI)             %cMauve%'%cReset%
@@ -21,9 +21,9 @@ if %errorlevel% equ 2 goto AppCategoryMenu
 
 :UniGetUI
 cls
-echo %cMauve% +------------------------+%cReset%
-echo %cMauve% '%cGrey%    Install UniGetUI    %cMauve%'%cReset%
-echo %cMauve% +------------------------+%cReset%
+echo %cMauve% +---                        ---+%cReset%
+echo %cMauve%  '%cGrey%    Install UniGetUI        %cMauve%'%cReset%
+echo %cMauve% +---                        ---+%cReset%
 
 powershell -Command "if ((winget list --id MartiCliment.UniGetUI --accept-source-agreements) -match 'MartiCliment.UniGetUI') { exit 0 } else { exit 1 }"
 if !errorlevel! equ 0 (
@@ -42,7 +42,7 @@ if !errorlevel! equ 0 (
     )
 )
 
-goto wingetInstall
+goto UniGetUI
 
 :checkWinget
 where winget >nul 2>nul
@@ -50,7 +50,7 @@ if !errorlevel! neq 0 (
     echo %cRed%Winget is not installed. Please install Windows App Installer from Microsoft Store.%cReset%
     start "" "ms-windows-store://pdp/?ProductId=9nblggh4nns1"
     pause
-    goto wingetInstall
+    goto UniGetUI
 )
 
 :AppCategoryMenu
@@ -74,4 +74,4 @@ if %errorlevel% equ 5 set "bundleName=gaming"
 if %errorlevel% equ 6 set "bundleName=microsoftcore"
 
 cmd /c explorer /select,"%~dp0ubundle\%bundleName%.ubundle"
-goto wingetInstall
+goto UniGetUI

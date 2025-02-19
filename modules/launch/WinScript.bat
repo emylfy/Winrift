@@ -7,7 +7,7 @@ set cReset=[0m
 set cRed=[38;5;203m
 set cGreen=[38;5;120m
 
-:launchWinscript
+:WinScript
 cls
 echo.
 echo %cMauve% +-----------------------------------+%cReset%
@@ -25,7 +25,7 @@ if errorlevel 1 goto online
 
 :online
 start "" "https://winscript.cc/online/"
-goto launchWinscript
+goto WinScript
 
 :install
 echo %cGreen%Installing WinScript... This may take a moment.%cReset%

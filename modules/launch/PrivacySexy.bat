@@ -7,7 +7,7 @@ set cReset=[0m
 set cRed=[38;5;203m
 set cGreen=[38;5;120m
 
-:launchPrivacySexy
+:PrivacySexy
 cls
 echo %cMauve% +--------------------------------------------------------+%cReset%
 echo %cMauve% '%cGrey% Privacy.Sexy Settings                                  %cMauve%'%cReset%
@@ -22,7 +22,7 @@ set /a "privacy_choice=%errorlevel%"
 if !privacy_choice! equ 3 exit
 if !privacy_choice! equ 2 (
     echo %cGrey%Downloading and executing privacy script...%cReset%
-    powershell -Command "irm 'https://raw.githubusercontent.com/emylfy/simplify11/refs/heads/main/src/scripts/privacy-standart.bat' -OutFile \"%TEMP%\privacy-standart.bat\"" && start cmd /c "%TEMP%\privacy-standart.bat"
+    powershell -Command "irm 'https://raw.githubusercontent.com/emylfy/simplify11/refs/heads/main/modules/tweaks/Privacy.bat' -OutFile \"%TEMP%\Privacy.bat\"" && start cmd /c "%TEMP%\Privacy.bat"
     if !errorlevel! equ 0 (
         echo %cGreen%Privacy script executed successfully.%cReset%
     ) else (

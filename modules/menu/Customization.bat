@@ -1,5 +1,3 @@
-: Windows terminal preset
-
 @echo off
 setlocal EnableDelayedExpansion
 net session >nul 2>&1 || (
