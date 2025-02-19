@@ -1,3 +1,6 @@
+# Script is building ISO but can't boot UEFI
+# https://github.com/ChrisTitusTech/winutil/blob/main/releases/oscdimg.exe
+
 function Show-Header {
     param($title)
     Write-Host "`n" -NoNewline
