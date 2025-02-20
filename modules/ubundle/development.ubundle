@@ -1,0 +1,375 @@
+{
+  "export_version": 2.1,
+  "packages": [
+    {
+      "Id": "Anysphere.Cursor",
+      "Name": "Cursor",
+      "Version": "0.45.12",
+      "Source": "winget",
+      "ManagerName": "Winget",
+      "InstallationOptions": {
+        "SkipHashCheck": false,
+        "InteractiveInstallation": false,
+        "RunAsAdministrator": false,
+        "Architecture": "",
+        "InstallationScope": "",
+        "CustomParameters": [],
+        "PreRelease": false,
+        "CustomInstallLocation": "",
+        "Version": "",
+        "SkipMinorUpdates": false
+      },
+      "Updates": {
+        "UpdatesIgnored": false,
+        "IgnoredVersion": ""
+      }
+    },
+    {
+      "Id": "CodeStory.Aide",
+      "Name": "Aide",
+      "Version": "1.96.4.25031",
+      "Source": "winget",
+      "ManagerName": "Winget",
+      "InstallationOptions": {
+        "SkipHashCheck": false,
+        "InteractiveInstallation": false,
+        "RunAsAdministrator": false,
+        "Architecture": "",
+        "InstallationScope": "",
+        "CustomParameters": [],
+        "PreRelease": false,
+        "CustomInstallLocation": "",
+        "Version": "",
+        "SkipMinorUpdates": false
+      },
+      "Updates": {
+        "UpdatesIgnored": false,
+        "IgnoredVersion": ""
+      }
+    },
+    {
+      "Id": "Codeium.Windsurf",
+      "Name": "Windsurf",
+      "Version": "1.94.0",
+      "Source": "winget",
+      "ManagerName": "Winget",
+      "InstallationOptions": {
+        "SkipHashCheck": false,
+        "InteractiveInstallation": false,
+        "RunAsAdministrator": false,
+        "Architecture": "",
+        "InstallationScope": "",
+        "CustomParameters": [],
+        "PreRelease": false,
+        "CustomInstallLocation": "",
+        "Version": "",
+        "SkipMinorUpdates": false
+      },
+      "Updates": {
+        "UpdatesIgnored": false,
+        "IgnoredVersion": ""
+      }
+    },
+    {
+      "Id": "Docker.DockerDesktop",
+      "Name": "Docker Desktop",
+      "Version": "4.38.0",
+      "Source": "winget",
+      "ManagerName": "Winget",
+      "InstallationOptions": {
+        "SkipHashCheck": false,
+        "InteractiveInstallation": false,
+        "RunAsAdministrator": false,
+        "Architecture": "",
+        "InstallationScope": "",
+        "CustomParameters": [],
+        "PreRelease": false,
+        "CustomInstallLocation": "",
+        "Version": "",
+        "SkipMinorUpdates": false
+      },
+      "Updates": {
+        "UpdatesIgnored": false,
+        "IgnoredVersion": ""
+      }
+    },
+    {
+      "Id": "GoLang.Go",
+      "Name": "Go Programming Language",
+      "Version": "1.24.0",
+      "Source": "winget",
+      "ManagerName": "Winget",
+      "InstallationOptions": {
+        "SkipHashCheck": false,
+        "InteractiveInstallation": false,
+        "RunAsAdministrator": false,
+        "Architecture": "",
+        "InstallationScope": "",
+        "CustomParameters": [],
+        "PreRelease": false,
+        "CustomInstallLocation": "",
+        "Version": "",
+        "SkipMinorUpdates": false
+      },
+      "Updates": {
+        "UpdatesIgnored": false,
+        "IgnoredVersion": ""
+      }
+    },
+    {
+      "Id": "JanDeDobbeleer.OhMyPosh",
+      "Name": "Oh My Posh",
+      "Version": "24.19.0",
+      "Source": "winget",
+      "ManagerName": "Winget",
+      "InstallationOptions": {
+        "SkipHashCheck": false,
+        "InteractiveInstallation": false,
+        "RunAsAdministrator": false,
+        "Architecture": "",
+        "InstallationScope": "",
+        "CustomParameters": [],
+        "PreRelease": false,
+        "CustomInstallLocation": "",
+        "Version": "",
+        "SkipMinorUpdates": false
+      },
+      "Updates": {
+        "UpdatesIgnored": false,
+        "IgnoredVersion": ""
+      }
+    },
+    {
+      "Id": "JetBrains.PyCharm.Community",
+      "Name": "PyCharm Community Edition",
+      "Version": "2024.3.3",
+      "Source": "winget",
+      "ManagerName": "Winget",
+      "InstallationOptions": {
+        "SkipHashCheck": false,
+        "InteractiveInstallation": false,
+        "RunAsAdministrator": false,
+        "Architecture": "",
+        "InstallationScope": "",
+        "CustomParameters": [],
+        "PreRelease": false,
+        "CustomInstallLocation": "",
+        "Version": "",
+        "SkipMinorUpdates": false
+      },
+      "Updates": {
+        "UpdatesIgnored": false,
+        "IgnoredVersion": ""
+      }
+    },
+    {
+      "Id": "Microsoft.Git",
+      "Name": "Git",
+      "Version": "2.48.1.0.0",
+      "Source": "winget",
+      "ManagerName": "Winget",
+      "InstallationOptions": {
+        "SkipHashCheck": false,
+        "InteractiveInstallation": false,
+        "RunAsAdministrator": false,
+        "Architecture": "",
+        "InstallationScope": "",
+        "CustomParameters": [],
+        "PreRelease": false,
+        "CustomInstallLocation": "",
+        "Version": "",
+        "SkipMinorUpdates": false
+      },
+      "Updates": {
+        "UpdatesIgnored": false,
+        "IgnoredVersion": ""
+      }
+    },
+    {
+      "Id": "Microsoft.VisualStudio.2022.Community",
+      "Name": "Visual Studio Community 2022",
+      "Version": "17.13.0",
+      "Source": "winget",
+      "ManagerName": "Winget",
+      "InstallationOptions": {
+        "SkipHashCheck": false,
+        "InteractiveInstallation": false,
+        "RunAsAdministrator": false,
+        "Architecture": "",
+        "InstallationScope": "",
+        "CustomParameters": [],
+        "PreRelease": false,
+        "CustomInstallLocation": "",
+        "Version": "",
+        "SkipMinorUpdates": false
+      },
+      "Updates": {
+        "UpdatesIgnored": false,
+        "IgnoredVersion": ""
+      }
+    },
+    {
+      "Id": "Microsoft.VisualStudioCode",
+      "Name": "Microsoft Visual Studio Code",
+      "Version": "1.97.2",
+      "Source": "winget",
+      "ManagerName": "Winget",
+      "InstallationOptions": {
+        "SkipHashCheck": false,
+        "InteractiveInstallation": false,
+        "RunAsAdministrator": false,
+        "Architecture": "",
+        "InstallationScope": "",
+        "CustomParameters": [],
+        "PreRelease": false,
+        "CustomInstallLocation": "",
+        "Version": "",
+        "SkipMinorUpdates": false
+      },
+      "Updates": {
+        "UpdatesIgnored": false,
+        "IgnoredVersion": ""
+      }
+    },
+    {
+      "Id": "Microsoft.WSL",
+      "Name": "Windows Subsystem for Linux",
+      "Version": "2.4.11.0",
+      "Source": "winget",
+      "ManagerName": "Winget",
+      "InstallationOptions": {
+        "SkipHashCheck": false,
+        "InteractiveInstallation": false,
+        "RunAsAdministrator": false,
+        "Architecture": "",
+        "InstallationScope": "",
+        "CustomParameters": [],
+        "PreRelease": false,
+        "CustomInstallLocation": "",
+        "Version": "",
+        "SkipMinorUpdates": false
+      },
+      "Updates": {
+        "UpdatesIgnored": false,
+        "IgnoredVersion": ""
+      }
+    },
+    {
+      "Id": "Microsoft.WindowsTerminal",
+      "Name": "Windows Terminal",
+      "Version": "1.22.10352.0",
+      "Source": "winget",
+      "ManagerName": "Winget",
+      "InstallationOptions": {
+        "SkipHashCheck": false,
+        "InteractiveInstallation": false,
+        "RunAsAdministrator": false,
+        "Architecture": "",
+        "InstallationScope": "",
+        "CustomParameters": [],
+        "PreRelease": false,
+        "CustomInstallLocation": "",
+        "Version": "",
+        "SkipMinorUpdates": false
+      },
+      "Updates": {
+        "UpdatesIgnored": false,
+        "IgnoredVersion": ""
+      }
+    },
+    {
+      "Id": "OpenJS.NodeJS",
+      "Name": "Node.js",
+      "Version": "23.8.0",
+      "Source": "winget",
+      "ManagerName": "Winget",
+      "InstallationOptions": {
+        "SkipHashCheck": false,
+        "InteractiveInstallation": false,
+        "RunAsAdministrator": false,
+        "Architecture": "",
+        "InstallationScope": "",
+        "CustomParameters": [],
+        "PreRelease": false,
+        "CustomInstallLocation": "",
+        "Version": "",
+        "SkipMinorUpdates": false
+      },
+      "Updates": {
+        "UpdatesIgnored": false,
+        "IgnoredVersion": ""
+      }
+    },
+    {
+      "Id": "PostgreSQL.PostgreSQL.17",
+      "Name": "PostgreSQL 17",
+      "Version": "17.3-1",
+      "Source": "winget",
+      "ManagerName": "Winget",
+      "InstallationOptions": {
+        "SkipHashCheck": false,
+        "InteractiveInstallation": false,
+        "RunAsAdministrator": false,
+        "Architecture": "",
+        "InstallationScope": "",
+        "CustomParameters": [],
+        "PreRelease": false,
+        "CustomInstallLocation": "",
+        "Version": "",
+        "SkipMinorUpdates": false
+      },
+      "Updates": {
+        "UpdatesIgnored": false,
+        "IgnoredVersion": ""
+      }
+    },
+    {
+      "Id": "PostgreSQL.pgAdmin",
+      "Name": "pgAdmin 4",
+      "Version": "9",
+      "Source": "winget",
+      "ManagerName": "Winget",
+      "InstallationOptions": {
+        "SkipHashCheck": false,
+        "InteractiveInstallation": false,
+        "RunAsAdministrator": false,
+        "Architecture": "",
+        "InstallationScope": "",
+        "CustomParameters": [],
+        "PreRelease": false,
+        "CustomInstallLocation": "",
+        "Version": "",
+        "SkipMinorUpdates": false
+      },
+      "Updates": {
+        "UpdatesIgnored": false,
+        "IgnoredVersion": ""
+      }
+    },
+    {
+      "Id": "VSCodium.VSCodium",
+      "Name": "VSCodium",
+      "Version": "1.97.2.25045",
+      "Source": "winget",
+      "ManagerName": "Winget",
+      "InstallationOptions": {
+        "SkipHashCheck": false,
+        "InteractiveInstallation": false,
+        "RunAsAdministrator": false,
+        "Architecture": "",
+        "InstallationScope": "",
+        "CustomParameters": [],
+        "PreRelease": false,
+        "CustomInstallLocation": "",
+        "Version": "",
+        "SkipMinorUpdates": false
+      },
+      "Updates": {
+        "UpdatesIgnored": false,
+        "IgnoredVersion": ""
+      }
+    }
+  ],
+  "incompatible_packages_info": "Incompatible packages cannot be installed from WingetUI, but they have been listed here for logging purposes.",
+  "incompatible_packages": []
+}

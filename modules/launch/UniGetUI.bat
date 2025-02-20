@@ -21,9 +21,9 @@ if %errorlevel% equ 2 goto AppCategoryMenu
 
 :UniGetUI
 cls
-echo %cMauve% +---                        ---+%cReset%
-echo %cMauve%  '%cGrey%    Install UniGetUI        %cMauve%'%cReset%
-echo %cMauve% +---                        ---+%cReset%
+echo %cMauve% +---                    ---+%cReset%
+echo %cMauve%  '%cGrey%    Install UniGetUI    %cMauve%'%cReset%
+echo %cMauve% +---                    ---+%cReset%
 
 powershell -Command "if ((winget list --id MartiCliment.UniGetUI --accept-source-agreements) -match 'MartiCliment.UniGetUI') { exit 0 } else { exit 1 }"
 if !errorlevel! equ 0 (
@@ -55,23 +55,23 @@ if !errorlevel! neq 0 (
 
 :AppCategoryMenu
 cls
-echo %cMauve% +-------------------------------+%cReset%
-echo %cMauve% '%cGrey% App Categories                %cMauve%'%cReset%
-echo %cMauve% +-------------------------------+%cReset%
-echo %cMauve% '%cGrey% [1] Development               %cMauve%'%cReset%
-echo %cMauve% '%cGrey% [2] Web Browsers              %cMauve%'%cReset%
-echo %cMauve% '%cGrey% [3] System Tools              %cMauve%'%cReset%
-echo %cMauve% '%cGrey% [4] Productivity Suite        %cMauve%'%cReset%
-echo %cMauve% '%cGrey% [5] Gaming Essentials         %cMauve%'%cReset%
-echo %cMauve% '%cGrey% [6] Microsoft Core Apps       %cMauve%'%cReset%
-echo %cMauve% +-------------------------------+%cReset%
+echo %cMauve% +--------------------------------+%cReset%
+echo %cMauve% '%cGrey% App Categories                 %cMauve%'%cReset%
+echo %cMauve% +--------------------------------+%cReset%
+echo %cMauve% '%cGrey% [1] Development                %cMauve%'%cReset%
+echo %cMauve% '%cGrey% [2] Web Browsers               %cMauve%'%cReset%
+echo %cMauve% '%cGrey% [3] Utilities, Microsoft tools %cMauve%'%cReset%
+echo %cMauve% '%cGrey% [4] Productivity Suite         %cMauve%'%cReset%
+echo %cMauve% '%cGrey% [5] Gaming Essentials          %cMauve%'%cReset%
+echo %cMauve% '%cGrey% [6] Communications             %cMauve%'%cReset%
+echo %cMauve% +--------------------------------+%cReset%
 choice /C 123456 /N /M "Select a category: "
 if %errorlevel% equ 1 set "bundleName=development"
-if %errorlevel% equ 2 set "bundleName=webbrowsers"
-if %errorlevel% equ 3 set "bundleName=systemtools"
+if %errorlevel% equ 2 set "bundleName=browsers"
+if %errorlevel% equ 3 set "bundleName=utilities"
 if %errorlevel% equ 4 set "bundleName=productivity"
-if %errorlevel% equ 5 set "bundleName=gaming"
-if %errorlevel% equ 6 set "bundleName=microsoftcore"
+if %errorlevel% equ 5 set "bundleName=games"
+if %errorlevel% equ 6 set "bundleName=communications"
 
-cmd /c explorer /select,"%~dp0ubundle\%bundleName%.ubundle"
-goto UniGetUI
+"%LOCALAPPDATA%\Programs\UniGetUI\UniGetUI.exe" "%~dp0ubundle\%bundleName%.ubundle"
+goto AppCategoryMenu

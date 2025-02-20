@@ -35,7 +35,7 @@ Creates a shortcut to Start Menu that launch latest version:
 iwr "https://dub.sh/s11install" | iex
 ```
 
-## ✨ Features
+<!-- ## ✨ Features
 
 <details>
 <summary>🛠️ Performance Tweaks</summary>
@@ -83,7 +83,7 @@ iwr "https://dub.sh/s11install" | iex
 - Gaming Essentials
 - Microsoft Core Apps
 
-</details>
+</details> -->
 
 ## 🔄 Integrations
 
@@ -112,12 +112,12 @@ iwr "https://dub.sh/s11install" | iex
 </tr>
 </table>
 
-## 🪄 Cool Stuff
+<!-- ## 🪄 Cool Stuff
 
 - [Rectify11 Installer](https://github.com/Rectify11/Installer) - Modern UI redesign for Windows 11
 - [Simplify11 Unattended](https://github.com/emylfy/simplify11/blob/main/src/docs/autounattend_guide.md) - Automated Windows installation with customizable configurations
 - [WinDynamicDesktop](https://github.com/t1m0thyj/WinDynamicDesktop) - Port of macOS Dynamic Desktop Wallpapers feature
-</details>
+</details> -->
 
 ## 🌟 Credits
 
@@ -129,12 +129,12 @@ iwr "https://dub.sh/s11install" | iex
 
 <div align="center">
 
-| Project | Description |
-|:---:|:---|
-| [Win11Tweaks](https://github.com/SysadminWorld/Win11Tweaks) | My first project |
-| [Latency Optimization](https://github.com/denis-g/windows10-latency-optimization) | Informative guide to optimize Windows |
-| [Verified Tweaks](https://github.com/AlchemyTweaks/Verified-Tweaks) | Modifications that have been tested in videos |
-| [QuickBoost](https://github.com/SanGraphic/QuickBoost) • [CoutX](https://github.com/UnLovedCookie/CoutX) • [SyncOS](https://github.com/Snowfliger/SyncOS) | Most accurate batch optimization projects |
+|                                                                          Project                                                                          | Description                                   |
+| :-------------------------------------------------------------------------------------------------------------------------------------------------------: | :-------------------------------------------- |
+|                                                [Win11Tweaks](https://github.com/SysadminWorld/Win11Tweaks)                                                | My first project                              |
+|                                     [Latency Optimization](https://github.com/denis-g/windows10-latency-optimization)                                     | Informative guide to optimize Windows         |
+|                                            [Verified Tweaks](https://github.com/AlchemyTweaks/Verified-Tweaks)                                            | Modifications that have been tested in videos |
+| [QuickBoost](https://github.com/SanGraphic/QuickBoost) • [CoutX](https://github.com/UnLovedCookie/CoutX) • [SyncOS](https://github.com/Snowfliger/SyncOS) | Most accurate batch optimization projects     |
 
 </div>
 
@@ -145,4 +145,5 @@ iwr "https://dub.sh/s11install" | iex
 ### ⭐ Love this project? Show your support by giving it a star!
 
 #### 📫 If you have specific recommendations on how to improve or change this project or any suggestions and wishes, you can write everything in [**Issues**](https://github.com/emylfy/simplify11/issues/).
+
 </div>

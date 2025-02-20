@@ -1,0 +1,329 @@
+{
+  "export_version": 2.1,
+  "packages": [
+    {
+      "Id": "AdrienAllard.FileConverter",
+      "Name": "File Converter",
+      "Version": "2.0.2",
+      "Source": "winget",
+      "ManagerName": "Winget",
+      "InstallationOptions": {
+        "SkipHashCheck": false,
+        "InteractiveInstallation": false,
+        "RunAsAdministrator": false,
+        "Architecture": "",
+        "InstallationScope": "",
+        "CustomParameters": [],
+        "PreRelease": false,
+        "CustomInstallLocation": "",
+        "Version": "",
+        "SkipMinorUpdates": false
+      },
+      "Updates": {
+        "UpdatesIgnored": false,
+        "IgnoredVersion": ""
+      }
+    },
+    {
+      "Id": "AgileBits.1Password",
+      "Name": "1Password",
+      "Version": "8.10.60",
+      "Source": "winget",
+      "ManagerName": "Winget",
+      "InstallationOptions": {
+        "SkipHashCheck": false,
+        "InteractiveInstallation": false,
+        "RunAsAdministrator": false,
+        "Architecture": "",
+        "InstallationScope": "",
+        "CustomParameters": [],
+        "PreRelease": false,
+        "CustomInstallLocation": "",
+        "Version": "",
+        "SkipMinorUpdates": false
+      },
+      "Updates": {
+        "UpdatesIgnored": false,
+        "IgnoredVersion": ""
+      }
+    },
+    {
+      "Id": "Fastfetch-cli.Fastfetch",
+      "Name": "fastfetch",
+      "Version": "2.36.1",
+      "Source": "winget",
+      "ManagerName": "Winget",
+      "InstallationOptions": {
+        "SkipHashCheck": false,
+        "InteractiveInstallation": false,
+        "RunAsAdministrator": false,
+        "Architecture": "",
+        "InstallationScope": "",
+        "CustomParameters": [],
+        "PreRelease": false,
+        "CustomInstallLocation": "",
+        "Version": "",
+        "SkipMinorUpdates": false
+      },
+      "Updates": {
+        "UpdatesIgnored": false,
+        "IgnoredVersion": ""
+      }
+    },
+    {
+      "Id": "FilesCommunity.Files",
+      "Name": "Files",
+      "Version": "3.9.0.0",
+      "Source": "winget",
+      "ManagerName": "Winget",
+      "InstallationOptions": {
+        "SkipHashCheck": false,
+        "InteractiveInstallation": false,
+        "RunAsAdministrator": false,
+        "Architecture": "",
+        "InstallationScope": "",
+        "CustomParameters": [],
+        "PreRelease": false,
+        "CustomInstallLocation": "",
+        "Version": "",
+        "SkipMinorUpdates": false
+      },
+      "Updates": {
+        "UpdatesIgnored": false,
+        "IgnoredVersion": ""
+      }
+    },
+    {
+      "Id": "Flow-Launcher.Flow-Launcher",
+      "Name": "Flow Launcher",
+      "Version": "1.19.5",
+      "Source": "winget",
+      "ManagerName": "Winget",
+      "InstallationOptions": {
+        "SkipHashCheck": false,
+        "InteractiveInstallation": false,
+        "RunAsAdministrator": false,
+        "Architecture": "",
+        "InstallationScope": "",
+        "CustomParameters": [],
+        "PreRelease": false,
+        "CustomInstallLocation": "",
+        "Version": "",
+        "SkipMinorUpdates": false
+      },
+      "Updates": {
+        "UpdatesIgnored": false,
+        "IgnoredVersion": ""
+      }
+    },
+    {
+      "Id": "Gyan.FFmpeg",
+      "Name": "FFmpeg",
+      "Version": "7.1",
+      "Source": "winget",
+      "ManagerName": "Winget",
+      "InstallationOptions": {
+        "SkipHashCheck": false,
+        "InteractiveInstallation": false,
+        "RunAsAdministrator": false,
+        "Architecture": "",
+        "InstallationScope": "",
+        "CustomParameters": [],
+        "PreRelease": false,
+        "CustomInstallLocation": "",
+        "Version": "",
+        "SkipMinorUpdates": false
+      },
+      "Updates": {
+        "UpdatesIgnored": false,
+        "IgnoredVersion": ""
+      }
+    },
+    {
+      "Id": "M2Team.NanaZip",
+      "Name": "NanaZip",
+      "Version": "5.0.1263.0",
+      "Source": "winget",
+      "ManagerName": "Winget",
+      "InstallationOptions": {
+        "SkipHashCheck": false,
+        "InteractiveInstallation": false,
+        "RunAsAdministrator": false,
+        "Architecture": "",
+        "InstallationScope": "",
+        "CustomParameters": [],
+        "PreRelease": false,
+        "CustomInstallLocation": "",
+        "Version": "",
+        "SkipMinorUpdates": false
+      },
+      "Updates": {
+        "UpdatesIgnored": false,
+        "IgnoredVersion": ""
+      }
+    },
+    {
+      "Id": "Microsoft.DotNet.DesktopRuntime.8",
+      "Name": "Microsoft .NET Windows Desktop Runtime 8.0",
+      "Version": "8.0.13",
+      "Source": "winget",
+      "ManagerName": "Winget",
+      "InstallationOptions": {
+        "SkipHashCheck": false,
+        "InteractiveInstallation": false,
+        "RunAsAdministrator": false,
+        "Architecture": "",
+        "InstallationScope": "",
+        "CustomParameters": [],
+        "PreRelease": false,
+        "CustomInstallLocation": "",
+        "Version": "",
+        "SkipMinorUpdates": false
+      },
+      "Updates": {
+        "UpdatesIgnored": false,
+        "IgnoredVersion": ""
+      }
+    },
+    {
+      "Id": "Microsoft.PowerToys",
+      "Name": "PowerToys",
+      "Version": "0.88.0",
+      "Source": "winget",
+      "ManagerName": "Winget",
+      "InstallationOptions": {
+        "SkipHashCheck": false,
+        "InteractiveInstallation": false,
+        "RunAsAdministrator": false,
+        "Architecture": "",
+        "InstallationScope": "",
+        "CustomParameters": [],
+        "PreRelease": false,
+        "CustomInstallLocation": "",
+        "Version": "",
+        "SkipMinorUpdates": false
+      },
+      "Updates": {
+        "UpdatesIgnored": false,
+        "IgnoredVersion": ""
+      }
+    },
+    {
+      "Id": "Microsoft.VCRedist.2015\u002B.x64",
+      "Name": "Microsoft Visual C\u002B\u002B 2015-2022 Redistributable (x64)",
+      "Version": "14.42.34438.0",
+      "Source": "winget",
+      "ManagerName": "Winget",
+      "InstallationOptions": {
+        "SkipHashCheck": false,
+        "InteractiveInstallation": false,
+        "RunAsAdministrator": false,
+        "Architecture": "",
+        "InstallationScope": "",
+        "CustomParameters": [],
+        "PreRelease": false,
+        "CustomInstallLocation": "",
+        "Version": "",
+        "SkipMinorUpdates": false
+      },
+      "Updates": {
+        "UpdatesIgnored": false,
+        "IgnoredVersion": ""
+      }
+    },
+    {
+      "Id": "Microsoft.WSL",
+      "Name": "Windows Subsystem for Linux",
+      "Version": "2.4.11.0",
+      "Source": "winget",
+      "ManagerName": "Winget",
+      "InstallationOptions": {
+        "SkipHashCheck": false,
+        "InteractiveInstallation": false,
+        "RunAsAdministrator": false,
+        "Architecture": "",
+        "InstallationScope": "",
+        "CustomParameters": [],
+        "PreRelease": false,
+        "CustomInstallLocation": "",
+        "Version": "",
+        "SkipMinorUpdates": false
+      },
+      "Updates": {
+        "UpdatesIgnored": false,
+        "IgnoredVersion": ""
+      }
+    },
+    {
+      "Id": "agalwood.Motrix",
+      "Name": "Motrix",
+      "Version": "1.8.19",
+      "Source": "winget",
+      "ManagerName": "Winget",
+      "InstallationOptions": {
+        "SkipHashCheck": false,
+        "InteractiveInstallation": false,
+        "RunAsAdministrator": false,
+        "Architecture": "",
+        "InstallationScope": "",
+        "CustomParameters": [],
+        "PreRelease": false,
+        "CustomInstallLocation": "",
+        "Version": "",
+        "SkipMinorUpdates": false
+      },
+      "Updates": {
+        "UpdatesIgnored": false,
+        "IgnoredVersion": ""
+      }
+    },
+    {
+      "Id": "flick9000.WinScript",
+      "Name": "WinScript",
+      "Version": "1.1.5",
+      "Source": "winget",
+      "ManagerName": "Winget",
+      "InstallationOptions": {
+        "SkipHashCheck": false,
+        "InteractiveInstallation": false,
+        "RunAsAdministrator": false,
+        "Architecture": "",
+        "InstallationScope": "",
+        "CustomParameters": [],
+        "PreRelease": false,
+        "CustomInstallLocation": "",
+        "Version": "",
+        "SkipMinorUpdates": false
+      },
+      "Updates": {
+        "UpdatesIgnored": false,
+        "IgnoredVersion": ""
+      }
+    },
+    {
+      "Id": "t1m0thyj.WinDynamicDesktop",
+      "Name": "WinDynamicDesktop",
+      "Version": "5.6.0",
+      "Source": "winget",
+      "ManagerName": "Winget",
+      "InstallationOptions": {
+        "SkipHashCheck": false,
+        "InteractiveInstallation": false,
+        "RunAsAdministrator": false,
+        "Architecture": "",
+        "InstallationScope": "",
+        "CustomParameters": [],
+        "PreRelease": false,
+        "CustomInstallLocation": "",
+        "Version": "",
+        "SkipMinorUpdates": false
+      },
+      "Updates": {
+        "UpdatesIgnored": false,
+        "IgnoredVersion": ""
+      }
+    }
+  ],
+  "incompatible_packages_info": "Incompatible packages cannot be installed from WingetUI, but they have been listed here for logging purposes.",
+  "incompatible_packages": []
+}

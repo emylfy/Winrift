@@ -17,26 +17,28 @@ set cReset=[0m
 set cRed=[38;5;203m
 set cGreen=[38;5;120m
 
-:coolStuff
+:customization
 cls
 echo %cMauve% +--------------------------------------------------------+%cReset%
 echo %cMauve% '%cGrey% Customization Options                                  %cMauve%'%cReset%
 echo %cMauve% +--------------------------------------------------------+%cReset%
 echo %cMauve% '%cGrey% [1] Set Short Date and Hours Format - Feb 17, 17:57    %cMauve%'%cReset%
 echo %cMauve% '%cGrey% [2] Disable automatic pin of folders to Quick Access   %cMauve%'%cReset%
+echo %cMauve% '%cGrey% [3] Selectively pull icons from folders in start menu  %cMauve%'%cReset%
 echo %cMauve% +-Require-Internet-Connection----------------------------+%cReset%
-echo %cMauve% '%cGrey% [3] Launch Windots - configs, cursor, wallpapers       %cMauve%'%cReset%
+echo %cMauve% '%cGrey% [4] Launch Windots - configs, cursor, wallpapers       %cMauve%'%cReset%
 echo %cMauve% +--------------------------------------------------------+%cReset%
-echo %cMauve% '%cGrey% [4] Back to Menu                                       %cMauve%'%cReset%
+echo %cMauve% '%cGrey% [5] Back to Menu                                       %cMauve%'%cReset%
 echo %cMauve% +--------------------------------------------------------+%cReset%
 
-choice /C 1234 /N /M ">"
+choice /C 12345 /N /M ">"
 set /a "customization_choice=%errorlevel%"
-if !customization_choice! equ 4 exit
-if !customization_choice! equ 3 goto launchWindots
+if !customization_choice! equ 5 exit
+if !customization_choice! equ 4 goto Windots
+if !customization_choice! equ 3 goto Organizer
 if !customization_choice! equ 2 goto disableQuickAccess
 if !customization_choice! equ 1 goto shortDateHours
-goto coolStuff
+goto customization
 
 :shortDateHours
 cls
@@ -46,7 +48,7 @@ reg add "HKCU\Control Panel\International" /v sShortTime /t REG_SZ /d "HH:mm" /f
 reg add "HKCU\Control Panel\International" /v sTimeFormat /t REG_SZ /d "HH:mm:ss" /f
 echo %cGreen%Date and time format updated successfully. Changes will take effect after restart.%cReset%
 pause
-goto coolStuff
+goto customization
 
 :disableQuickAccess
 cls
@@ -57,12 +59,17 @@ powershell -Command "$quickAccess = (New-Object -ComObject shell.application).Na
 powershell -Command "Stop-Process -Name explorer -Force; Start-Process explorer"
 echo %cGreen%Quick Access settings updated successfully. Explorer will restart to apply changes.%cReset%
 pause
-goto coolStuff
+goto customization
 
-:launchWindots
+:Organizer
+cls
+@REM powershell -Command "Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy Unrestricted -Force; & '\simplify11\modules\tweaks\Organizer.ps1'"
+goto customization
+
+:Windots
 cls
 powershell -Command "iwr https://dub.sh/windots/"
-goto coolStuff
+goto customization
 
 :reg
 call "%~dp0\..\reg_helper.bat" %*
@@ -75,7 +82,7 @@ call "%~dp0\..\reg_helper.bat" %*
 @REM echo %cMauve% '%cGrey% [2] PowerShell Configuration               %cMauve%'%cReset%
 @REM echo %cMauve% '%cGrey% [3] Oh My Posh Configuration               %cMauve%'%cReset%
 @REM echo %cMauve% '%cGrey% [4] FastFetch Configuration                %cMauve%'%cReset%
-@REM echo %cMauve% '%cGrey% [5] Return to Main Menu                           %cMauve%'%cReset%
+@REM echo %cMauve% '%cGrey% [5] Return to Main Menu                    %cMauve%'%cReset%
 @REM echo %cMauve% +--------------------------------------------------------+%cReset%
 @REM choice /C 12345 /N /M "Select config to install: "
 @REM set /a "configChoice=%errorlevel%"
@@ -90,6 +97,3 @@ call "%~dp0\..\reg_helper.bat" %*
 @REM echo %cMauve% +--------------------------------------------------------+%cReset%
 @REM choice /C 123 /N /M "Select customization: "
 @REM set /a "customChoice=%errorlevel%"
-
-: Install cursor
-@REM cmd /c explorer /select,"%USERPROFILE%\Documents\GitHub\windots\config\etc\cursor\install.inf"
