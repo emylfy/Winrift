@@ -39,9 +39,13 @@ try {
                   |_|             |___/     
 "@ -ForegroundColor Cyan
 
-    Write-Host "Installation complete! Starting Simplify11..." -ForegroundColor Green
+    if (Get-Command wt -ErrorAction SilentlyContinue) {
+        wt cmd /k "$env:TEMP\simplify11\simplify11-main\simplify11.bat"
+    } else {
+        cmd.exe /k "$env:TEMP\simplify11\simplify11-main\simplify11.bat"
+    }
 
-    Start-Process "$tempPath\simplify11-main\simplify11.bat"
+
 }
 catch {
     Write-Progress -Activity "Installing Simplify11" -Status "Error" -PercentComplete 100

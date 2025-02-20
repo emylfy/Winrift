@@ -1,5 +1,15 @@
 @echo off
 setlocal EnableDelayedExpansion
+net session >nul 2>&1 || (
+    echo Not running as admin. Elevating...
+    where wt.exe >nul 2>&1
+    if %errorlevel% equ 0 (
+        powershell -Command "Start-Process -FilePath 'wt.exe' -ArgumentList 'cmd /k \"%~0\"' -Verb runAs"
+    ) else (
+        powershell -Command "Start-Process -FilePath 'cmd.exe' -ArgumentList '/k \"%~0\"' -Verb runAs"
+    )
+    exit /b
+)
 
 set cMauve=[38;5;141m
 set cGrey=[38;5;250m
@@ -13,7 +23,7 @@ echo %cMauve% +--------------------------------------------------------+%cReset%
 echo %cMauve% '%cGrey% Privacy.Sexy Settings                                  %cMauve%'%cReset%
 echo %cMauve% +--------------------------------------------------------+%cReset%
 echo %cMauve% '%cGrey% [1] Build your own batch from privacy.sexy website     %cMauve%'%cReset%
-echo %cMauve% '%cGrey% [2] Download and Run Standart preset (for most users)  %cMauve%'%cReset%
+echo %cMauve% '%cGrey% [2] Download and Run Standard preset (for most users)  %cMauve%'%cReset%
 echo %cMauve% '%cGrey% [3] Back to Main Menu                                  %cMauve%'%cReset%
 echo %cMauve% +--------------------------------------------------------+%cReset%
 

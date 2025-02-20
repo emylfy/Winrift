@@ -33,7 +33,7 @@ echo %cMauve% '%cGrey% [4] UniGetUI - Discover, Install, Update Packages      %c
 echo %cMauve% +--------------------------------------------------------+%cReset%
 echo %cMauve% '%cGrey% [5] System Tweaks - SSD, GPU, CPU, Storage and etc     %cMauve%'%cReset%
 echo %cMauve% '%cGrey% [6] Install Drivers - Nvidia, AMD, Device Manufacturer %cMauve%'%cReset%
-echo %cMauve% '%cGrey% [7] Customization stuff, windots                       %cMauve%'%cReset%
+echo %cMauve% '%cGrey% [7] Customization stuff, Windots                       %cMauve%'%cReset%
 echo %cMauve% +--------------------------------------------------------+%cReset%
 choice /C 01234567 /N /M ">"
 set /a "menuChoice=%errorlevel%-1"

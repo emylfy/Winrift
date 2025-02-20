@@ -11,7 +11,7 @@
 <p align="center">
 	<a href="#-quick-start">Usage</a> •
 	<a href="#-installation">Installation</a> •
-	<a href="#-features">Features</a> •
+	<!-- <a href="#-features">Features</a> • -->
 	<a href="#-credits">Credits</a>
 </p>
 

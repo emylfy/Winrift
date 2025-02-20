@@ -63,12 +63,17 @@ goto customization
 
 :Organizer
 cls
-@REM powershell -Command "Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy Unrestricted -Force; & '\simplify11\modules\tweaks\Organizer.ps1'"
+echo Will be available soon!
+pause
+@REM powershell -NoProfile -ExecutionPolicy Bypass -File "C:\Users\emylf\AppData\Local\Temp\simplify11\modules\menu\pwsh\Organizer.ps1"
+@REM powershell -NoProfile -ExecutionPolicy Bypass -File "$env:TEMP\simplify11\modules\menu\pwsh\Organizer.ps1"
 goto customization
 
 :Windots
 cls
-powershell -Command "iwr https://dub.sh/windots/"
+echo Will be available soon!
+pause
+@REM powershell -Command "iwr https://dub.sh/windots/"
 goto customization
 
 :reg

@@ -73,5 +73,22 @@ if %errorlevel% equ 4 set "bundleName=productivity"
 if %errorlevel% equ 5 set "bundleName=games"
 if %errorlevel% equ 6 set "bundleName=communications"
 
-"%LOCALAPPDATA%\Programs\UniGetUI\UniGetUI.exe" "%~dp0ubundle\%bundleName%.ubundle"
+"%LOCALAPPDATA%\Programs\UniGetUI\UniGetUI.exe" /launch "%~dp0..\ubundle\%bundleName%.ubundle"
+IF ERRORLEVEL 1 (
+    start "" "%~dp0..\ubundle\%bundleName%.ubundle"
+    IF ERRORLEVEL 1 (
+        echo Make sure that you installed UniGetUI.
+        goto :UniGetUI
+    )
+)
+
+IF ERRORLEVEL 1 (
+    start "" "%~dp0..\ubundle\%bundleName%.ubundle"
+    IF ERRORLEVEL 1 (
+        echo Make sure that you installed UniGetUI.
+        goto :UniGetUI
+    )
+)
+
+
 goto AppCategoryMenu
