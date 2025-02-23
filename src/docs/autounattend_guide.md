@@ -12,44 +12,33 @@ This XML configuration file automates the Windows installation process, ensuring
 
 > 🔧 **Integrated with [Simplify11](https://github.com/emylfy/simplify11) shorcut in Start Menu**
 
-## 🎯 What It Does  
+## 🎯 What It Does
 
-### 🧹 **Bloatware Removal**  
-- Removes over 20 pre-installed apps and unnecessary Windows features like Quick Assist and Steps Recorder.  
+### 🧹 **Bloatware Removal**
 
-### ⚙️ **System Optimizations**  
+- Removes over 20 pre-installed apps and unnecessary Windows features like Quick Assist and Steps Recorder.
+
+### ⚙️ **System Optimizations**
+
 - Bypasses TPM 2.0 and Secure Boot for broader compatibility
 - Disables telemetry, Cortana, Bing search, and other data collection
 - Customizes File Explorer, Start Menu, and Taskbar for a cleaner experience
 - Disables system sounds, removes OneDrive, and optimizes Windows Update settings
 
-### 🎨 **UI Enhancements**  
+### 🎨 **UI Enhancements**
+
 - Hides default desktop icons
 - Customizes the Taskbar and Start Menu for a clutter-free look
 
-### 🔒 **Security and Privacy**  
+### 🔒 **Security and Privacy**
+
 - Disables SmartScreen and unnecessary Windows Defender notifications
 - Turns off Edge’s first-run experience and consumer features like ads and suggestions
 
 ## 📥 Installation Guide
 
-### 🚀 Automated Script Method
+For manual creation:
 
-Work in Progress.
-<!-- Use our PowerShell script to automate the ISO customization process:
-
-```powershell
-iwr "https://dub.sh/iso-builder" | iex
-```
-
-**What It Does:**
-1. Asks for your Windows ISO file
-2. Lets you choose answer file (autounattend.xml)
-3. Suggests save location for new ISO -->
-
-### 🛠️ Manual Method
-
-For manual creation:  
 1. Open AnyBurn and select "Edit Image File"
 2. Choose your Windows ISO file
 3. Paste the [autounattend.xml](https://github.com/emylfy/simplify11/blob/main/src/docs/autounattend.xml) file into ISO root

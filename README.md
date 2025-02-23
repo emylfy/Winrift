@@ -5,13 +5,13 @@
 </p>
 
 <p align="center">
-	<img src="src/media/logo.png" alt="Simplify11 Logo" width="80%">
+	<img src="src/media/logo.png" alt="Simplify11 Logo" width="90%">
 </p>
 
 <p align="center">
-	<a href="#-quick-start">Usage</a> •
+	<a href="#-about">About</a> •
+	<a href="#-features">Features</a> •
 	<a href="#-installation">Installation</a> •
-	<!-- <a href="#-features">Features</a> • -->
 	<a href="#-credits">Credits</a>
 </p>
 
@@ -19,7 +19,9 @@
 
 ![](https://github.com/emylfy/simplify11/blob/main/src/media/separator.png)
 
-## 🚀 Quick Start
+## ⚡ Installation
+
+### Quick Start
 
 Launch Simplify11 with a single command in PowerShell:
 
@@ -27,7 +29,7 @@ Launch Simplify11 with a single command in PowerShell:
 iwr "https://dub.sh/simplify11" | iex
 ```
 
-## ⚡ Installation
+### Full Installation
 
 Creates a shortcut to Start Menu that launch latest version:
 
@@ -35,47 +37,43 @@ Creates a shortcut to Start Menu that launch latest version:
 iwr "https://dub.sh/s11install" | iex
 ```
 
-<!-- ## ✨ Features
+## ✨ Features
 
 <details>
 <summary>🛠️ Performance Tweaks</summary>
 
 - **Storage Optimization**
-	- Smart detection for SSD/HDD specific tweaks
-	- TRIM optimization for SSDs
-	- Intelligent prefetch management
+
+  - Smart detection for SSD/HDD specific tweaks
+  - TRIM optimization for SSDs
+  - Intelligent prefetch management
 
 - **Input Responsiveness**
-	- Enhanced mouse precision
-	- Optimized keyboard response
-	- Reduced input latency
 
-- **System Performance**
-	- GPU acceleration optimization
-	- Network latency reduction
-	- Advanced CPU power management
-	- Memory usage optimization
-	- DirectX performance enhancements
+  - Enhanced mouse precision
+  - Optimized keyboard response
+  - Reduced input latency
+
+- **System Performance** - GPU acceleration optimization - Network latency reduction - Advanced CPU power management - Memory usage optimization - DirectX performance enhancements
 </details>
 
 <details>
 <summary>💾 Space Management</summary>
 
-- **Storage Control**
-	- Reserved storage management
-	- WinSxS component cleanup
-	- Virtual memory optimization
+- **Storage Control** - Reserved storage management - WinSxS component cleanup - Virtual memory optimization
 </details>
 
 <details>
 <summary>📦 Software Installation</summary>
 
 **Package System**
+
 - Windows Package Manager integration
-- Multiple manager support (Winget, UniGetUI)
+- Multiple manager support
 - Essential software collection:
 
 **Categories:**
+
 - Development
 - Web Browsers
 - System Tools
@@ -83,7 +81,7 @@ iwr "https://dub.sh/s11install" | iex
 - Gaming Essentials
 - Microsoft Core Apps
 
-</details> -->
+</details>
 
 ## 🔄 Integrations
 
@@ -112,12 +110,9 @@ iwr "https://dub.sh/s11install" | iex
 </tr>
 </table>
 
-<!-- ## 🪄 Cool Stuff
+## 🪄 Also check this out!
 
-- [Rectify11 Installer](https://github.com/Rectify11/Installer) - Modern UI redesign for Windows 11
-- [Simplify11 Unattended](https://github.com/emylfy/simplify11/blob/main/src/docs/autounattend_guide.md) - Automated Windows installation with customizable configurations
-- [WinDynamicDesktop](https://github.com/t1m0thyj/WinDynamicDesktop) - Port of macOS Dynamic Desktop Wallpapers feature
-</details> -->
+- [Simplify11 Unattended](https://github.com/emylfy/simplify11/blob/main/src/docs/autounattend_guide.md) - Guide for Automated Windows installation with customizable configurations
 
 ## 🌟 Credits
 

@@ -20,7 +20,6 @@ set Green=[38;5;120m
 :main
 title Simplify11 v25.02
 cls
-echo.
 echo %Purple% +--------------------------------------------------------+%Reset%
 echo %Purple% '%Purple%   Tired of System Setup After Reinstall? Simplify It!   %Purple%'%Reset%
 echo %Purple% +--------------------------------------------------------+%Reset%
