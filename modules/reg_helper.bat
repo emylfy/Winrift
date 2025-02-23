@@ -21,13 +21,13 @@ if /i "%valueType%"=="REG_DWORD" (
 ) else if /i "%valueType%"=="REG_BINARY" (
 	reg add "%key%" /v "%valueName%" /t REG_BINARY /d "%valueData%" /f >nul 2>&1
 ) else (
-	echo %cRed%[FAILED]%cReset% Unsupported registry value type: %valueType%
+	echo %Red%[FAILED]%Reset% Unsupported registry value type: %valueType%
 	exit /b 1
 )
 
 if %errorlevel% equ 0 (
-	echo %cGreen%[SUCCESS]%cReset% %comment%
+	echo %Green%[SUCCESS]%Reset% %comment%
 ) else (
-	echo %cRed%[FAILED]%cReset% Failed to set %valueName%
+	echo %Red%[FAILED]%Reset% Failed to set %valueName%
 	exit /b 1
 )

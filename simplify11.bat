@@ -11,30 +11,30 @@ net session >nul 2>&1 || (
     exit /b
 )
 
-set cMauve=[38;5;141m
-set cGrey=[38;5;250m
-set cReset=[0m
-set cRed=[38;5;203m
-set cGreen=[38;5;120m
+set Purple=[38;5;141m
+set Grey=[38;5;250m
+set Reset=[0m
+set Red=[38;5;203m
+set Green=[38;5;120m
 
 :main
 title Simplify11 v25.02
 cls
 echo.
-echo %cMauve% +--------------------------------------------------------+%cReset%
-echo %cMauve% '%cMauve%   Tired of System Setup After Reinstall? Simplify It!   %cMauve%'%cReset%
-echo %cMauve% +--------------------------------------------------------+%cReset%
-echo %cMauve% '%cGrey% [0] Configure Your Windows Installation Answer File    %cMauve%'%cReset%
-echo %cMauve% +--------------------------------------------------------+%cReset%
-echo %cMauve% '%cGrey% [1] WinUtil - Install Programs, Tweaks, Fixes, Updates %cMauve%'%cReset%
-echo %cMauve% '%cGrey% [2] WinScript - Build your script from scratch         %cMauve%'%cReset%
-echo %cMauve% '%cGrey% [3] Privacy.sexy - Enforce privacy and security        %cMauve%'%cReset%
-echo %cMauve% '%cGrey% [4] UniGetUI - Discover, Install, Update Packages      %cMauve%'%cReset%
-echo %cMauve% +--------------------------------------------------------+%cReset%
-echo %cMauve% '%cGrey% [5] System Tweaks - SSD, GPU, CPU, Storage and etc     %cMauve%'%cReset%
-echo %cMauve% '%cGrey% [6] Install Drivers - Nvidia, AMD, Device Manufacturer %cMauve%'%cReset%
-echo %cMauve% '%cGrey% [7] Customization stuff, Windots                       %cMauve%'%cReset%
-echo %cMauve% +--------------------------------------------------------+%cReset%
+echo %Purple% +--------------------------------------------------------+%Reset%
+echo %Purple% '%Purple%   Tired of System Setup After Reinstall? Simplify It!   %Purple%'%Reset%
+echo %Purple% +--------------------------------------------------------+%Reset%
+echo %Purple% '%Grey% [0] Configure Your Windows Installation Answer File    %Purple%'%Reset%
+echo %Purple% +--------------------------------------------------------+%Reset%
+echo %Purple% '%Grey% [1] WinUtil - Install Programs, Tweaks, Fixes, Updates %Purple%'%Reset%
+echo %Purple% '%Grey% [2] WinScript - Build your script from scratch         %Purple%'%Reset%
+echo %Purple% '%Grey% [3] Privacy.sexy - Enforce privacy and security        %Purple%'%Reset%
+echo %Purple% '%Grey% [4] UniGetUI - Discover, Install, Update Packages      %Purple%'%Reset%
+echo %Purple% +--------------------------------------------------------+%Reset%
+echo %Purple% '%Grey% [5] System Tweaks - SSD, GPU, CPU, Storage and etc     %Purple%'%Reset%
+echo %Purple% '%Grey% [6] Install Drivers - Nvidia, AMD, Device Manufacturer %Purple%'%Reset%
+echo %Purple% '%Grey% [7] Customization stuff, Windots                       %Purple%'%Reset%
+echo %Purple% +--------------------------------------------------------+%Reset%
 choice /C 01234567 /N /M ">"
 set /a "menuChoice=%errorlevel%-1"
 goto s!menuChoice!

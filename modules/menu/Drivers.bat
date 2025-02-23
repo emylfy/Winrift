@@ -1,11 +1,11 @@
 @echo off
 setlocal EnableDelayedExpansion
 
-set cMauve=[38;5;141m
-set cGrey=[38;5;250m
-set cReset=[0m
-set cRed=[38;5;203m
-set cGreen=[38;5;120m
+set Purple=[38;5;141m
+set Grey=[38;5;250m
+set Reset=[0m
+set Red=[38;5;203m
+set Green=[38;5;120m
 
 :deviceMenu
 cls
@@ -22,20 +22,20 @@ set "url[8]=https://www.xiaomi.com/global/support"
 set "url[9]=https://www.alienware.com/support"
 set "url[10]=https://www.gigabyte.com/support/consumer"
 
-echo %cMauve% +------------------------+%cReset%
-echo %cMauve% '%cGrey% [0] Nvidia App         %cMauve%'%cReset%
-echo %cMauve% '%cGrey% [1] AMD Drivers        %cMauve%'%cReset%
-echo %cMauve% +------------------------+%cReset%
-echo %cMauve% '%cGrey% [2] HP                 %cMauve%'%cReset%
-echo %cMauve% '%cGrey% [3] Lenovo             %cMauve%'%cReset%
-echo %cMauve% '%cGrey% [4] Asus               %cMauve%'%cReset%
-echo %cMauve% '%cGrey% [5] Acer               %cMauve%'%cReset%
-echo %cMauve% '%cGrey% [6] MSI                %cMauve%'%cReset%
-echo %cMauve% '%cGrey% [7] Huawei             %cMauve%'%cReset%
-echo %cMauve% '%cGrey% [8] Xiaomi             %cMauve%'%cReset%
-echo %cMauve% '%cGrey% [9] Alienware          %cMauve%'%cReset%
-echo %cMauve% '%cGrey% [10] Gigabyte          %cMauve%'%cReset%
-echo %cMauve% +------------------------+%cReset%
+echo %Purple% +------------------------+%Reset%
+echo %Purple% '%Grey% [0] Nvidia App         %Purple%'%Reset%
+echo %Purple% '%Grey% [1] AMD Drivers        %Purple%'%Reset%
+echo %Purple% +------------------------+%Reset%
+echo %Purple% '%Grey% [2] HP                 %Purple%'%Reset%
+echo %Purple% '%Grey% [3] Lenovo             %Purple%'%Reset%
+echo %Purple% '%Grey% [4] Asus               %Purple%'%Reset%
+echo %Purple% '%Grey% [5] Acer               %Purple%'%Reset%
+echo %Purple% '%Grey% [6] MSI                %Purple%'%Reset%
+echo %Purple% '%Grey% [7] Huawei             %Purple%'%Reset%
+echo %Purple% '%Grey% [8] Xiaomi             %Purple%'%Reset%
+echo %Purple% '%Grey% [9] Alienware          %Purple%'%Reset%
+echo %Purple% '%Grey% [10] Gigabyte          %Purple%'%Reset%
+echo %Purple% +------------------------+%Reset%
 
 choice /C 0123456789 /N /M "Select your device manufacturer to install drivers: "
 set /a "manufacturer_choice=%errorlevel%-1"
@@ -46,7 +46,7 @@ if !manufacturer_choice! equ 3 (
     start "" "!url[%manufacturer_choice%]!"
     goto main
 ) else (
-    echo %cRed%Invalid choice. Returning to main menu.%cReset%
+    echo %Red%Invalid choice. Returning to main menu.%Reset%
     timeout /t 2 >nul
     goto main
 )
@@ -54,12 +54,12 @@ if !manufacturer_choice! equ 3 (
 :lenovoMenu
 cls
 echo.
-echo %cMauve% +--------------------------------------------+%cReset%
-echo %cMauve% '%cGrey% [1] Install Lenovo Vantage                 %cMauve%'%cReset%
-echo %cMauve% '%cGrey% [2] Open Lenovo Driver Page                %cMauve%'%cReset%
-echo %cMauve% +--------------------------------------------+%cReset%
-echo %cMauve% '%cGrey% [3] Back to Manufacturer Selection         %cMauve%'%cReset%
-echo %cMauve% +--------------------------------------------+%cReset%
+echo %Purple% +--------------------------------------------+%Reset%
+echo %Purple% '%Grey% [1] Install Lenovo Vantage                 %Purple%'%Reset%
+echo %Purple% '%Grey% [2] Open Lenovo Driver Page                %Purple%'%Reset%
+echo %Purple% +--------------------------------------------+%Reset%
+echo %Purple% '%Grey% [3] Back to Manufacturer Selection         %Purple%'%Reset%
+echo %Purple% +--------------------------------------------+%Reset%
 
 choice /C 123 /N /M ">"
 set /a "lenovo_choice=%errorlevel%"
@@ -70,12 +70,12 @@ if !lenovo_choice! equ 2 (
     goto lenovoMenu
 )
 if !lenovo_choice! equ 1 (
-    echo %cGrey%Installing Lenovo Vantage...%cReset%
+    echo %Grey%Installing Lenovo Vantage...%Reset%
     winget install "9WZDNCRFJ4MV" --accept-package-agreements --accept-source-agreements
     if !errorlevel! equ 0 (
-        echo %cGreen%Successfully installed Lenovo Vantage.%cReset%
+        echo %Green%Successfully installed Lenovo Vantage.%Reset%
     ) else (
-        echo %cRed%Failed to install Lenovo Vantage. Please install manually from the Microsoft Store.%cReset%
+        echo %Red%Failed to install Lenovo Vantage. Please install manually from the Microsoft Store.%Reset%
         start "" "ms-windows-store://pdp?hl=en-us&gl=us&ocid=pdpshare&referrer=storeforweb&productid=9WZDNCRFJ4MV&storecid=storeweb-pdp-open-cta"
     )
     timeout /t 2

@@ -1,22 +1,22 @@
 @echo off
 setlocal EnableDelayedExpansion
 
-set cMauve=[38;5;141m
-set cGrey=[38;5;250m
-set cReset=[0m
-set cRed=[38;5;203m
-set cGreen=[38;5;120m
+set Purple=[38;5;141m
+set Grey=[38;5;250m
+set Reset=[0m
+set Red=[38;5;203m
+set Green=[38;5;120m
 
 :WinScript
 cls
 echo.
-echo %cMauve% +-----------------------------------+%cReset%
-echo %cMauve% '%cGrey%  Winscript - Make Windows Yours   %cMauve%'%cReset%
-echo %cMauve% +-----------------------------------+%cReset%
-echo %cMauve% '%cGrey% [1] Open online version           %cMauve%'%cReset%
-echo %cMauve% '%cGrey% [2] Install and Launch via Winget %cMauve%'%cReset%
-echo %cMauve% '%cGrey% [3] Back to menu                  %cMauve%'%cReset%
-echo %cMauve% +-----------------------------------+%cReset%
+echo %Purple% +-----------------------------------+%Reset%
+echo %Purple% '%Grey%  Winscript - Make Windows Yours   %Purple%'%Reset%
+echo %Purple% +-----------------------------------+%Reset%
+echo %Purple% '%Grey% [1] Open online version           %Purple%'%Reset%
+echo %Purple% '%Grey% [2] Install and Launch via Winget %Purple%'%Reset%
+echo %Purple% '%Grey% [3] Back to menu                  %Purple%'%Reset%
+echo %Purple% +-----------------------------------+%Reset%
 choice /C 123 /N /M "Select an option: "
 
 if errorlevel 3 goto :eof
@@ -28,8 +28,8 @@ start "" "https://winscript.cc/online/"
 goto WinScript
 
 :install
-echo %cGreen%Installing WinScript... This may take a moment.%cReset%
+echo %Green%Installing WinScript... This may take a moment.%Reset%
 winget install --id=flick9000.WinScript
 start "" "%ProgramFiles%\WinScript\WinScript.exe"
-echo %cGreen%Installation complete. Launching WinScript...%cReset%
+echo %Green%Installation complete. Launching WinScript...%Reset%
 exit /b

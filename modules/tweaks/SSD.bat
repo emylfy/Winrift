@@ -11,11 +11,11 @@ net session >nul 2>&1 || (
     exit /b
 )
 
-set cMauve=[38;5;141m
-set cGrey=[38;5;250m
-set cReset=[0m
-set cRed=[38;5;203m
-set cGreen=[38;5;120m
+set Purple=[38;5;141m
+set Grey=[38;5;250m
+set Reset=[0m
+set Red=[38;5;203m
+set Green=[38;5;120m
 
 powershell -command "Get-PhysicalDisk | Where-Object { $_.MediaType -eq 'SSD' -or $_.BusType -eq 'NVMe' } | Measure-Object | ForEach-Object { if ($_.Count -gt 0) { exit 0 } else { exit 1 } }"
 if %errorlevel% equ 0 (

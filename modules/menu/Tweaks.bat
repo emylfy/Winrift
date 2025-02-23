@@ -1,21 +1,21 @@
 @echo off
 setlocal EnableDelayedExpansion
 
-set cMauve=[38;5;141m
-set cGrey=[38;5;250m
-set cReset=[0m
-set cRed=[38;5;203m
-set cGreen=[38;5;120m
+set Purple=[38;5;141m
+set Grey=[38;5;250m
+set Reset=[0m
+set Red=[38;5;203m
+set Green=[38;5;120m
 
 :menu
 cls
 echo.
-echo %cMauve% +----------------------------------------+%cReset%
-echo %cMauve% '%cGrey% [1] SSD/NVMe Tweaks                    %cMauve%'%cReset%
-echo %cMauve% '%cGrey% [2] GPU Performance Tweaks             %cMauve%'%cReset%
-echo %cMauve% '%cGrey% [3] Universal System Tweaks            %cMauve%'%cReset%
-echo %cMauve% '%cGrey% [4] Exit                               %cMauve%'%cReset%
-echo %cMauve% +----------------------------------------+%cReset%
+echo %Purple% +----------------------------------------+%Reset%
+echo %Purple% '%Grey% [1] SSD/NVMe Tweaks                    %Purple%'%Reset%
+echo %Purple% '%Grey% [2] GPU Performance Tweaks             %Purple%'%Reset%
+echo %Purple% '%Grey% [3] Universal System Tweaks            %Purple%'%Reset%
+echo %Purple% '%Grey% [4] Exit                               %Purple%'%Reset%
+echo %Purple% +----------------------------------------+%Reset%
 choice /C 1234 /N /M "Select an option: "
 if errorlevel 4 goto :eof
 if errorlevel 3 goto :universal
@@ -24,21 +24,21 @@ if errorlevel 1 goto :ssd
 
 :ssd
 cls
-echo %cGreen%Applying Storage Device Tweaks...%cReset%
+echo %Green%Applying Storage Device Tweaks...%Reset%
 start cmd /c "%~dp0\tweaks\SSD.bat"
 pause
 goto :eof
 
 :gpu
 cls
-echo %cGreen%Applying GPU Performance Tweaks...%cReset%
+echo %Green%Applying GPU Performance Tweaks...%Reset%
 start cmd /c "%~dp0\tweaks\Gpu.bat"
 pause
 goto :eof
 
 :universal
 cls
-echo %cGreen%Applying Universal System Tweaks...%cReset%
+echo %Green%Applying Universal System Tweaks...%Reset%
 start cmd /c "%~dp0\tweaks\Universal.bat"
 pause
 goto :eof

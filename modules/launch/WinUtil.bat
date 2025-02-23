@@ -11,17 +11,17 @@ net session >nul 2>&1 || (
     exit /b
 )
 
-set cMauve=[38;5;141m
-set cGrey=[38;5;250m
-set cReset=[0m
-set cRed=[38;5;203m
-set cGreen=[38;5;120m
+set Purple=[38;5;141m
+set Grey=[38;5;250m
+set Reset=[0m
+set Red=[38;5;203m
+set Green=[38;5;120m
 
 cls
 echo.
-echo %cMauve% +-----------------------------------+%cReset%
-echo %cMauve% '%cGrey% Launching Windows Utility Tool... %cMauve%'%cReset%
-echo %cMauve% +-----------------------------------+%cReset%
+echo %Purple% +-----------------------------------+%Reset%
+echo %Purple% '%Grey% Launching Windows Utility Tool... %Purple%'%Reset%
+echo %Purple% +-----------------------------------+%Reset%
 
 wt.exe cmd /c powershell -Command "irm 'https://christitus.com/win' | iex"
 if %errorlevel% neq 0 (

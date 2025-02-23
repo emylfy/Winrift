@@ -11,54 +11,54 @@ net session >nul 2>&1 || (
     exit /b
 )
 
-set cMauve=[38;5;141m
-set cGrey=[38;5;250m
-set cReset=[0m
-set cRed=[38;5;203m
-set cGreen=[38;5;120m
+set Purple=[38;5;141m
+set Grey=[38;5;250m
+set Reset=[0m
+set Red=[38;5;203m
+set Green=[38;5;120m
 
 :freeUpSpace
 
 echo.
-echo %cGrey%Would you like to disable Reserved Storage?%cReset%
+echo %Grey%Would you like to disable Reserved Storage?%Reset%
 choice /C 12 /N /M "[1] Yes or [2] No : "
 set /a "storage_choice=%errorlevel%"
 if !storage_choice!==1 (
-    echo %cGrey%Disabling Reserved Storage...%cReset%
+    echo %Grey%Disabling Reserved Storage...%Reset%
     dism /Online /Set-ReservedStorageState /State:Disabled
 )
 
 echo.
-echo %cGrey%Would you like to clean up WinSxS?%cReset%
+echo %Grey%Would you like to clean up WinSxS?%Reset%
 choice /C 12 /N /M "[1] Yes or [2] No : "
 set /a "winsxs_choice=%errorlevel%"
 if !winsxs_choice!==1 (
-    echo %cGrey%Cleaning up WinSxS...%cReset%
+    echo %Grey%Cleaning up WinSxS...%Reset%
     dism /Online /Cleanup-Image /StartComponentCleanup /ResetBase /RestoreHealth
 )
 
 echo.
-echo %cGrey%Would you like to remove Virtual Memory (pagefile.sys)?%cReset%
+echo %Grey%Would you like to remove Virtual Memory (pagefile.sys)?%Reset%
 choice /C 12 /N /M "[1] Yes or [2] No : "
 set /a "vm_choice=%errorlevel%"
 if !vm_choice!==1 (
-    echo %cGrey%Removing Virtual Memory...%cReset%
+    echo %Grey%Removing Virtual Memory...%Reset%
     powershell -Command "Set-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Memory Management' -Name 'PagingFiles' -Value ''"
 )
 
 echo.
-echo %cGrey%Would you like to install and launch PC Manager? (Official Microsoft Utility from Store)%cReset%
+echo %Grey%Would you like to install and launch PC Manager? (Official Microsoft Utility from Store)%Reset%
 choice /C 12 /N /M "[1] Yes or [2] No : "
 set /a "pcmanager_choice=%errorlevel%"
 if !pcmanager_choice!==1 (
-    echo %cGrey%Installing PC Manager...%cReset%
+    echo %Grey%Installing PC Manager...%Reset%
     winget install Microsoft.PCManager --accept-package-agreements --accept-source-agreements
     if !errorlevel! equ 0 (
         echo Successfully installed PC Manager.
         timeout /t 2
         start "" "shell:AppsFolder\Microsoft.MicrosoftPCManager_8wekyb3d8bbwe!App"
     ) else if !errorlevel! equ -1978335189 (
-        echo %cGrey%PC Manager is already installed. Launching...%cReset%
+        echo %Grey%PC Manager is already installed. Launching...%Reset%
         start "" "shell:AppsFolder\Microsoft.MicrosoftPCManager_8wekyb3d8bbwe!App"
     ) else (
         echo Failed to install PC Manager. Please try manually.

@@ -11,23 +11,23 @@ net session >nul 2>&1 || (
     exit /b
 )
 
-set cMauve=[38;5;141m
-set cGrey=[38;5;250m
-set cReset=[0m
-set cRed=[38;5;203m
-set cGreen=[38;5;120m
+set Purple=[38;5;141m
+set Grey=[38;5;250m
+set Reset=[0m
+set Red=[38;5;203m
+set Green=[38;5;120m
 
 :next
 cls
 echo.
-echo %cMauve% +-------------------------------------+%cReset%
-echo %cMauve% '%cGrey% Select your GPU manufacturer:       %cMauve%'%cReset%
-echo %cMauve% +-------------------------------------+%cReset%
-echo %cMauve% '%cGrey% [1] NVIDIA                          %cMauve%'%cReset%
-echo %cMauve% '%cGrey% [2] AMD                             %cMauve%'%cReset%
-echo %cMauve% +-------------------------------------+%cReset%
-echo %cMauve% '%cGrey% [3] Skip                            %cMauve%'%cReset%
-echo %cMauve% +-------------------------------------+%cReset%
+echo %Purple% +-------------------------------------+%Reset%
+echo %Purple% '%Grey% Select your GPU manufacturer:       %Purple%'%Reset%
+echo %Purple% +-------------------------------------+%Reset%
+echo %Purple% '%Grey% [1] NVIDIA                          %Purple%'%Reset%
+echo %Purple% '%Grey% [2] AMD                             %Purple%'%Reset%
+echo %Purple% +-------------------------------------+%Reset%
+echo %Purple% '%Grey% [3] Skip                            %Purple%'%Reset%
+echo %Purple% +-------------------------------------+%Reset%
 
 choice /C 123 /N /M ">"
 if errorlevel 3 exit
