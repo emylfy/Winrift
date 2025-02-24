@@ -4,9 +4,9 @@ net session >nul 2>&1 || (
     echo Not running as admin. Elevating...
     where wt.exe >nul 2>&1
     if %errorlevel% equ 0 (
-        powershell -Command "Start-Process -FilePath 'wt.exe' -ArgumentList 'cmd /k \"%~0\"' -Verb runAs"
+        powershell "Start-Process -FilePath 'wt.exe' -ArgumentList 'cmd /k \"%~0\"' -Verb runAs"
     ) else (
-        powershell -Command "Start-Process -FilePath 'cmd.exe' -ArgumentList '/k \"%~0\"' -Verb runAs"
+        powershell "Start-Process -FilePath 'cmd.exe' -ArgumentList '/k \"%~0\"' -Verb runAs"
     )
     exit /b
 )
@@ -23,8 +23,8 @@ echo %Purple% +-----------------------------------+%Reset%
 echo %Purple% '%Grey% Launching Windows Utility Tool... %Purple%'%Reset%
 echo %Purple% +-----------------------------------+%Reset%
 
-wt.exe cmd /c powershell -Command "irm 'https://christitus.com/win' | iex"
+wt.exe cmd /c powershell "irm 'https://christitus.com/win' | iex"
 if %errorlevel% neq 0 (
-    powershell -Command "irm 'https://christitus.com/win' | iex"
+    powershell "irm 'https://christitus.com/win' | iex"
 )
 exit

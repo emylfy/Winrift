@@ -4,9 +4,9 @@ net session >nul 2>&1 || (
     echo Not running as admin. Elevating...
     where wt.exe >nul 2>&1
     if %errorlevel% equ 0 (
-        powershell -Command "Start-Process -FilePath 'wt.exe' -ArgumentList 'cmd /k \"%~0\"' -Verb runAs"
+        powershell "Start-Process -FilePath 'wt.exe' -ArgumentList 'cmd /k \"%~0\"' -Verb runAs"
     ) else (
-        powershell -Command "Start-Process -FilePath 'cmd.exe' -ArgumentList '/k \"%~0\"' -Verb runAs"
+        powershell "Start-Process -FilePath 'cmd.exe' -ArgumentList '/k \"%~0\"' -Verb runAs"
     )
     exit /b
 )
@@ -32,7 +32,7 @@ set /a "privacy_choice=%errorlevel%"
 if !privacy_choice! equ 3 exit
 if !privacy_choice! equ 2 (
     echo %Grey%Downloading and executing privacy script...%Reset%
-    powershell -Command "irm 'https://raw.githubusercontent.com/emylfy/simplify11/refs/heads/main/modules/tweaks/Privacy.bat' -OutFile \"%TEMP%\Privacy.bat\"" && start cmd /c "%TEMP%\Privacy.bat"
+    powershell "irm 'https://raw.githubusercontent.com/emylfy/simplify11/refs/heads/main/modules/tweaks/Privacy.bat' -OutFile \"%TEMP%\Privacy.bat\"" && start cmd /c "%TEMP%\Privacy.bat"
     if !errorlevel! equ 0 (
         echo %Green%Privacy script executed successfully.%Reset%
     ) else (

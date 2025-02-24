@@ -4,9 +4,9 @@ net session >nul 2>&1 || (
     echo Not running as admin. Elevating...
     where wt.exe >nul 2>&1
     if %errorlevel% equ 0 (
-        powershell -Command "Start-Process -FilePath 'wt.exe' -ArgumentList 'cmd /k \"%~0\"' -Verb runAs"
+        powershell "Start-Process -FilePath 'wt.exe' -ArgumentList 'cmd /k \"%~0\"' -Verb runAs"
     ) else (
-        powershell -Command "Start-Process -FilePath 'cmd.exe' -ArgumentList '/k \"%~0\"' -Verb runAs"
+        powershell "Start-Process -FilePath 'cmd.exe' -ArgumentList '/k \"%~0\"' -Verb runAs"
     )
     exit /b
 )
@@ -54,10 +54,10 @@ goto menu
 :disableQuickAccess
 cls
 echo %Grey%Disabling automatic addition of folders to Quick Access...%Reset%
-powershell -Command "Set-ItemProperty -Path 'HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer' -Name 'ShowFrequent' -Type DWord -Value 0"
-powershell -Command "Set-ItemProperty -Path 'HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer' -Name 'ShowRecent' -Type DWord -Value 0"
-powershell -Command "$quickAccess = (New-Object -ComObject shell.application).Namespace('shell:::{679f85cb-0220-4080-b29b-5540cc05aab6}').Items(); $quickAccess | ForEach-Object { $_.InvokeVerb('remove') }"
-powershell -Command "Stop-Process -Name explorer -Force; Start-Process explorer"
+powershell "Set-ItemProperty -Path 'HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer' -Name 'ShowFrequent' -Type DWord -Value 0"
+powershell "Set-ItemProperty -Path 'HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer' -Name 'ShowRecent' -Type DWord -Value 0"
+powershell "$quickAccess = (New-Object -ComObject shell.application).Namespace('shell:::{679f85cb-0220-4080-b29b-5540cc05aab6}').Items(); $quickAccess | ForEach-Object { $_.InvokeVerb('remove') }"
+powershell "Stop-Process -Name explorer -Force; Start-Process explorer"
 echo %Green%Quick Access settings updated successfully. Explorer will restart to apply changes.%Reset%
 pause
 goto menu
@@ -69,7 +69,7 @@ goto menu
 
 :Windots
 cls
-wt powershell -Command "iwr 'https://dub.sh/windots' |iex "
+wt powershell "iwr 'https://dub.sh/windots' |iex "
 goto menu
 
 :reg

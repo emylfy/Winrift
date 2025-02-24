@@ -3,7 +3,7 @@ $shortcutPath = Join-Path -Path $startMenuPath -ChildPath "Simplify11.lnk"
 $wshShell = New-Object -ComObject WScript.Shell
 $shortcut = $wshShell.CreateShortcut($shortcutPath)
 $shortcut.TargetPath = "powershell.exe"
-$shortcut.Arguments = '-NoProfile -ExecutionPolicy Bypass -Command "iwr \"https://dub.sh/simplify11\" | iex"'
+$shortcut.Arguments = '-NoProfile -ExecutionPolicy Bypass "iwr \"https://dub.sh/simplify11\" | iex"'
 $shortcut.Description = "Launch Simplify11"
 $shortcut.WorkingDirectory = $startMenuPath
 

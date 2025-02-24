@@ -27,7 +27,7 @@ echo %Purple%  '%Grey%    Install UniGetUI    %Purple%'%Reset%
 echo %Purple% +---                    ---+%Reset%
 
 winget source update
-powershell -Command "if ((winget list --id MartiCliment.UniGetUI --accept-source-agreements) -match 'MartiCliment.UniGetUI') { exit 0 } else { exit 1 }"
+powershell "if ((winget list --id MartiCliment.UniGetUI --accept-source-agreements) -match 'MartiCliment.UniGetUI') { exit 0 } else { exit 1 }"
 if !errorlevel! equ 0 (
     echo %Grey%UniGetUI is already installed. Launching...%Reset%
     start "" "unigetui:"
