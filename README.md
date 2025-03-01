@@ -1,7 +1,7 @@
 # Simplify11
 
 <p align="center">
-	<strong>A powerful Windows toolkit that quickly configures your system</strong>
+	<strong>A powerful toolkit that quickly configures your Windows 11</strong>
 </p>
 
 <p align="center">

@@ -25,20 +25,19 @@ if errorlevel 1 goto :ssd
 :ssd
 cls
 echo %Green%Applying Storage Device Tweaks...%Reset%
-start cmd /c "%~dp0\tweaks\SSD.bat"
+start cmd /c "%~dp0..\tweaks\SSD.bat"
 pause
-goto :eof
+goto :menu
 
 :gpu
 cls
-echo %Green%Applying GPU Performance Tweaks...%Reset%
-start cmd /c "%~dp0\tweaks\Gpu.bat"
+start cmd /c "%~dp0..\tweaks\Gpu.bat"
 pause
-goto :eof
+goto :menu
 
 :universal
 cls
 echo %Green%Applying Universal System Tweaks...%Reset%
-start cmd /c "%~dp0\tweaks\Universal.bat"
+start cmd /c "%~dp0..\tweaks\Universal.bat"
 pause
-goto :eof
+goto :menu
