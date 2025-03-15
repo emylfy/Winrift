@@ -27,12 +27,17 @@ if %errorlevel% equ 0 (
 		
     echo Disable NTFS last access time updates
     fsutil behavior set disablelastaccess 1
+    
+    echo Disabling legacy 8.3 filename creation
     call :reg "HKLM\SYSTEM\CurrentControlSet\Control\FileSystem" "NtfsDisable8dot3NameCreation" "REG_DWORD" "1" "Disabled legacy 8.3 filename creation for better SSD performance"
 ) else (
     echo No SSD or NVMe detected. Skipping tweaks.
 )
-pause
-exit
+
+echo.
+echo %Purple%Press any key to exit...%Reset%
+pause >nul
+exit /b
 
 :reg
 call "%~dp0\..\reg_helper.bat" %*

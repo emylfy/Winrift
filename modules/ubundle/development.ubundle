@@ -71,6 +71,29 @@
       }
     },
     {
+      "Id": "CommandLine.Wave",
+      "Name": "Wave",
+      "Version": "0.11.2",
+      "Source": "winget",
+      "ManagerName": "Winget",
+      "InstallationOptions": {
+        "SkipHashCheck": false,
+        "InteractiveInstallation": false,
+        "RunAsAdministrator": false,
+        "Architecture": "",
+        "InstallationScope": "",
+        "CustomParameters": [],
+        "PreRelease": false,
+        "CustomInstallLocation": "",
+        "Version": "",
+        "SkipMinorUpdates": false
+      },
+      "Updates": {
+        "UpdatesIgnored": false,
+        "IgnoredVersion": ""
+      }
+    },
+    {
       "Id": "Docker.DockerDesktop",
       "Name": "Docker Desktop",
       "Version": "4.38.0",

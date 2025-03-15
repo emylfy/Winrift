@@ -37,39 +37,32 @@ This XML configuration file automates the Windows installation process, ensuring
 
 ## 📥 Installation Guide
 
+> **Download XML File:** [autounattend.xml](https://github.com/emylfy/simplify11/blob/main/src/docs/autounattend.xml)
+
 For manual creation:
 
 1. Open AnyBurn and select "Edit Image File"
 2. Choose your Windows ISO file
 3. Paste the [autounattend.xml](https://github.com/emylfy/simplify11/blob/main/src/docs/autounattend.xml) file into ISO root
 4. Complete the burning process to create your bootable media
-5. Start installation - script will apply automatically
 
-> 📥 **Download XML File:** [autounattend.xml](https://github.com/emylfy/simplify11/blob/main/src/docs/autounattend.xml)
+For automated creation:
 
-The configuration will be applied automatically during installation.
+Use [tiny11builder-24H2](https://github.com/chrisGrando/tiny11builder-24H2) - PowerShell script to build a Windows 11 24H2 image
 
 ## 🔧 Technical Details
 
-<details>
 <summary>Configuration Passes</summary>
 
 - `windowsPE`: Initial setup configuration
 - `specialize`: System customization
 - `oobeSystem`: Out-of-box experience settings
-</details>
 
-<details>
 <summary>Script Locations</summary>
 
 - Main scripts: `C:\Windows\Setup\Scripts\`
 - Temp files: `C:\Windows\Temp\`
 - Logs: Various `.log` files for debugging
-</details>
-
-## ⚠️ Important Note
-
-- Some settings may vary by Windows version
 
 ![](https://github.com/emylfy/simplify11/blob/main/src/media/separator.png)
 

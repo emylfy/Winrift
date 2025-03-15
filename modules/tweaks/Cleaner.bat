@@ -1,5 +1,6 @@
 @echo off
 setlocal EnableDelayedExpansion
+title System Cleaner
 net session >nul 2>&1 || (
     echo Not running as admin. Elevating...
     where wt.exe >nul 2>&1
@@ -21,6 +22,7 @@ set Green=[38;5;120m
 
 echo.
 echo %Grey%Would you like to disable Reserved Storage?%Reset%
+echo %Yellow%This can free up to 7GB of space used for Windows updates.%Reset%
 choice /C 12 /N /M "[1] Yes or [2] No : "
 set /a "storage_choice=%errorlevel%"
 if !storage_choice!==1 (
@@ -30,6 +32,7 @@ if !storage_choice!==1 (
 
 echo.
 echo %Grey%Would you like to clean up WinSxS?%Reset%
+echo %Yellow%This removes old component versions and reduces the size of the WinSxS folder.%Reset%
 choice /C 12 /N /M "[1] Yes or [2] No : "
 set /a "winsxs_choice=%errorlevel%"
 if !winsxs_choice!==1 (
@@ -39,6 +42,7 @@ if !winsxs_choice!==1 (
 
 echo.
 echo %Grey%Would you like to remove Virtual Memory (pagefile.sys)?%Reset%
+echo %Yellow%Warning: This may affect system performance. Only use if you have sufficient RAM.%Reset%
 choice /C 12 /N /M "[1] Yes or [2] No : "
 set /a "vm_choice=%errorlevel%"
 if !vm_choice!==1 (
@@ -67,4 +71,8 @@ if !pcmanager_choice!==1 (
     )
 )
 
+echo.
+echo %Green%All selected cleaning operations completed.%Reset%
+echo %Grey%Press any key to exit...%Reset%
+pause >nul
 exit

@@ -1,29 +1,48 @@
-# Simplify11
+<h1>Simplify11 <img src="https://raw.githubusercontent.com/emylfy/simplify11/refs/heads/main/src/media/icon.ico" width="24px" alt="WinUtil"> </h1>
 
 <p align="center">
 	<strong>A powerful toolkit that quickly configures your Windows 11</strong>
 </p>
 
 <p align="center">
-	<img src="src/media/logo.png" alt="Simplify11 Logo" width="90%">
+	<img src="src/media/logo.png" alt="Simplify11 Logo" width="70%">
 </p>
 
 <p align="center">
-	<a href="#-about">About</a> •
 	<a href="#-features">Features</a> •
 	<a href="#-installation">Installation</a> •
+	<a href="#-integrations">Installation</a> •
 	<a href="#-credits">Credits</a>
 </p>
 
-</div>
-
 ![](https://github.com/emylfy/simplify11/blob/main/src/media/separator.png)
+
+## ✨ Features
+
+### 🛠️ System Configuration
+- Windows installation [answer file](https://github.com/emylfy/simplify11/blob/main/src/docs/autounattend_guide.md) creation
+- System performance tweaks for SSD, GPU, CPU optimization
+- Driver installation support (NVIDIA, AMD, device manufacturers)
+- Customization options including [Windots integration](https://github.com/emylfy/windots)
+
+### ⚡ Optimization
+- Storage optimization for SSD
+- Enhanced input responsiveness
+- System performance improvements
+- GPU and DirectX enhancements
+- Disk space management and cleanup
+
+### 📦 Software Installation
+- UniGetUI with Windows Package Manager integration
+- Essential software categories:
+  - Development, Browsers, System Tools
+  - Productivity, Gaming, Microsoft Apps
 
 ## ⚡ Installation
 
 ### Quick Start
 
-Launch Simplify11 with a single command in PowerShell:
+Launch Simplify11 from PowerShell:
 
 ```powershell
 iwr "https://dub.sh/simplify11" | iex
@@ -37,52 +56,6 @@ Creates a shortcut to Start Menu that launch latest version:
 iwr "https://dub.sh/s11install" | iex
 ```
 
-## ✨ Features
-
-<details>
-<summary>🛠️ Performance Tweaks</summary>
-
-- **Storage Optimization**
-
-  - Smart detection for SSD/HDD specific tweaks
-  - TRIM optimization for SSDs
-  - Intelligent prefetch management
-
-- **Input Responsiveness**
-
-  - Enhanced mouse precision
-  - Optimized keyboard response
-  - Reduced input latency
-
-- **System Performance** - GPU acceleration optimization - Network latency reduction - Advanced CPU power management - Memory usage optimization - DirectX performance enhancements
-</details>
-
-<details>
-<summary>💾 Space Management</summary>
-
-- **Storage Control** - Reserved storage management - WinSxS component cleanup - Virtual memory optimization
-</details>
-
-<details>
-<summary>📦 Software Installation</summary>
-
-**Package System**
-
-- Windows Package Manager integration
-- Multiple manager support
-- Essential software collection:
-
-**Categories:**
-
-- Development
-- Web Browsers
-- System Tools
-- Productivity Suite
-- Gaming Essentials
-- Microsoft Core Apps
-
-</details>
-
 ## 🔄 Integrations
 
 <table>
@@ -93,7 +66,7 @@ iwr "https://dub.sh/s11install" | iex
 <sub>Chris Titus Windows Utility</sub>
 </td>
 <td align="center">
-<img src="https://raw.githubusercontent.com/flick9000/winscript/refs/heads/main/icons/logo.svg" width="60px" alt="Winscript"><br/>
+<img src="https://raw.githubusercontent.com/flick9000/winscript/refs/heads/main/assets/icons/logo.svg" width="60px" alt="Winscript"><br/>
 <b><a href="https://github.com/flick9000/winscript">Winscript</a></b><br/>
 <sub>Tool to build your script</sub>
 </td>
@@ -110,15 +83,11 @@ iwr "https://dub.sh/s11install" | iex
 </tr>
 </table>
 
-## 🪄 Also check this out!
-
-- [Simplify11 Unattended](https://github.com/emylfy/simplify11/blob/main/src/docs/autounattend_guide.md) - Guide for Automated Windows installation with customizable configurations
-
 ## 🌟 Credits
 
 <div align="center">
 
-### Built with inspiration from most unique projects
+### Built with inspiration from these unique projects
 
 </div>
 
