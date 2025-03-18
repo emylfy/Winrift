@@ -40,9 +40,9 @@ try {
 "@ -ForegroundColor Cyan
 
     if (Get-Command wt -ErrorAction SilentlyContinue) {
-        wt cmd /k "$env:TEMP\simplify11\simplify11-main\simplify11.bat"
+        wt cmd /k "$env:TEMP\simplify11\simplify11-main\simplify11.ps1"
     } else {
-        cmd.exe /k "$env:TEMP\simplify11\simplify11-main\simplify11.bat"
+        cmd.exe /k "$env:TEMP\simplify11\simplify11-main\simplify11.ps1"
     }
 
 
