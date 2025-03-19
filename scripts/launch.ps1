@@ -40,12 +40,10 @@ try {
 "@ -ForegroundColor Cyan
 
     if (Get-Command wt -ErrorAction SilentlyContinue) {
-        wt cmd /k "$env:TEMP\simplify11\simplify11-main\simplify11.ps1"
+        wt powershell.exe -NoExit -File "$env:TEMP\simplify11\simplify11-main\simplify11.ps1"
     } else {
-        cmd.exe /k "$env:TEMP\simplify11\simplify11-main\simplify11.ps1"
+        Start-Process powershell.exe -ArgumentList "-NoExit", "-File", "$env:TEMP\simplify11\simplify11-main\simplify11.ps1"
     }
-
-
 }
 catch {
     Write-Progress -Activity "Installing Simplify11" -Status "Error" -PercentComplete 100
