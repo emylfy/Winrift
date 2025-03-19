@@ -7,7 +7,7 @@ $shortcut.Arguments = '-NoProfile -ExecutionPolicy Bypass "iwr \"https://dub.sh/
 $shortcut.Description = "Launch Simplify11"
 $shortcut.WorkingDirectory = $startMenuPath
 
-Invoke-WebRequest -Uri "https://raw.githubusercontent.com/emylfy/simplify11/refs/heads/main/src/media/icon.ico" -OutFile "$env:APPDATA\icon.ico"
+Invoke-WebRequest -Uri "https://raw.githubusercontent.com/emylfy/simplify11/refs/heads/main/media/icon.ico" -OutFile "$env:APPDATA\icon.ico"
 
 $icoPath = "$env:APPDATA\icon.ico"
 $shortcut.IconLocation = $icoPath

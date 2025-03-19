@@ -15,12 +15,12 @@
 	<a href="#-credits">Credits</a>
 </p>
 
-![](https://github.com/emylfy/simplify11/blob/main/src/media/separator.png)
+![](https://github.com/emylfy/simplify11/blob/main/media/separator.png)
 
 ## ✨ Features
 
 ### 🛠️ System Configuration
-- Windows installation [answer file](https://github.com/emylfy/simplify11/blob/main/src/docs/autounattend_guide.md) creation
+- Windows installation [answer file](https://github.com/emylfy/simplify11/blob/main/docs/autounattend_guide.md) creation
 - System performance tweaks for SSD, GPU, CPU optimization
 - Driver installation support (NVIDIA, AMD, device manufacturers)
 - Customization options including [Windots integration](https://github.com/emylfy/windots)
@@ -102,7 +102,7 @@ iwr "https://dub.sh/s11install" | iex
 
 </div>
 
-![](https://github.com/emylfy/simplify11/blob/main/src/media/separator.png)
+![](https://github.com/emylfy/simplify11/blob/main/media/separator.png)
 
 <div align="center">
 

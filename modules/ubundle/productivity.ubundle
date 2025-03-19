@@ -25,6 +25,29 @@
       }
     },
     {
+      "Id": "ByteDance.CapCut",
+      "Name": "CapCut",
+      "Version": "5.8.0.2216",
+      "Source": "winget",
+      "ManagerName": "Winget",
+      "InstallationOptions": {
+        "SkipHashCheck": false,
+        "InteractiveInstallation": false,
+        "RunAsAdministrator": false,
+        "Architecture": "",
+        "InstallationScope": "",
+        "CustomParameters": [],
+        "PreRelease": false,
+        "CustomInstallLocation": "",
+        "Version": "",
+        "SkipMinorUpdates": false
+      },
+      "Updates": {
+        "UpdatesIgnored": false,
+        "IgnoredVersion": ""
+      }
+    },
+    {
       "Id": "Doist.Todoist",
       "Name": "Todoist",
       "Version": "9.11.0",

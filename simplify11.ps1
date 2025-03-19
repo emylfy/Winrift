@@ -42,7 +42,7 @@ function Show-MainMenu {
     $choice = Read-Host ">"
     
     switch ($choice) {
-        "0" { Start-Process "https://github.com/emylfy/simplify11/blob/main/src/docs/autounattend_guide.md"; Show-MainMenu }
+        "0" { Start-Process "https://github.com/emylfy/simplify11/blob/main/docs/autounattend_guide.md"; Show-MainMenu }
         "1" { Start-Process powershell -ArgumentList "-NoExit -File `"$PSScriptRoot\modules\launch\WinUtil.ps1`""; Show-MainMenu }
         "2" { Start-Process powershell -ArgumentList "-NoExit -File `"$PSScriptRoot\modules\launch\WinScript.ps1`""; Show-MainMenu }
         "3" { Start-Process powershell -ArgumentList "-NoExit -File `"$PSScriptRoot\modules\launch\PrivacySexy.ps1`""; Show-MainMenu }

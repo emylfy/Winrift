@@ -37,13 +37,13 @@ This XML configuration file automates the Windows installation process, ensuring
 
 ## 📥 Installation Guide
 
-> **Download XML File:** [autounattend.xml](https://github.com/emylfy/simplify11/blob/main/src/docs/autounattend.xml)
+> **Download XML File:** [autounattend.xml](https://github.com/emylfy/simplify11/blob/main/docs/autounattend.xml)
 
 For manual creation:
 
 1. Open AnyBurn and select "Edit Image File"
 2. Choose your Windows ISO file
-3. Paste the [autounattend.xml](https://github.com/emylfy/simplify11/blob/main/src/docs/autounattend.xml) file into ISO root
+3. Paste the [autounattend.xml](https://github.com/emylfy/simplify11/blob/main/docs/autounattend.xml) file into ISO root
 4. Complete the burning process to create your bootable media
 
 For automated creation:
@@ -64,7 +64,7 @@ Use [tiny11builder-24H2](https://github.com/chrisGrando/tiny11builder-24H2) - Po
 - Temp files: `C:\Windows\Temp\`
 - Logs: Various `.log` files for debugging
 
-![](https://github.com/emylfy/simplify11/blob/main/src/media/separator.png)
+![](https://github.com/emylfy/simplify11/blob/main/media/separator.png)
 
 <div align="center">
   <p>Made with ❤️ for the Windows community</p>
