@@ -1,11 +1,11 @@
-<h1>Simplify11 <img src="https://raw.githubusercontent.com/emylfy/simplify11/refs/heads/main/src/media/icon.ico" width="24px" alt="WinUtil"> </h1>
+<h1>Simplify11 <img src="https://raw.githubusercontent.com/emylfy/simplify11/refs/heads/main/media/icon.ico" width="24px" alt="WinUtil"> </h1>
 
 <p align="center">
 	<strong>A powerful toolkit that quickly configures your Windows 11</strong>
 </p>
 
 <p align="center">
-	<img src="src/media/logo.png" alt="Simplify11 Logo" width="70%">
+	<img src="media/logo.png" alt="Simplify11 Logo" width="70%">
 </p>
 
 <p align="center">
@@ -34,7 +34,7 @@
 
 ### 📦 Software Installation
 - UniGetUI with Windows Package Manager integration
-- Essential software categories:
+- Software categories:
   - Development, Browsers, System Tools
   - Productivity, Gaming, Microsoft Apps
 
@@ -63,12 +63,12 @@ iwr "https://dub.sh/s11install" | iex
 <td align="center">
 <img src="https://github.com/ChrisTitusTech/winutil/blob/main/docs/assets/favicon.png?raw=true" width="60px" alt="WinUtil"><br/>
 <b><a href="https://github.com/ChrisTitusTech/winutil">WinUtil</a></b><br/>
-<sub>Chris Titus Windows Utility</sub>
+<sub>Windows Utility</sub>
 </td>
 <td align="center">
 <img src="https://raw.githubusercontent.com/flick9000/winscript/refs/heads/main/assets/icons/logo.svg" width="60px" alt="Winscript"><br/>
 <b><a href="https://github.com/flick9000/winscript">Winscript</a></b><br/>
-<sub>Tool to build your script</sub>
+<sub>Script builder</sub>
 </td>
 <td align="center">
 <img src="https://raw.githubusercontent.com/undergroundwires/privacy.sexy/refs/heads/master/img/logo.svg" width="60px" alt="Privacy.sexy"><br/>
@@ -95,10 +95,10 @@ iwr "https://dub.sh/s11install" | iex
 
 |                                                                          Project                                                                          | Description                                   |
 | :-------------------------------------------------------------------------------------------------------------------------------------------------------: | :-------------------------------------------- |
-|                                                [Win11Tweaks](https://github.com/SysadminWorld/Win11Tweaks)                                                | My first project                              |
+|                                                [Win11Tweaks](https://github.com/SysadminWorld/Win11Tweaks)                                                | My first batch script                              |
 |                                     [Latency Optimization](https://github.com/denis-g/windows10-latency-optimization)                                     | Informative guide to optimize Windows         |
 |                                            [Verified Tweaks](https://github.com/AlchemyTweaks/Verified-Tweaks)                                            | Modifications that have been tested in videos |
-| [QuickBoost](https://github.com/SanGraphic/QuickBoost) • [CoutX](https://github.com/UnLovedCookie/CoutX) • [SyncOS](https://github.com/Snowfliger/SyncOS) | Most accurate batch optimization projects     |
+| [QuickBoost](https://github.com/SanGraphic/QuickBoost) • [CoutX](https://github.com/UnLovedCookie/CoutX) • [SyncOS](https://github.com/Snowfliger/SyncOS) | Accurate batch optimization projects     |
 
 </div>
 
