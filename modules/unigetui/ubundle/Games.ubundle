@@ -2,6 +2,29 @@
   "export_version": 2.1,
   "packages": [
     {
+      "Id": "Blizzard.BattleNet",
+      "Name": "Battle.net Setup",
+      "Version": "1.18.10.3141",
+      "Source": "winget",
+      "ManagerName": "Winget",
+      "InstallationOptions": {
+        "SkipHashCheck": false,
+        "InteractiveInstallation": false,
+        "RunAsAdministrator": false,
+        "Architecture": "",
+        "InstallationScope": "",
+        "CustomParameters": [],
+        "PreRelease": false,
+        "CustomInstallLocation": "",
+        "Version": "",
+        "SkipMinorUpdates": false
+      },
+      "Updates": {
+        "UpdatesIgnored": false,
+        "IgnoredVersion": ""
+      }
+    },
+    {
       "Id": "EpicGames.EpicGamesLauncher",
       "Name": "Epic Games Launcher",
       "Version": "1.3.128.0",
@@ -51,6 +74,29 @@
       "Id": "Octol1ttle.ElyPrismLauncher",
       "Name": "ElyPrismLauncher",
       "Version": "8.4",
+      "Source": "winget",
+      "ManagerName": "Winget",
+      "InstallationOptions": {
+        "SkipHashCheck": false,
+        "InteractiveInstallation": false,
+        "RunAsAdministrator": false,
+        "Architecture": "",
+        "InstallationScope": "",
+        "CustomParameters": [],
+        "PreRelease": false,
+        "CustomInstallLocation": "",
+        "Version": "",
+        "SkipMinorUpdates": false
+      },
+      "Updates": {
+        "UpdatesIgnored": false,
+        "IgnoredVersion": ""
+      }
+    },
+    {
+      "Id": "Playnite.Playnite",
+      "Name": "Playnite",
+      "Version": "10.35",
       "Source": "winget",
       "ManagerName": "Winget",
       "InstallationOptions": {

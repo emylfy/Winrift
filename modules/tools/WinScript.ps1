@@ -1,8 +1,4 @@
-$Purple = [char]0x1b + "[38;5;141m"
-$Grey = [char]0x1b + "[38;5;250m"
-$Reset = [char]0x1b + "[0m"
-$Red = [char]0x1b + "[38;5;203m"
-$Green = [char]0x1b + "[38;5;120m"
+. "$PSScriptRoot\..\..\scripts\Common.ps1"
 
 function Show-WinScriptMenu {
     Clear-Host
@@ -11,7 +7,7 @@ function Show-WinScriptMenu {
     Write-Host "$Purple '$Grey  Winscript - Make Windows Yours   $Purple'$Reset"
     Write-Host "$Purple +-----------------------------------+$Reset"
     Write-Host "$Purple '$Grey [1] Open online version           $Purple'$Reset"
-    Write-Host "$Purple '$Grey [2] Install and Launch via Winget $Purple'$Reset"
+    Write-Host "$Purple '$Grey [2] Run portable version          $Purple'$Reset"
     Write-Host "$Purple '$Grey [3] Back to menu                  $Purple'$Reset"
     Write-Host "$Purple +-----------------------------------+$Reset"
     
@@ -19,8 +15,8 @@ function Show-WinScriptMenu {
     
     switch ($choice) {
         "1" { Open-OnlineVersion }
-        "2" { Install-WinScript }
-        "3" { return }
+        "2" { Run-Portable }
+        "3" { & "$PSScriptRoot\..\..\simplify11.ps1" }
         default { Show-WinScriptMenu }
     }
 }
@@ -30,12 +26,11 @@ function Open-OnlineVersion {
     Show-WinScriptMenu
 }
 
-function Install-WinScript {
-    Write-Host "$Green Installing WinScript... This may take a moment. $Reset"
-    Start-Process "winget" -ArgumentList "install --id=flick9000.WinScript" -Wait
-    Start-Process "$env:ProgramFiles\WinScript\WinScript.exe"
-    Write-Host "$Green Installation complete. Launching WinScript... $Reset"
-    exit
+function Run-Portable {
+    Write-Host "$Green Running portable WinScript... $Reset"
+    Invoke-Expression (Invoke-RestMethod -Uri "https://winscript.cc/irm")
+    Write-Host "$Green WinScript completed. $Reset"
+    Show-WinScriptMenu
 }
 
 Show-WinScriptMenu

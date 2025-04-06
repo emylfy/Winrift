@@ -11,7 +11,7 @@
 <p align="center">
 	<a href="#-features">Features</a> •
 	<a href="#-installation">Installation</a> •
-	<a href="#-integrations">Installation</a> •
+	<a href="#-integrations">Integrations</a> •
 	<a href="#-credits">Credits</a>
 </p>
 
@@ -20,12 +20,14 @@
 ## ✨ Features
 
 ### 🛠️ System Configuration
+
 - Windows installation [answer file](https://github.com/emylfy/simplify11/blob/main/docs/autounattend_guide.md) creation
 - System performance tweaks for SSD, GPU, CPU optimization
 - Driver installation support (NVIDIA, AMD, device manufacturers)
 - Customization options including [Windots integration](https://github.com/emylfy/windots)
 
 ### ⚡ Optimization
+
 - Storage optimization for SSD
 - Enhanced input responsiveness
 - System performance improvements
@@ -33,6 +35,7 @@
 - Disk space management and cleanup
 
 ### 📦 Software Installation
+
 - UniGetUI with Windows Package Manager integration
 - Software categories:
   - Development, Browsers, System Tools
@@ -66,7 +69,7 @@ iwr "https://dub.sh/s11install" | iex
 <sub>Windows Utility</sub>
 </td>
 <td align="center">
-<img src="https://raw.githubusercontent.com/flick9000/winscript/refs/heads/main/assets/icons/logo.svg" width="60px" alt="Winscript"><br/>
+<img src="https://raw.githubusercontent.com/flick9000/winscript/refs/heads/main/app/public/logo.svg" width="60px" alt="Winscript"><br/>
 <b><a href="https://github.com/flick9000/winscript">Winscript</a></b><br/>
 <sub>Script builder</sub>
 </td>
@@ -95,10 +98,10 @@ iwr "https://dub.sh/s11install" | iex
 
 |                                                                          Project                                                                          | Description                                   |
 | :-------------------------------------------------------------------------------------------------------------------------------------------------------: | :-------------------------------------------- |
-|                                                [Win11Tweaks](https://github.com/SysadminWorld/Win11Tweaks)                                                | My first batch script                              |
+|                                                [Win11Tweaks](https://github.com/SysadminWorld/Win11Tweaks)                                                | My first batch script                         |
 |                                     [Latency Optimization](https://github.com/denis-g/windows10-latency-optimization)                                     | Informative guide to optimize Windows         |
 |                                            [Verified Tweaks](https://github.com/AlchemyTweaks/Verified-Tweaks)                                            | Modifications that have been tested in videos |
-| [QuickBoost](https://github.com/SanGraphic/QuickBoost) • [CoutX](https://github.com/UnLovedCookie/CoutX) • [SyncOS](https://github.com/Snowfliger/SyncOS) | Accurate batch optimization projects     |
+| [QuickBoost](https://github.com/SanGraphic/QuickBoost) • [CoutX](https://github.com/UnLovedCookie/CoutX) • [SyncOS](https://github.com/Snowfliger/SyncOS) | Accurate batch optimization projects          |
 
 </div>
 

@@ -1,24 +1,4 @@
-# Check if running as administrator
-if (-not ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
-    Write-Host "Not running as admin. Elevating..."
-    
-    # Check if Windows Terminal is available
-    $wtExists = Get-Command wt.exe -ErrorAction SilentlyContinue
-    
-    if ($wtExists) {
-        Start-Process -FilePath 'wt.exe' -ArgumentList "powershell -NoExit -File `"$PSCommandPath`"" -Verb RunAs
-    } else {
-        Start-Process -FilePath 'powershell.exe' -ArgumentList "-NoExit -File `"$PSCommandPath`"" -Verb RunAs
-    }
-    exit
-}
-
-# Define colors
-$Purple = "$([char]0x1b)[38;5;141m"
-$Grey = "$([char]0x1b)[38;5;250m"
-$Reset = "$([char]0x1b)[0m"
-$Red = "$([char]0x1b)[38;5;203m"
-$Green = "$([char]0x1b)[38;5;120m"
+. "$PSScriptRoot\scripts\Common.ps1"
 
 function Show-MainMenu {
     $Host.UI.RawUI.WindowTitle = "Simplify11 v25.02"
@@ -43,16 +23,15 @@ function Show-MainMenu {
     
     switch ($choice) {
         "0" { Start-Process "https://github.com/emylfy/simplify11/blob/main/docs/autounattend_guide.md"; Show-MainMenu }
-        "1" { Start-Process powershell -ArgumentList "-NoExit -File `"$PSScriptRoot\modules\launch\WinUtil.ps1`""; Show-MainMenu }
-        "2" { Start-Process powershell -ArgumentList "-NoExit -File `"$PSScriptRoot\modules\launch\WinScript.ps1`""; Show-MainMenu }
-        "3" { Start-Process powershell -ArgumentList "-NoExit -File `"$PSScriptRoot\modules\launch\PrivacySexy.ps1`""; Show-MainMenu }
-        "4" { Start-Process powershell -ArgumentList "-NoExit -File `"$PSScriptRoot\modules\launch\UniGetUI.ps1`""; Show-MainMenu }
-        "5" { Start-Process cmd -ArgumentList "/c `"$PSScriptRoot\modules\menu\Tweaks.bat`""; Show-MainMenu }
+        "1" { Start-Process powershell -ArgumentList "-NoExit -File `"$PSScriptRoot\modules\tools\WinUtil.ps1`""; Show-MainMenu }
+        "2" { Start-Process powershell -ArgumentList "-NoExit -File `"$PSScriptRoot\modules\tools\WinScript.ps1`""; Show-MainMenu }
+        "3" { Start-Process powershell -ArgumentList "-NoExit -File `"$PSScriptRoot\modules\privacy\PrivacySexy.ps1`""; Show-MainMenu }
+        "4" { Start-Process powershell -ArgumentList "-NoExit -File `"$PSScriptRoot\modules\unigetui\UniGetUI.ps1`""; Show-MainMenu }
+        "5" { Start-Process powershell -ArgumentList "-NoExit -File `"$PSScriptRoot\modules\system\Universal.ps1`""; Show-MainMenu }
         "6" { Start-Process powershell -ArgumentList "-NoExit -File `"$PSScriptRoot\modules\menu\Drivers.ps1`""; Show-MainMenu }
-        "7" { Start-Process cmd -ArgumentList "/c `"$PSScriptRoot\modules\menu\Customization.bat`""; Show-MainMenu }
+        "7" { Start-Process powershell -ArgumentList "-NoExit -File `"$PSScriptRoot\modules\customization\Customization.ps1`""; Show-MainMenu }
         default { Show-MainMenu }
     }
 }
 
-# Start the main menu
 Show-MainMenu

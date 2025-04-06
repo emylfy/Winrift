@@ -1,14 +1,4 @@
-if (-not ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
-    Write-Host "Not running as admin. Elevating..."
-    $command = "-File `"$($MyInvocation.MyCommand.Path)`""
-    
-    if (Get-Command wt.exe -ErrorAction SilentlyContinue) {
-        Start-Process wt.exe -ArgumentList "powershell -NoExit $command" -Verb RunAs
-    } else {
-        Start-Process powershell.exe -ArgumentList "-NoExit $command" -Verb RunAs
-    }
-    exit
-}
+. "$PSScriptRoot\..\..\scripts\common.ps1"
 
 $Purple = "$([char]0x1b)[38;5;141m"
 $Grey = "$([char]0x1b)[38;5;250m"
@@ -18,8 +8,7 @@ $Green = "$([char]0x1b)[38;5;120m"
 
 function Show-PrivacySexyMenu {
     Clear-Host
-    Write-Host "$Purple +--------------------------------------------------------+$Reset"
-    Write-Host "$Purple '$Grey Privacy.Sexy Settings                                  $Purple'$Reset"
+
     Write-Host "$Purple +--------------------------------------------------------+$Reset"
     Write-Host "$Purple '$Grey [1] Build your own batch from privacy.sexy website     $Purple'$Reset"
     Write-Host "$Purple '$Grey [2] Download and Run Standard preset (for most users)  $Purple'$Reset"
