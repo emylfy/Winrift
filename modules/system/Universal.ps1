@@ -146,8 +146,7 @@ function Apply-UniversalTweaks {
     # Windows uses IRQL to determine interrupt priority. If an interrupt can be serviced, it starts execution.
     # Lower priority tasks are queued. This ensures critical services are prioritized for interrupts.
     Set-RegistryValue -Path "HKLM:\SYSTEM\CurrentControlSet\services\DXGKrnl\Parameters" -Name "ThreadPriority" -Type "DWord" -Value "15" -Message "Set high priority for DirectX kernel services"
-    Set-RegistryValue -Path "HKLM:\SYSTEM\CurrentControlSet\services\USBHUB3\Parameters" -Name "ThreadPriority" -Type "DWord" -Value "15" -Message "Set high priority for USB 3.0 hub services"
-    Set-RegistryValue -Path "HKLM:\SYSTEM\CurrentControlSet\services\USBXHCI\Parameters" -Name "ThreadPriority" -Type "DWord" -Value "15" -Message "Set high priority for USB XHCI services"
+
     Set-RegistryValue -Path "HKLM:\SYSTEM\CurrentControlSet\Services\mouclass\Parameters" -Name "ThreadPriority" -Type "DWord" -Value "31" -Message "Set maximum priority for mouse input"
     Set-RegistryValue -Path "HKLM:\SYSTEM\CurrentControlSet\Services\kbdclass\Parameters" -Name "ThreadPriority" -Type "DWord" -Value "31" -Message "Set maximum priority for keyboard input"
     

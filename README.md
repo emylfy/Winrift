@@ -81,7 +81,7 @@ iwr "https://dub.sh/s11install" | iex
 <td align="center">
 <img src="https://raw.githubusercontent.com/marticliment/UniGetUI/refs/heads/main/media/icon.svg" width="60px" alt="UniGetUI"><br/>
 <b><a href="https://github.com/marticliment/UniGetUI">UniGetUI</a></b><br/>
-<sub>Graphical Package manager</sub>
+<sub>Package manager</sub>
 </td>
 </tr>
 </table>

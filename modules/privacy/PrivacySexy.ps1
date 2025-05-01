@@ -11,7 +11,7 @@ function Show-PrivacySexyMenu {
 
     Write-Host "$Purple +--------------------------------------------------------+$Reset"
     Write-Host "$Purple '$Grey [1] Build your own batch from privacy.sexy website     $Purple'$Reset"
-    Write-Host "$Purple '$Grey [2] Download and Run Standard preset (for most users)  $Purple'$Reset"
+    Write-Host "$Purple '$Grey [2] Execute latest standard preset (for most users)    $Purple'$Reset"
     Write-Host "$Purple '$Grey [3] Back to Main Menu                                  $Purple'$Reset"
     Write-Host "$Purple +--------------------------------------------------------+$Reset"
     
@@ -25,8 +25,8 @@ function Show-PrivacySexyMenu {
         "2" {
             Write-Host "$Grey`Downloading and executing privacy script...$Reset"
             try {
-                Invoke-RestMethod 'https://raw.githubusercontent.com/emylfy/simplify11/refs/heads/main/modules/tweaks/Privacy.bat' -OutFile "$env:TEMP\Privacy.bat"
-                Start-Process cmd -ArgumentList "/c `"$env:TEMP\Privacy.bat`"" -Wait
+                Invoke-RestMethod 'https://privacylearn.com/downloads/windows/standard.bat' -OutFile "$env:TEMP\standard.bat"
+                Start-Process cmd -ArgumentList "/c `"$env:TEMP\standard.bat`"" -Wait
                 Write-Host "$Green`Privacy script executed successfully.$Reset"
             } catch {
                 Write-Host "$Red`Failed to execute privacy script.$Reset"

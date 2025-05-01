@@ -96,7 +96,7 @@ function Show-AppCategoryMenu {
         $PWD.Path
     }
     
-    $bundlePath = Join-Path -Path (Split-Path -Parent $scriptPath) -ChildPath "ubundle\$bundleName.ubundle"
+    $bundlePath = Join-Path -Path (Split-Path -Parent $scriptPath) -ChildPath "unigetui\ubundle\$bundleName.ubundle"
     
     Write-Host "Opening bundle: $bundlePath"
     
