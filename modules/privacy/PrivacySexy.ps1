@@ -1,11 +1,5 @@
 . "$PSScriptRoot\..\..\scripts\common.ps1"
 
-$Purple = "$([char]0x1b)[38;5;141m"
-$Grey = "$([char]0x1b)[38;5;250m"
-$Reset = "$([char]0x1b)[0m"
-$Red = "$([char]0x1b)[38;5;203m"
-$Green = "$([char]0x1b)[38;5;120m"
-
 function Show-PrivacySexyMenu {
     Clear-Host
 

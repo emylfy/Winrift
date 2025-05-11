@@ -1,9 +1,9 @@
 . "$PSScriptRoot\scripts\Common.ps1"
 
 function Show-MainMenu {
-    $Host.UI.RawUI.WindowTitle = "Simplify11 v25.05"
+    $Host.UI.RawUI.WindowTitle = "Simplify11 v25.05.1"
     Clear-Host
-    
+    Write-Host
     Write-Host "$Purple +--------------------------------------------------------+$Reset"
     Write-Host "$Purple '$Purple   Tired of System Setup After Reinstall? Simplify It!  $Purple'$Reset"
     Write-Host "$Purple +--------------------------------------------------------+$Reset"
@@ -11,13 +11,13 @@ function Show-MainMenu {
     Write-Host "$Purple +--------------------------------------------------------+$Reset"
     Write-Host "$Purple '$Grey [1] WinUtil - Install Programs, Tweaks, Fixes, Updates $Purple'$Reset"
     Write-Host "$Purple '$Grey [2] WinScript - Build your script from scratch         $Purple'$Reset"
-    Write-Host "$Purple '$Grey [3] GTweak - System Tweaking Tool, Debloater           $Purple'$Reset"
+    Write-Host "$Purple '$Grey [3] GTweak - Tweaking tool and debloater               $Purple'$Reset"
     Write-Host "$Purple '$Grey [4] Privacy.sexy - Enforce privacy and security        $Purple'$Reset"
     Write-Host "$Purple '$Grey [5] UniGetUI - Discover, Install, Update Packages      $Purple'$Reset"
     Write-Host "$Purple +--------------------------------------------------------+$Reset"
     Write-Host "$Purple '$Grey [6] System Tweaks - SSD, GPU, CPU, Storage and etc     $Purple'$Reset"
     Write-Host "$Purple '$Grey [7] Install Drivers - Nvidia, AMD, Device Manufacturer $Purple'$Reset"
-    Write-Host "$Purple '$Grey [8] Customization stuff, Windots                       $Purple'$Reset"
+    Write-Host "$Purple '$Grey [8] Windots - Simpler way to rice & customize Windows  $Purple'$Reset"
     Write-Host "$Purple +--------------------------------------------------------+$Reset"
     
     $choice = Read-Host ">"
@@ -31,7 +31,7 @@ function Show-MainMenu {
         "5" { Start-Process powershell -ArgumentList "-NoExit -File `"$PSScriptRoot\modules\unigetui\UniGetUI.ps1`""; Show-MainMenu }
         "6" { Start-Process powershell -ArgumentList "-NoExit -File `"$PSScriptRoot\modules\system\Universal.ps1`""; Show-MainMenu }
         "7" { Start-Process powershell -ArgumentList "-NoExit -File `"$PSScriptRoot\modules\menu\Drivers.ps1`""; Show-MainMenu }
-        "8" { Start-Process powershell -ArgumentList "-NoExit -File `"$PSScriptRoot\modules\customization\Customization.ps1`""; Show-MainMenu }
+        "8" { Start-Process powershell -ArgumentList "-NoExit -File `"$PSScriptRoot\modules\windots\windots.ps1`""; Show-MainMenu }
         default { Show-MainMenu }
     }
 }

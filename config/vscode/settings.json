@@ -1,0 +1,206 @@
+{
+	// Core Editor Settings
+	"editor.accessibilitySupport": "off",
+	"editor.bracketPairColorization.enabled": false,
+	"editor.codeActionsOnSave": {
+		"source.organizeImports": "explicit"
+	},
+	"editor.cursorBlinking": "expand",
+	"editor.cursorStyle": "line-thin",
+	"editor.cursorSmoothCaretAnimation": "explicit",
+	"editor.defaultFormatter": "esbenp.prettier-vscode",
+	"editor.detectIndentation": true,
+	"editor.folding": false,
+	"editor.fontFamily": "Fira Code",
+	"editor.fontLigatures": true,
+	"editor.fontSize": 16,
+	"editor.fontWeight": "400",
+	"editor.formatOnSave": true,
+	"editor.glyphMargin": false,
+	"editor.gotoLocation.multipleDefinitions": "goto",
+	"editor.hideCursorInOverviewRuler": true,
+	"editor.inlayHints.fontFamily": "Fira Code",
+	"editor.inlineSuggest.enabled": true,
+	"editor.insertSpaces": false,
+	"editor.linkedEditing": true,
+	"editor.minimap.enabled": false,
+	"editor.multiCursorModifier": "ctrlCmd",
+	"editor.scrollBeyondLastLine": true,
+	"editor.scrollbar.horizontal": "hidden",
+	"editor.smoothScrolling": true,
+	"editor.stickyScroll.enabled": false,
+	"editor.stickyScroll.scrollWithEditor": false,
+	"editor.suggestSelection": "first",
+	"editor.tabSize": 2,
+	"editor.tokenColorCustomizations": {
+		"textMateRules": [
+			{
+				"scope": [
+					"comment",
+					"entity.name.type.class",
+					"keyword",
+					"constant",
+					"storage.modifier",
+					"storage.type.class.js"
+				],
+				"settings": {
+					"fontStyle": "italic"
+				}
+			},
+			{
+				"scope": [
+					"invalid",
+					"keyword.operator",
+					"constant.numeric.css",
+					"keyword.other.unit.px.css",
+					"constant.numeric.decimal.js",
+					"constant.numeric.json"
+				],
+				"settings": {
+					"fontStyle": ""
+				}
+			}
+		]
+	},
+	"editor.unicodeHighlight.ambiguousCharacters": false,
+	"editor.unicodeHighlight.allowedCharacters": {
+		"а": true,
+		"с": true,
+		"Т": true,
+		"б": true,
+		"е": true,
+		" ": true
+	},
+	"editor.wrappingIndent": "same",
+	"editor.wordWrapColumn": 80,
+
+	// Window Management
+	"window.commandCenter": false,
+	"window.confirmBeforeClose": "keyboardOnly",
+	"window.density.editorTabHeight": "compact",
+	"window.openFilesInNewWindow": "off",
+	"window.title": " ",
+	"window.titleBarStyle": "custom",
+	"window.zoomLevel": 1,
+	"workbench.colorTheme": "Dark Knight",
+	"workbench.editor.customLabels.patterns": {
+		"**/app/**/[[]*[]]/[[]*[]]/page.tsx": "${dirname(2)}/${dirname(1)}/${dirname}/page.tsx",
+		"**/app/**/[[]*[]]/page.tsx": "${dirname(1)}/${dirname}/page.tsx",
+		"**/app/**/page.tsx": "${dirname}/page.tsx",
+		"**/app/**/[[]*[]]/[[]*[]]/layout.tsx": "${dirname(2)}/${dirname(1)}/${dirname}/layout.tsx",
+		"**/app/**/[[]*[]]/layout.tsx": "${dirname(1)}/${dirname}/layout.tsx",
+		"**/app/**/layout.tsx": "${dirname}/layout.tsx"
+	},
+	"workbench.editor.editorActionsLocation": "hidden",
+	"workbench.editor.empty.hint": "hidden",
+	"workbench.editor.tabSizing": "shrink",
+	"workbench.iconTheme": "catppuccin noctis icons",
+	"workbench.layoutControl.enabled": false,
+	"workbench.productIconTheme": "macos-modern",
+	"workbench.startupEditor": "newUntitledFile",
+	"workbench.statusBar.visible": false,
+	"workbench.tree.enableStickyScroll": false,
+
+	// Terminal
+	"terminal.integrated.cursorStyle": "line",
+	"terminal.integrated.fontFamily": "PragmataPro Liga",
+	"terminal.integrated.fontSize": 13,
+	"terminal.integrated.tabs.enabled": false,
+
+	// Debugging
+	"debug.focusWindowOnBreak": false,
+	"debug.showBreakpointsInOverviewRuler": false,
+	"debug.showInlineBreakpointCandidates": false,
+	"debug.toolBarLocation": "hidden",
+
+	// File Management
+	"explorer.compactFolders": false,
+	"explorer.confirmDelete": false,
+	"explorer.confirmDragAndDrop": false,
+	"files.autoSave": "afterDelay",
+	"files.defaultLanguage": "plaintext",
+	"files.exclude": {
+		"**/.expo": true,
+		"**/.expo-shared": true,
+		"**/.idea": true,
+		"**/.nuxt": true
+	},
+
+	// Language Specific
+	"html.autoClosingTags": true,
+	"html.completion.attributeDefaultValue": "singlequotes",
+	"javascript.autoClosingTags": true,
+	"javascript.experimental.updateImportsOnPaste": true,
+	"javascript.format.semicolons": "remove",
+	"javascript.preferences.quoteStyle": "single",
+	"javascript.updateImportsOnFileMove.enabled": "always",
+	"js/ts.implicitProjectConfig.experimentalDecorators": true,
+	"typescript.autoClosingTags": true,
+	"typescript.experimental.updateImportsOnPaste": true,
+	"typescript.format.semicolons": "remove",
+	"typescript.preferences.quoteStyle": "single",
+	"typescript.updateImportsOnFileMove.enabled": "always",
+
+	// Formatters
+	"prettier.arrowParens": "avoid",
+	"prettier.jsxSingleQuote": true,
+	"prettier.semi": false,
+	"prettier.singleQuote": true,
+	"prettier.useTabs": true,
+
+	// Extensions
+	"cSpell.enabledFileTypes": {
+		"*": true,
+		"blade": true,
+		"jsx": true,
+		"tsx": true,
+		"ts": true,
+		"js": true,
+		"scss": true,
+		"sass": true,
+		"vue": true,
+		"json": false
+	},
+	"cSpell.enabled": true,
+	"cSpell.language": "en,ru",
+	"emmet.includeLanguages": {
+		"blade": "html",
+		"javascript": "javascriptreact"
+	},
+	"emmet.triggerExpansionOnTab": true,
+
+	// Miscellaneous
+	"breadcrumbs.icons": false,
+	"breadcrumbs.showKeys": false,
+	"breadcrumbs.showFiles": false,
+	"breadcrumbs.symbolPath": "off",
+	"breadcrumbs.showArrays": false,
+	"breadcrumbs.showEvents": false,
+	"breadcrumbs.showFields": false,
+	"breadcrumbs.showClasses": false,
+	"breadcrumbs.showMethods": false,
+	"breadcrumbs.showBooleans": false,
+	"breadcrumbs.showFunctions": false,
+	"breadcrumbs.showConstants": false,
+	"breadcrumbs.showEnumMembers": false,
+	"breadcrumbs.showConstructors": false,
+	"catppuccin-noctis-icons.folders.associations": {},
+	"catppuccin-noctis-icons.hidesExplorerArrows": true,
+	"diffEditor.ignoreTrimWhitespace": false,
+	"frosted-glass-theme.filter": {
+		"default": {
+			"filter": "saturate(var(--fgt-saturate)) url(#fgt-acrylic-{key})",
+			"disableBackgroundColor": true,
+			"opacity": 0.6
+		},
+		"decorationsOverviewRuler": "blur(30px)",
+		"minimap": "blur(30px)",
+		"terminalOverlay": "blur(30px)"
+	},
+	"git.enableSmartCommit": true,
+	"git.openRepositoryInParentFolders": "never",
+	"markdown.updateLinksOnFileMove.enabled": "always",
+	"security.workspace.trust.untrustedFiles": "open",
+	"symbols.hidesExplorerArrows": true,
+	"window.menuBarVisibility": "compact"
+}

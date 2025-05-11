@@ -71,6 +71,29 @@
       }
     },
     {
+      "Id": "DupeGuru.DupeGuru",
+      "Name": "dupeGuru",
+      "Version": "4.3.1",
+      "Source": "winget",
+      "ManagerName": "Winget",
+      "InstallationOptions": {
+        "SkipHashCheck": false,
+        "InteractiveInstallation": false,
+        "RunAsAdministrator": false,
+        "Architecture": "",
+        "InstallationScope": "",
+        "CustomParameters": [],
+        "PreRelease": false,
+        "CustomInstallLocation": "",
+        "Version": "",
+        "SkipMinorUpdates": false
+      },
+      "Updates": {
+        "UpdatesIgnored": false,
+        "IgnoredVersion": ""
+      }
+    },
+    {
       "Id": "Fastfetch-cli.Fastfetch",
       "Name": "fastfetch",
       "Version": "2.36.1",
@@ -120,6 +143,29 @@
       "Id": "Flow-Launcher.Flow-Launcher",
       "Name": "Flow Launcher",
       "Version": "1.19.5",
+      "Source": "winget",
+      "ManagerName": "Winget",
+      "InstallationOptions": {
+        "SkipHashCheck": false,
+        "InteractiveInstallation": false,
+        "RunAsAdministrator": false,
+        "Architecture": "",
+        "InstallationScope": "",
+        "CustomParameters": [],
+        "PreRelease": false,
+        "CustomInstallLocation": "",
+        "Version": "",
+        "SkipMinorUpdates": false
+      },
+      "Updates": {
+        "UpdatesIgnored": false,
+        "IgnoredVersion": ""
+      }
+    },
+    {
+      "Id": "Genymobile.scrcpy",
+      "Name": "scrcpy",
+      "Version": "3.2",
       "Source": "winget",
       "ManagerName": "Winget",
       "InstallationOptions": {

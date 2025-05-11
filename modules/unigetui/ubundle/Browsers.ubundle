@@ -2,29 +2,6 @@
   "export_version": 2.1,
   "packages": [
     {
-      "Id": "Alex313031.Thorium",
-      "Name": "Thorium",
-      "Version": "130.0.6723.174",
-      "Source": "winget",
-      "ManagerName": "Winget",
-      "InstallationOptions": {
-        "SkipHashCheck": false,
-        "InteractiveInstallation": false,
-        "RunAsAdministrator": false,
-        "Architecture": "",
-        "InstallationScope": "",
-        "CustomParameters": [],
-        "PreRelease": false,
-        "CustomInstallLocation": "",
-        "Version": "",
-        "SkipMinorUpdates": false
-      },
-      "Updates": {
-        "UpdatesIgnored": false,
-        "IgnoredVersion": ""
-      }
-    },
-    {
       "Id": "Brave.Brave",
       "Name": "Brave",
       "Version": "133.1.75.178",

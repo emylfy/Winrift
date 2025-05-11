@@ -1,4 +1,11 @@
 . "$PSScriptRoot\..\..\scripts\Common.ps1"
+# https://github.com/SysadminWorld/Win11Tweaks
+# https://github.com/AlchemyTweaks/Verified-Tweaks
+# https://github.com/SanGraphic/QuickBoost
+
+# https://github.com/UnLovedCookie/CoutX
+# https://github.com/Snowfliger/SyncOS
+# https://github.com/denis-g/windows10-latency-optimization
 
 if (-not ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
     Write-Host "Not running as admin. Elevating..." -ForegroundColor Yellow
@@ -146,7 +153,6 @@ function Apply-UniversalTweaks {
     # Windows uses IRQL to determine interrupt priority. If an interrupt can be serviced, it starts execution.
     # Lower priority tasks are queued. This ensures critical services are prioritized for interrupts.
     Set-RegistryValue -Path "HKLM:\SYSTEM\CurrentControlSet\services\DXGKrnl\Parameters" -Name "ThreadPriority" -Type "DWord" -Value "15" -Message "Set high priority for DirectX kernel services"
-
     Set-RegistryValue -Path "HKLM:\SYSTEM\CurrentControlSet\Services\mouclass\Parameters" -Name "ThreadPriority" -Type "DWord" -Value "31" -Message "Set maximum priority for mouse input"
     Set-RegistryValue -Path "HKLM:\SYSTEM\CurrentControlSet\Services\kbdclass\Parameters" -Name "ThreadPriority" -Type "DWord" -Value "31" -Message "Set maximum priority for keyboard input"
     

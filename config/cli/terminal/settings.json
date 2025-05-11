@@ -1,0 +1,274 @@
+{
+	"$help": "https://aka.ms/terminal-documentation",
+	"$schema": "https://aka.ms/terminal-profiles-schema",
+	"actions": [
+		{
+			"command": {
+				"action": "copy",
+				"singleLine": false
+			},
+			"id": "User.copy.644BA8F2",
+			"keys": "ctrl+c"
+		},
+		{
+			"command": "paste",
+			"id": "User.paste",
+			"keys": "ctrl+v"
+		},
+		{
+			"command": "find",
+			"id": "User.find",
+			"keys": "ctrl+shift+f"
+		},
+		{
+			"command": {
+				"action": "splitPane",
+				"split": "auto",
+				"splitMode": "duplicate"
+			},
+			"id": "User.splitPane.A6751878",
+			"keys": "alt+shift+d"
+		}
+	],
+	"autoHideWindow": false,
+	"centerOnLaunch": true,
+	"confirmCloseAllTabs": false,
+	"copyFormatting": "none",
+	"copyOnSelect": false,
+	"defaultProfile": "{61c54bbd-c2c6-5271-96e7-009a87ff44bf}",
+	"initialCols": 90,
+	"initialPosition": ",",
+	"initialRows": 20,
+	"launchMode": "focus",
+	"newTabMenu": [
+		{
+			"type": "remainingProfiles"
+		}
+	],
+	"profiles": {
+		"defaults": {
+			"colorScheme": "Catppuccin Mocha",
+			"cursorShape": "filledBox",
+			"elevate": false,
+			"font": {
+				"face": "Fira Code"
+			},
+			"opacity": 100,
+			"useAcrylic": true
+		},
+		"list": [
+			{
+				"commandline": "%SystemRoot%\\System32\\WindowsPowerShell\\v1.0\\powershell.exe -nologo",
+				"cursorShape": "emptyBox",
+				"experimental.retroTerminalEffect": false,
+				"font": {
+					"cellHeight": "1.3",
+					"face": "Fira Code",
+					"size": 14
+				},
+				"guid": "{61c54bbd-c2c6-5271-96e7-009a87ff44bf}",
+				"hidden": false,
+				"name": "Windows PowerShell",
+				"opacity": 100,
+				"padding": "10",
+				"scrollbarState": "hidden",
+				"tabTitle": "pwsh",
+				"useAcrylic": true
+			},
+			{
+				"commandline": "%SystemRoot%\\System32\\cmd.exe",
+				"font": {
+					"cellHeight": "1.3",
+					"size": 14
+				},
+				"guid": "{0caa0dad-35be-5f56-a8ff-afceeeaa6101}",
+				"hidden": false,
+				"name": "Command Prompt",
+				"opacity": 100,
+				"padding": "10",
+				"scrollbarState": "hidden",
+				"tabTitle": "cmd"
+			},
+			{
+				"adjustIndistinguishableColors": "always",
+				"backgroundImage": null,
+				"backgroundImageOpacity": 1,
+				"colorScheme": "Catppuccin Mocha",
+				"cursorHeight": 20,
+				"cursorShape": "filledBox",
+				"elevate": false,
+				"experimental.retroTerminalEffect": false,
+				"font": {
+					"cellHeight": "1.3",
+					"face": "Fira Code",
+					"size": 14,
+					"weight": "normal"
+				},
+				"guid": "{51855cb2-8cce-5362-8f54-464b92b32386}",
+				"hidden": false,
+				"intenseTextStyle": "bright",
+				"name": "Ubuntu",
+				"opacity": 100,
+				"padding": "10",
+				"scrollbarState": "hidden",
+				"source": "CanonicalGroupLimited.Ubuntu_79rhkp1fndgsc",
+				"useAcrylic": false
+			},
+			{
+				"font": {
+					"size": 14
+				},
+				"guid": "{2c4de342-38b7-51cf-b940-2309a097f518}",
+				"hidden": true,
+				"name": "Ubuntu",
+				"padding": "15",
+				"source": "Windows.Terminal.Wsl"
+			}
+		]
+	},
+	"rendering.graphicsAPI": "direct3d11",
+	"schemes": [
+		{
+			"background": "#1E1E2E",
+			"black": "#45475A",
+			"blue": "#89B4FA",
+			"brightBlack": "#585B70",
+			"brightBlue": "#89B4FA",
+			"brightCyan": "#94E2D5",
+			"brightGreen": "#A6E3A1",
+			"brightPurple": "#F5C2E7",
+			"brightRed": "#F38BA8",
+			"brightWhite": "#A6ADC8",
+			"brightYellow": "#F9E2AF",
+			"cursorColor": "#F5E0DC",
+			"cyan": "#94E2D5",
+			"foreground": "#CDD6F4",
+			"green": "#A6E3A1",
+			"name": "Catppuccin Mocha",
+			"purple": "#F5C2E7",
+			"red": "#F38BA8",
+			"selectionBackground": "#585B70",
+			"white": "#BAC2DE",
+			"yellow": "#F9E2AF"
+		},
+		{
+			"background": "#24273A",
+			"black": "#0C0C0C",
+			"blue": "#0037DA",
+			"brightBlack": "#767676",
+			"brightBlue": "#3B78FF",
+			"brightCyan": "#61D6D6",
+			"brightGreen": "#16C60C",
+			"brightPurple": "#B4009E",
+			"brightRed": "#E74856",
+			"brightWhite": "#F2F2F2",
+			"brightYellow": "#F9F1A5",
+			"cursorColor": "#FFFFFF",
+			"cyan": "#3A96DD",
+			"foreground": "#FFFFFF",
+			"green": "#13A10E",
+			"name": "Custom",
+			"purple": "#881798",
+			"red": "#C50F1F",
+			"selectionBackground": "#DCDFE4",
+			"white": "#CCCCCC",
+			"yellow": "#C19C00"
+		},
+		{
+			"background": "#212121",
+			"black": "#21222C",
+			"blue": "#82AAFF",
+			"brightBlack": "#545454",
+			"brightBlue": "#D6ACFF",
+			"brightCyan": "#A4FFFF",
+			"brightGreen": "#69FF94",
+			"brightPurple": "#FF92DF",
+			"brightRed": "#FF6E6E",
+			"brightWhite": "#F8F8F2",
+			"brightYellow": "#FFCB6B",
+			"cursorColor": "#ECEFF4",
+			"cyan": "#8BE9FD",
+			"foreground": "#F8F8F2",
+			"green": "#50FA7B",
+			"name": "Dracula+",
+			"purple": "#C792EA",
+			"red": "#FF5555",
+			"selectionBackground": "#F8F8F2",
+			"white": "#F8F8F2",
+			"yellow": "#FFCB6B"
+		},
+		{
+			"background": "#24273A",
+			"black": "#0C0C0C",
+			"blue": "#0037DA",
+			"brightBlack": "#767676",
+			"brightBlue": "#3B78FF",
+			"brightCyan": "#61D6D6",
+			"brightGreen": "#16C60C",
+			"brightPurple": "#B4009E",
+			"brightRed": "#E74856",
+			"brightWhite": "#F2F2F2",
+			"brightYellow": "#F9F1A5",
+			"cursorColor": "#FFCB6B",
+			"cyan": "#3A96DD",
+			"foreground": "#CCCCCC",
+			"green": "#13A10E",
+			"name": "VSCode Terminal",
+			"purple": "#881798",
+			"red": "#C50F1F",
+			"selectionBackground": "#CCCCCC",
+			"white": "#CCCCCC",
+			"yellow": "#C19C00"
+		},
+		{
+			"background": "#24273A",
+			"black": "#494D64",
+			"blue": "#8AADF4",
+			"brightBlack": "#5B6078",
+			"brightBlue": "#8AADF4",
+			"brightCyan": "#8BD5CA",
+			"brightGreen": "#A6DA95",
+			"brightPurple": "#F5BDE6",
+			"brightRed": "#ED8796",
+			"brightWhite": "#A5ADCB",
+			"brightYellow": "#EED49F",
+			"cursorColor": "#F4DBD6",
+			"cyan": "#8BD5CA",
+			"foreground": "#CAD3F5",
+			"green": "#A6DA95",
+			"name": "catppuccin-macchiato",
+			"purple": "#F5BDE6",
+			"red": "#ED8796",
+			"selectionBackground": "#5B6078",
+			"white": "#B8C0E0",
+			"yellow": "#EED49F"
+		}
+	],
+	"showTabsInTitlebar": true,
+	"showTerminalTitleInTitlebar": true,
+	"tabSwitcherMode": "mru",
+	"themes": [
+		{
+			"name": "Catppuccin Macchiato",
+			"tab": {
+				"background": "#24273AFF",
+				"iconStyle": "default",
+				"showCloseButton": "always",
+				"unfocusedBackground": null
+			},
+			"tabRow": {
+				"background": "#24273AFF",
+				"unfocusedBackground": "#24273AFF"
+			},
+			"window": {
+				"applicationTheme": "dark",
+				"experimental.rainbowFrame": false,
+				"frame": null,
+				"unfocusedFrame": null,
+				"useMica": true
+			}
+		}
+	],
+	"useAcrylicInTabRow": true,
+	"windowingBehavior": "useNew"
+}
