@@ -100,6 +100,8 @@ iwr "https://dub.sh/s11install" | iex
 </tr>
 </table>
 
+![](https://github.com/emylfy/simplify11/blob/main/media/separator.png)
+
 ## 🌟 Credits
 
 <div align="center">

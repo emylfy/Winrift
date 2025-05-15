@@ -163,6 +163,29 @@
       }
     },
     {
+      "Id": "Spotify.Spotify",
+      "Name": "Spotify",
+      "Version": "1.2.63.394.g126b0d89",
+      "Source": "winget",
+      "ManagerName": "Winget",
+      "InstallationOptions": {
+        "SkipHashCheck": false,
+        "InteractiveInstallation": false,
+        "RunAsAdministrator": false,
+        "Architecture": "",
+        "InstallationScope": "",
+        "CustomParameters": [],
+        "PreRelease": false,
+        "CustomInstallLocation": "",
+        "Version": "",
+        "SkipMinorUpdates": false
+      },
+      "Updates": {
+        "UpdatesIgnored": false,
+        "IgnoredVersion": ""
+      }
+    },
+    {
       "Id": "th-ch.YouTubeMusic",
       "Name": "YouTube Music",
       "Version": "3.8.0",

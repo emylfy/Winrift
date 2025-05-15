@@ -1,6 +1,7 @@
 . "$PSScriptRoot\..\..\scripts\common.ps1"
 
 function Show-PrivacySexyMenu {
+    $Host.UI.RawUI.WindowTitle = "Privacy.sexy Launcher"
     Clear-Host
 
     Write-Host "$Purple +--------------------------------------------------------+$Reset"

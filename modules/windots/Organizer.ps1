@@ -1,5 +1,7 @@
 . "$PSScriptRoot\..\..\scripts\Common.ps1"
 
+$Host.UI.RawUI.WindowTitle = "Organizer"
+
 $targetPaths = @(
     "$env:USERPROFILE\AppData\Roaming\Microsoft\Windows\Start Menu\Programs",
     "C:\ProgramData\Microsoft\Windows\Start Menu\Programs"
@@ -23,6 +25,7 @@ $excludeList = @(
     "Node.js",
     "ODBC Data Sources",
     "Performance Monitor",
+    "postgreSQL",
     "RecoveryDrive",
     "Registry Editor",
     "Resource Monitor",
@@ -84,7 +87,13 @@ foreach ($targetDir in $targetPaths) {
         $_.Name -notmatch $excludeRegex -and
         -not $excludeHash.Contains($_.Name) -and
         -not (Get-ChildItem -Path $_.FullName -Recurse -ErrorAction SilentlyContinue | 
-              Where-Object { $excludeHash.Contains($_.Name) -or $excludeHash.Contains($_.BaseName) })
+              Where-Object { 
+                  $file = $_
+                  $excludeHash.Contains($_.Name) -or 
+                  $excludeHash.Contains($_.BaseName) -or
+                  ($excludeList | Where-Object { $file.BaseName -like "*$_*" }) -or
+                  $_.BaseName -like "Uninstall*"
+              })
     }
 
     foreach ($folder in $subFolders) {
@@ -92,7 +101,13 @@ foreach ($targetDir in $targetPaths) {
         $folderFullPath = $folder.FullName
 
         $files = Get-ChildItem -Path $folderFullPath -File -Recurse -ErrorAction SilentlyContinue |
-                 Where-Object { -not $excludeHash.Contains($_.Name) -and -not $excludeHash.Contains($_.BaseName) }
+                 Where-Object { 
+                     $file = $_
+                     -not ($excludeList | Where-Object { $file.BaseName -like "*$_*" }) -and
+                     -not $excludeHash.Contains($_.Name) -and 
+                     -not $excludeHash.Contains($_.BaseName) -and
+                     -not ($_.BaseName -like "Uninstall*")
+                 }
 
         if (-not $files) {
             Write-Host "`nNo movable files in: $folderName" -ForegroundColor DarkGray

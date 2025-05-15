@@ -1,6 +1,7 @@
 . "$PSScriptRoot\..\..\scripts\Common.ps1"
 
 function Show-WinScriptMenu {
+    $Host.UI.RawUI.WindowTitle = "WinScript Launcher"
     Clear-Host
     Write-Host ""
     Write-Host "$Purple +-----------------------------------+$Reset"

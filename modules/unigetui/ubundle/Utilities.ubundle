@@ -186,6 +186,29 @@
       }
     },
     {
+      "Id": "Google.PlatformTools",
+      "Name": "Android SDK Platform-Tools",
+      "Version": "36.0.0",
+      "Source": "winget",
+      "ManagerName": "Winget",
+      "InstallationOptions": {
+        "SkipHashCheck": false,
+        "InteractiveInstallation": false,
+        "RunAsAdministrator": false,
+        "Architecture": "",
+        "InstallationScope": "",
+        "CustomParameters": [],
+        "PreRelease": false,
+        "CustomInstallLocation": "",
+        "Version": "",
+        "SkipMinorUpdates": false
+      },
+      "Updates": {
+        "UpdatesIgnored": false,
+        "IgnoredVersion": ""
+      }
+    },
+    {
       "Id": "Gyan.FFmpeg",
       "Name": "FFmpeg",
       "Version": "7.1",

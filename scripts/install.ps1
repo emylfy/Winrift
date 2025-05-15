@@ -1,3 +1,5 @@
+$Host.UI.RawUI.WindowTitle = "Simplify11 - Installer"
+
 $startMenuPath = [System.Environment]::GetFolderPath('Programs')
 $shortcutPath = Join-Path -Path $startMenuPath -ChildPath "Simplify11.lnk"
 $wshShell = New-Object -ComObject WScript.Shell

@@ -25,9 +25,9 @@
       }
     },
     {
-      "Id": "CodeStory.Aide",
-      "Name": "Aide",
-      "Version": "1.96.4.25031",
+      "Id": "ByteDance.Trae",
+      "Name": "Trae",
+      "Version": "1.98.2",
       "Source": "winget",
       "ManagerName": "Winget",
       "InstallationOptions": {
@@ -97,6 +97,29 @@
       "Id": "Docker.DockerDesktop",
       "Name": "Docker Desktop",
       "Version": "4.38.0",
+      "Source": "winget",
+      "ManagerName": "Winget",
+      "InstallationOptions": {
+        "SkipHashCheck": false,
+        "InteractiveInstallation": false,
+        "RunAsAdministrator": false,
+        "Architecture": "",
+        "InstallationScope": "",
+        "CustomParameters": [],
+        "PreRelease": false,
+        "CustomInstallLocation": "",
+        "Version": "",
+        "SkipMinorUpdates": false
+      },
+      "Updates": {
+        "UpdatesIgnored": false,
+        "IgnoredVersion": ""
+      }
+    },
+    {
+      "Id": "GitHub.GitHubDesktop",
+      "Name": "GitHub Desktop",
+      "Version": "3.4.19",
       "Source": "winget",
       "ManagerName": "Winget",
       "InstallationOptions": {

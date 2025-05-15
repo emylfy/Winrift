@@ -1,7 +1,7 @@
 . "$PSScriptRoot\scripts\Common.ps1"
 
 function Show-MainMenu {
-    $Host.UI.RawUI.WindowTitle = "Simplify11 v25.05.1"
+    $Host.UI.RawUI.WindowTitle = "Simplify11 v25.05.2"
     Clear-Host
     Write-Host
     Write-Host "$Purple +--------------------------------------------------------+$Reset"
@@ -29,9 +29,9 @@ function Show-MainMenu {
         "3" { Start-Process powershell -ArgumentList "-NoExit -File `"$PSScriptRoot\modules\tools\GTweak.ps1`""; Show-MainMenu }
         "4" { Start-Process powershell -ArgumentList "-NoExit -File `"$PSScriptRoot\modules\privacy\PrivacySexy.ps1`""; Show-MainMenu }
         "5" { Start-Process powershell -ArgumentList "-NoExit -File `"$PSScriptRoot\modules\unigetui\UniGetUI.ps1`""; Show-MainMenu }
-        "6" { Start-Process powershell -ArgumentList "-NoExit -File `"$PSScriptRoot\modules\system\Universal.ps1`""; Show-MainMenu }
-        "7" { Start-Process powershell -ArgumentList "-NoExit -File `"$PSScriptRoot\modules\menu\Drivers.ps1`""; Show-MainMenu }
-        "8" { Start-Process powershell -ArgumentList "-NoExit -File `"$PSScriptRoot\modules\windots\windots.ps1`""; Show-MainMenu }
+        "6" { Start-Process powershell -ArgumentList "-NoExit -File `"$PSScriptRoot\modules\system\Tweaks.ps1`""; Show-MainMenu }
+        "7" { Start-Process powershell -ArgumentList "-NoExit -File `"$PSScriptRoot\modules\drivers\Drivers.ps1`""; Show-MainMenu }
+        "8" { Start-Process powershell -ArgumentList "-NoExit -File `"$PSScriptRoot\modules\windots\Windots.ps1`""; Show-MainMenu }
         default { Show-MainMenu }
     }
 }

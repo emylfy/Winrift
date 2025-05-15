@@ -1,5 +1,7 @@
 . "$PSScriptRoot\..\..\scripts\Common.ps1"
 
+$Host.UI.RawUI.WindowTitle = "WinUtil Launcher"
+
 Clear-Host
 Write-Host ""
 Write-Host "$Purple +-----------------------------------+$Reset"

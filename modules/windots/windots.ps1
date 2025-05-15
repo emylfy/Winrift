@@ -1,7 +1,8 @@
 . "$PSScriptRoot\..\..\scripts\Common.ps1"
 
 function Show-MainMenu {
-    cls
+    $Host.UI.RawUI.WindowTitle = "Windots"
+    
     Write-Host "$Purple +-------------------------------------+$Reset"
     Write-Host "$Purple '$Grey [1] Configs Installer               $Purple'$Reset"
     Write-Host "$Purple +-------------------------------------+$Reset"
@@ -83,8 +84,9 @@ function Install-Steam {
         Invoke-Expression (Invoke-WebRequest -UseBasicParsing 'https://steambrew.app/install.ps1')
         Write-Host "$Green Steam Millenium installed successfully.$Reset"
     } catch {
-        Write-Host "$Red Failed to install Steam Millenium. Make sure steam installed$Reset"
+        Write-Host "$Red Failed to install Steam Millenium. Make sure Steam is installed.$Reset"
     }
+    
     Read-Host "Press Enter to continue"
 
     Clear-Host
@@ -102,7 +104,8 @@ function Install-Steam {
             Write-Host "$Green Space Theme installed successfully.$Reset"
         } catch {
             Write-Host "$Red Failed to install Space Theme through the main method.$Reset"
-                Start-Process "https://github.com/SpaceTheme/Steam/releases"
+            Write-Host "Opening GitHub releases page for manual download..."
+            Start-Process "https://github.com/SpaceTheme/Steam/releases"
         }
     }
     Read-Host "Press Enter to continue"
@@ -110,8 +113,19 @@ function Install-Steam {
 }
 
 function Apply-Cursor {
-    Write-Host "Opening macOS cursor download link in browser..."
-    Start-Process "https://github.com/ful1e5/apple_cursor/releases/download/v2.0.1/macOS-Windows.zip"
+    Clear-Host
+    Write-Host "\nOpening macOS cursor download link in browser..."
+    try {
+        Start-Process "https://github.com/ful1e5/apple_cursor/releases/download/v2.0.1/macOS-Windows.zip"
+        Write-Host "$Green Download link opened successfully.$Reset"
+        Write-Host "\n$Yellow Installation Instructions:$Reset"
+        Write-Host "1. Extract the downloaded ZIP file"
+        Write-Host "2. Right-click on each .inf file and select 'Install'"
+        Write-Host "3. Go to Settings > Personalization > Themes > Mouse cursor"
+        Write-Host "4. Select the installed macOS cursor theme"
+    } catch {
+        Write-Host "$Red Failed to open download link: $($_.Exception.Message)$Reset"
+    }
     Read-Host "Press Enter to continue"
     Show-MainMenu
 }
@@ -182,13 +196,13 @@ function Configure-VSCode {
     )
     
     try {
-        Copy-Item -Path "$PSScriptRoot\..\..\config\vscode\settings.json" -Destination $targetPath -Force
-        Copy-Item -Path "$PSScriptRoot\..\..\config\vscode\product.json" -Destination $targetPath -Force
+        Copy-Item -Path "$PSScriptRoot\config\vscode\settings.json" -Destination $targetPath -Force
+        Copy-Item -Path "$PSScriptRoot\config\vscode\product.json" -Destination $targetPath -Force
         Write-Host "$Green Configuration copied successfully to $targetPath.$Reset"
     } catch {
         Write-Host "$Red Failed to copy configuration to $targetPath.$Reset"
     }
-    
+
     Read-Host "Press Enter to continue"
     Show-VSCodeMenu
 }
@@ -199,8 +213,8 @@ function Configure-OtherVSC {
     $editorPath = Read-Host "Enter path"
     
     try {
-        Copy-Item -Path "$PSScriptRoot\..\..\config\vscode\settings.json" -Destination $editorPath -Force
-        Copy-Item -Path "$PSScriptRoot\..\..\config\vscode\product.json" -Destination $editorPath -Force
+        Copy-Item -Path "$PSScriptRoot\config\vscode\settings.json" -Destination $editorPath -Force
+        Copy-Item -Path "$PSScriptRoot\config\vscode\product.json" -Destination $editorPath -Force
         Write-Host "$Green Configuration copied successfully to $editorPath.$Reset"
     } catch {
         Write-Host "$Red Failed to copy configuration to $editorPath.$Reset"
@@ -230,7 +244,8 @@ function Configure-WinTerm {
                     Invoke-Expression ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
                     Write-Host "$Green Chocolatey installed successfully.$Reset"
                 } catch {
-                    Write-Host "$Red Failed to install Chocolatey. Please try manual installation.$Reset"
+                    Write-Host "$Red Failed to install Chocolatey: $($_.Exception.Message)$Reset"
+                    Write-Host "Opening Nerd Fonts releases page for manual installation..."
                     Start-Process "https://github.com/ryanoasis/nerd-fonts/releases/"
                 }
             }
@@ -240,7 +255,8 @@ function Configure-WinTerm {
                 Start-Process -FilePath "choco.exe" -ArgumentList "install FiraCode -y --no-progress" -Wait -NoNewWindow
                 Write-Host "$Green Fira Code font installed successfully.$Reset"
             } catch {
-                Write-Host "$Red Failed to install Fira Code font. Please try manual installation.$Reset"
+                Write-Host "$Red Failed to install Fira Code font.$Reset"
+                Write-Host "Opening Nerd Fonts releases page for manual installation..."
                 Start-Process "https://github.com/ryanoasis/nerd-fonts/releases/"
             }
         }
@@ -254,7 +270,7 @@ function Configure-WinTerm {
     }
     
     try {
-        Copy-Item -Path "$PSScriptRoot\..\..\config\cli\terminal\settings.json" -Destination "$env:USERPROFILE\AppData\Local\Packages\Microsoft.WindowsTerminal_8wekyb3d8bbwe\LocalState\" -Force
+        Copy-Item -Path "$PSScriptRoot\config\cli\terminal\settings.json" -Destination "$env:USERPROFILE\AppData\Local\Packages\Microsoft.WindowsTerminal_8wekyb3d8bbwe\LocalState\" -Force
         Write-Host "$Green Windows Terminal settings copied successfully.$Reset"
     } catch {
         Write-Host "$Red Failed to copy Windows Terminal settings.$Reset"
@@ -266,8 +282,9 @@ function Configure-WinTerm {
 
 function Configure-Pwsh {
     try {
+        Write-Host "Installing Terminal-Icons module..."
         Install-Module -Name Terminal-Icons -Scope CurrentUser -Force
-        Copy-Item -Path "$PSScriptRoot\..\..\config\cli\WindowsPowershell\Microsoft.PowerShell_profile.ps1" -Destination "$env:USERPROFILE\Documents\WindowsPowerShell" -Force
+        Copy-Item -Path "$PSScriptRoot\config\cli\WindowsPowershell\Microsoft.PowerShell_profile.ps1" -Destination "$env:USERPROFILE\Documents\WindowsPowerShell" -Force
         Write-Host "$Green PowerShell profile copied successfully.$Reset"
     } catch {
         Write-Host "$Red Failed to copy PowerShell profile.$Reset"
@@ -282,7 +299,7 @@ function Configure-OhMyPosh {
         if (-not (Test-Path "$env:USERPROFILE\.config\ohmyposh")) {
             New-Item -Path "$env:USERPROFILE\.config\ohmyposh" -ItemType Directory -Force | Out-Null
         }
-        Copy-Item -Path "$PSScriptRoot\..\..\config\cli\ohmyposh\zen.toml" -Destination "$env:USERPROFILE\.config\ohmyposh" -Force
+        Copy-Item -Path "$PSScriptRoot\config\cli\ohmyposh\zen.toml" -Destination "$env:USERPROFILE\.config\ohmyposh" -Force
         Write-Host "$Green Oh My Posh configuration copied successfully.$Reset"
     } catch {
         Write-Host "$Red Failed to copy Oh My Posh configuration.$Reset"
@@ -297,8 +314,8 @@ function Configure-FastFetch {
         if (-not (Test-Path "$env:USERPROFILE\.config\fastfetch")) {
             New-Item -Path "$env:USERPROFILE\.config\fastfetch" -ItemType Directory -Force | Out-Null
         }
-        Copy-Item -Path "$PSScriptRoot\..\..\config\cli\fastfetch\cat.txt" -Destination "$env:USERPROFILE\.config\fastfetch" -Force
-        Copy-Item -Path "$PSScriptRoot\..\..\config\cli\fastfetch\config.jsonc" -Destination "$env:USERPROFILE\.config\fastfetch" -Force
+        Copy-Item -Path "$PSScriptRoot\config\cli\fastfetch\cat.txt" -Destination "$env:USERPROFILE\.config\fastfetch" -Force
+        Copy-Item -Path "$PSScriptRoot\config\cli\fastfetch\config.jsonc" -Destination "$env:USERPROFILE\.config\fastfetch" -Force
         Write-Host "$Green FastFetch configuration copied successfully.$Reset"
     } catch {
         Write-Host "$Red Failed to copy FastFetch configuration.$Reset"
@@ -343,21 +360,24 @@ function Set-ShortDateHours {
 function Disable-QuickAccess {
     Clear-Host
     Write-Host "${Grey}Disabling automatic addition of folders to Quick Access...$Reset"
+
     Set-ItemProperty -Path 'HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer' -Name 'ShowFrequent' -Type DWord -Value 0
     Set-ItemProperty -Path 'HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer' -Name 'ShowRecent' -Type DWord -Value 0
+
     $quickAccess = (New-Object -ComObject shell.application).Namespace('shell:::{679f85cb-0220-4080-b29b-5540cc05aab6}').Items()
     $quickAccess | ForEach-Object { $_.InvokeVerb('remove') }
+    
+    Write-Host "${Yellow}Restarting Explorer to apply changes...$Reset"
     Stop-Process -Name explorer -Force
-    Start-Process explorer
-    Write-Host "${Green}Quick Access settings updated successfully. Explorer will restart to apply changes.$Reset"
-    pause
+    Write-Host "${Green}Quick Access settings updated successfully.$Reset"
+    Read-Host "Press Enter to continue"
     Show-WindowsCustomizationMenu
 }
 
 function Extract-StartFolders {
     Clear-Host
     $scriptDir = Split-Path -Parent $PSScriptRoot
-    $organizerPath = Join-Path -Path $scriptDir -ChildPath "tweaks\Organizer.ps1"
+    $organizerPath = Join-Path -Path $scriptDir -ChildPath "windots\Organizer.ps1"
     Start-Process powershell -ArgumentList "-NoExit -File `"$organizerPath`""
     Show-WindowsCustomizationMenu
 }

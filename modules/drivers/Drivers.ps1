@@ -1,6 +1,7 @@
 . "$PSScriptRoot\..\..\scripts\Common.ps1"
 
 function Show-DeviceMenu {
+    $Host.UI.RawUI.WindowTitle = "Simplify11 - Drivers"
     Clear-Host
 
     $urls = @(

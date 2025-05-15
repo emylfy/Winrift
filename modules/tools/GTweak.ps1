@@ -1,5 +1,7 @@
 . "$PSScriptRoot\..\..\scripts\Common.ps1"
 
+$Host.UI.RawUI.WindowTitle = "GTweak Launcher"
+
 $downloadUrl = "https://github.com/Greedeks/GTweak/releases/latest/download/gtweak.exe"
 $downloadPath = "$env:TEMP\gtweak.exe"
 

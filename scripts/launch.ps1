@@ -1,3 +1,5 @@
+$Host.UI.RawUI.WindowTitle = "Launcher"
+
 $tempPath = "$env:TEMP\simplify11"
 $zipPath = "$tempPath\simplify11.zip"
 

@@ -16,6 +16,7 @@ if (-not ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdenti
     Start-Process -FilePath $shell -ArgumentList $shellArgs -Verb RunAs
     exit
 }
+
 function Set-RegistryValue {
     param (
         [string]$Path,
@@ -39,6 +40,7 @@ function Set-RegistryValue {
 }
 
 function Show-MainMenu {
+    $Host.UI.RawUI.WindowTitle = "Simplify11 - System Tweaks"
     Clear-Host
     Write-Host ""
     Write-Host "$Purple +-------------------------------------+$Reset"
@@ -70,13 +72,6 @@ function Apply-UniversalTweaks {
 
     # Mouse & Keyboard Tweaks
 
-    # These settings disable Enhance Pointer Precision, which increases pointer speed with mouse speed
-    # This can be useful generally, but it causes cursor issues in games
-    # It's recommended to disable this for gaming
-    Set-RegistryValue -Path "HKCU:\Control Panel\Mouse" -Name "MouseSpeed" -Type "String" -Value "0" -Message "Disabled Enhanced Pointer Precision"
-    Set-RegistryValue -Path "HKCU:\Control Panel\Mouse" -Name "MouseThreshold1" -Type "String" -Value "0" -Message "Removed mouse acceleration threshold 1"
-    Set-RegistryValue -Path "HKCU:\Control Panel\Mouse" -Name "MouseThreshold2" -Type "String" -Value "0" -Message "Removed mouse acceleration threshold 2"
-
     # The MouseDataQueueSize and KeyboardDataQueueSize parameters set the number of events stored in the mouse and keyboard driver buffers
     # A smaller value means faster processing of new information
     Set-RegistryValue -Path "HKLM:\SYSTEM\CurrentControlSet\Services\mouclass\Parameters" -Name "MouseDataQueueSize" -Type "DWord" -Value "20" -Message "Optimized mouse input buffer size"
@@ -103,7 +98,15 @@ function Apply-UniversalTweaks {
         fsutil behavior set disablelastaccess 1
         
         Set-RegistryValue -Path "HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem" -Name "NtfsDisable8dot3NameCreation" -Type "DWord" -Value "1" -Message "Disabled legacy 8.3 filename creation for better SSD performance"
-    } else {
+       
+        # Disable ApplicationPreLaunch & Prefetch
+        # These services analyze apps in the background and cache data to speed up launches
+        # On an SSD, apps load fast without them, so caching isn't needed
+        Disable-MMAgent -ApplicationPreLaunch
+        
+        Set-RegistryValue -Path "HKLM:\System\CurrentControlSet\Control\Session Manager\Memory Management\PrefetchParameters" -Name "EnablePrefetcher" -Type "DWord" -Value "0" -Message "Disabled prefetcher for better SSD performance"
+        Set-RegistryValue -Path "HKLM:\System\CurrentControlSet\Control\Session Manager\Memory Management\PrefetchParameters" -Name "SfTracingState" -Type "DWord" -Value "0" -Message "Disabled superfetch tracing"
+   } else {
         Write-Host "No SSD or NVMe detected. Skipping tweaks."
     }
 
@@ -149,13 +152,6 @@ function Apply-UniversalTweaks {
 
     # Other Tweaks
     
-    # Specify priority for services (drivers) to handle interrupts first.
-    # Windows uses IRQL to determine interrupt priority. If an interrupt can be serviced, it starts execution.
-    # Lower priority tasks are queued. This ensures critical services are prioritized for interrupts.
-    Set-RegistryValue -Path "HKLM:\SYSTEM\CurrentControlSet\services\DXGKrnl\Parameters" -Name "ThreadPriority" -Type "DWord" -Value "15" -Message "Set high priority for DirectX kernel services"
-    Set-RegistryValue -Path "HKLM:\SYSTEM\CurrentControlSet\Services\mouclass\Parameters" -Name "ThreadPriority" -Type "DWord" -Value "31" -Message "Set maximum priority for mouse input"
-    Set-RegistryValue -Path "HKLM:\SYSTEM\CurrentControlSet\Services\kbdclass\Parameters" -Name "ThreadPriority" -Type "DWord" -Value "31" -Message "Set maximum priority for keyboard input"
-    
     # Set Priority For Programs Instead Of Background Services
     # This improves responsiveness of foreground applications
     # source - https://youtu.be/bqDMG1ZS-Yw
@@ -171,16 +167,7 @@ function Apply-UniversalTweaks {
     
     # Speed up start time
     Set-RegistryValue -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" -Name "DelayedDesktopSwitchTimeout" -Type "DWord" -Value "0" -Message "Removed desktop switch delay"
-    
-    # Disable ApplicationPreLaunch & Prefetch
-    # The outdated Prefetcher and Superfetch services run in the background, analyzing loaded apps/libraries/services.
-    # They cache repeated data to disk and then to RAM, speeding up app launches.
-    # However, with an SSD, apps load quickly without this, so constant disk caching is unnecessary.
-    Disable-MMAgent -ApplicationPreLaunch
-    
-    Set-RegistryValue -Path "HKLM:\System\CurrentControlSet\Control\Session Manager\Memory Management\PrefetchParameters" -Name "EnablePrefetcher" -Type "DWord" -Value "0" -Message "Disabled prefetcher for better SSD performance"
-    Set-RegistryValue -Path "HKLM:\System\CurrentControlSet\Control\Session Manager\Memory Management\PrefetchParameters" -Name "SfTracingState" -Type "DWord" -Value "0" -Message "Disabled superfetch tracing"
-    
+
     # Reducing time of disabling processes and menu
     Set-RegistryValue -Path "HKCU:\Control Panel\Desktop" -Name "AutoEndTasks" -Type "String" -Value "1" -Message "Enabled automatic ending of tasks"
     Set-RegistryValue -Path "HKCU:\Control Panel\Desktop" -Name "HungAppTimeout" -Type "String" -Value "1000" -Message "Reduced hung application timeout"
@@ -253,7 +240,7 @@ function FreeUpSpace {
 
     Write-Host ""
     Write-Host "$Grey`Would you like to remove Virtual Memory (pagefile.sys)?$Reset"
-    Write-Host "$Yellow`Warning: This may affect system performance. Only use if you have sufficient RAM.$Reset"
+    Write-Host "$Yellow`Warning: This may affect system performance. Only use if you have 16GB+ RAM.$Reset"
     $vm_choice = Read-Host "[1] Yes or [2] No"
     if ($vm_choice -eq "1") {
         Write-Host "$Grey`Removing Virtual Memory...$Reset"
@@ -333,11 +320,11 @@ function Apply-NvidiaTweaks {
     Set-RegistryValue -Path "HKLM:\SYSTEM\CurrentControlSet\Services\nvlddmkm\NVAPI" -Name "RmGpsPsEnablePerCpuCoreDpc" -Type "DWord" -Value "1" -Message "Enabled NVIDIA API per-CPU core DPC"
     Set-RegistryValue -Path "HKLM:\SYSTEM\CurrentControlSet\Services\nvlddmkm\Global\NVTweak" -Name "RmGpsPsEnablePerCpuCoreDpc" -Type "DWord" -Value "1" -Message "Enabled global NVIDIA tweaks for per-CPU core DPC"
     
-    if (-not $NoExit) {
+if (-not $NoExit) {
         Write-Host ""
         Write-Host "$Purple Press any key to return to the GPU menu...$Reset"
         $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
-        exit
+       Show-GPUMenu
     }
 }
 

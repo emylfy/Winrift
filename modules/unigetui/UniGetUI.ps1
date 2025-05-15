@@ -1,6 +1,7 @@
 . "$PSScriptRoot\..\..\scripts\Common.ps1"
 
 function Show-MainMenu {
+    $Host.UI.RawUI.WindowTitle = "Simplify11 - UniGetUI"
     Clear-Host
     Write-Host "$Purple +------------------------------------------+$Reset"
     Write-Host "$Purple '$Grey UniGetUI (formerly WingetUI)             $Purple'$Reset"
