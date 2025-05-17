@@ -5,11 +5,11 @@ function Show-WinScriptMenu {
     Clear-Host
     Write-Host ""
     Write-Host "$Purple +-----------------------------------+$Reset"
-    Write-Host "$Purple '$Grey  Winscript - Make Windows Yours   $Purple'$Reset"
+    Write-Host "$Purple '$Reset  Winscript - Make Windows Yours   $Purple'$Reset"
     Write-Host "$Purple +-----------------------------------+$Reset"
-    Write-Host "$Purple '$Grey [1] Open online version           $Purple'$Reset"
-    Write-Host "$Purple '$Grey [2] Run portable version          $Purple'$Reset"
-    Write-Host "$Purple '$Grey [3] Back to menu                  $Purple'$Reset"
+    Write-Host "$Purple '$Reset [1] Open online version           $Purple'$Reset"
+    Write-Host "$Purple '$Reset [2] Run portable version          $Purple'$Reset"
+    Write-Host "$Purple '$Reset [3] Back to menu                  $Purple'$Reset"
     Write-Host "$Purple +-----------------------------------+$Reset"
     
     $choice = Read-Host "Select an option"

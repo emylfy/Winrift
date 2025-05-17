@@ -11,6 +11,7 @@ $excludeRegex = "^(Windows|Microsoft|Steam|Accessibility|Accessories)$"
 
 $excludeList = @(
     "Accentcolorizer",
+    "CapCut",
     "Character Map",
     "Command Prompt",
     "Component Services",
@@ -43,13 +44,11 @@ foreach ($item in $excludeList) {
 if (-not ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator) -and
     (Test-Path -Path $targetPaths[1])) {
     Write-Host "`nAdministrator rights required for system directory!`n" -ForegroundColor Red
-    Start-Sleep 2
-    if ($MyInvocation.MyCommand.Path) {
-        Start-Process powershell -Verb RunAs -ArgumentList "-NoExit -File `"$($MyInvocation.MyCommand.Path)`""
-    }
-    else {
-        Write-Host "Please save the script before running" -ForegroundColor Yellow
-    }
+    
+    $adminLaunchPath = Join-Path -Path $PSScriptRoot -ChildPath "..\..\scripts\AdminLaunch.ps1"
+    . $adminLaunchPath
+    
+    Start-AdminProcess -ScriptPath $PSCommandPath
     exit
 }
 

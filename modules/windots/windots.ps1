@@ -1,18 +1,18 @@
 . "$PSScriptRoot\..\..\scripts\Common.ps1"
+$Host.UI.RawUI.WindowTitle = "Windots"
 
 function Show-MainMenu {
-    $Host.UI.RawUI.WindowTitle = "Windots"
-    
+    Clear-Host
     Write-Host "$Purple +-------------------------------------+$Reset"
-    Write-Host "$Purple '$Grey [1] Configs Installer               $Purple'$Reset"
+    Write-Host "$Purple '$Reset [1] Configs Installer               $Purple'$Reset"
     Write-Host "$Purple +-------------------------------------+$Reset"
-    Write-Host "$Purple '$Grey [2] Download Rectify11              $Purple'$Reset"
-    Write-Host "$Purple '$Grey [3] Install Spotify Tools           $Purple'$Reset"
-    Write-Host "$Purple '$Grey [4] Install Steam Millenium + Theme $Purple'$Reset"
-    Write-Host "$Purple '$Grey [5] Apply macOS Cursor              $Purple'$Reset"
-    Write-Host "$Purple '$Grey [6] Customization tweaks            $Purple'$Reset"
+    Write-Host "$Purple '$Reset [2] Download Rectify11              $Purple'$Reset"
+    Write-Host "$Purple '$Reset [3] Install Spotify Tools           $Purple'$Reset"
+    Write-Host "$Purple '$Reset [4] Install Steam Millenium + Theme $Purple'$Reset"
+    Write-Host "$Purple '$Reset [5] Apply macOS Cursor              $Purple'$Reset"
+    Write-Host "$Purple '$Reset [6] Customization tweaks            $Purple'$Reset"
     Write-Host "$Purple +-------------------------------------+$Reset"
-    Write-Host "$Purple '$Grey [7] Back to Simplify11              $Purple'$Reset"
+    Write-Host "$Purple '$Reset [7] Back to Simplify11              $Purple'$Reset"
     Write-Host "$Purple +-------------------------------------+$Reset"
     
     $choice = Read-Host ">"
@@ -37,10 +37,10 @@ function Invoke-Rectify11 {
 function Show-SpotifyToolsMenu {
     cls
     Write-Host "$Purple +-------------------------------------+$Reset"
-    Write-Host "$Purple '$Grey [1] Install SpotX                   $Purple'$Reset"
-    Write-Host "$Purple '$Grey [2] Install Spicetify               $Purple'$Reset"
+    Write-Host "$Purple '$Reset [1] Install SpotX                   $Purple'$Reset"
+    Write-Host "$Purple '$Reset [2] Install Spicetify               $Purple'$Reset"
     Write-Host "$Purple +-------------------------------------+$Reset"
-    Write-Host "$Purple '$Grey [3] Return to Main Menu             $Purple'$Reset"
+    Write-Host "$Purple '$Reset [3] Return to Main Menu             $Purple'$Reset"
     Write-Host "$Purple +-------------------------------------+$Reset"
     
     $choice = Read-Host ">"
@@ -92,7 +92,7 @@ function Install-Steam {
     Clear-Host
     Write-Host ""
     Write-Host "$Purple +-------------------------+$Reset"
-    Write-Host "$Purple '$Grey Space Theme Installation $Purple'$Reset"
+    Write-Host "$Purple '$Reset Space Theme Installation $Purple'$Reset"
     Write-Host "$Purple +-------------------------+$Reset"
     Write-Host "Would you like to install Space Theme for Steam?"
     $installChoice = Read-Host "Install Space Theme? (y/n)"
@@ -138,14 +138,14 @@ function Simplify11 {
 function Show-ConfigsMenu {
     Clear-Host
     Write-Host "$Purple +-------------------------+$Reset"
-    Write-Host "$Purple '$Grey [1] VSCode Based        $Purple'$Reset"
+    Write-Host "$Purple '$Reset [1] VSCode Based        $Purple'$Reset"
     Write-Host "$Purple +-------------------------+$Reset"
-    Write-Host "$Purple '$Grey [2] Windows Terminal    $Purple'$Reset"
-    Write-Host "$Purple '$Grey [3] PowerShell          $Purple'$Reset"
-    Write-Host "$Purple '$Grey [4] Oh My Posh          $Purple'$Reset"
-    Write-Host "$Purple '$Grey [5] FastFetch           $Purple'$Reset"
+    Write-Host "$Purple '$Reset [2] Windows Terminal    $Purple'$Reset"
+    Write-Host "$Purple '$Reset [3] PowerShell          $Purple'$Reset"
+    Write-Host "$Purple '$Reset [4] Oh My Posh          $Purple'$Reset"
+    Write-Host "$Purple '$Reset [5] FastFetch           $Purple'$Reset"
     Write-Host "$Purple +-------------------------+$Reset"
-    Write-Host "$Purple '$Grey [6] Return              $Purple'$Reset"
+    Write-Host "$Purple '$Reset [6] Return              $Purple'$Reset"
     Write-Host "$Purple +-------------------------+$Reset"
     
     $choice = Read-Host ">"
@@ -164,15 +164,15 @@ function Show-ConfigsMenu {
 function Show-VSCodeMenu {
     Clear-Host
     Write-Host "$Purple +-------------------------+$Reset"
-    Write-Host "$Purple '$Grey [1] Visual Studio Code  $Purple'$Reset"
-    Write-Host "$Purple '$Grey [2] Aide                $Purple'$Reset"
-    Write-Host "$Purple '$Grey [3] Cursor              $Purple'$Reset"
-    Write-Host "$Purple '$Grey [4] Windsurf            $Purple'$Reset"
-    Write-Host "$Purple '$Grey [5] VSCodium            $Purple'$Reset"
-    Write-Host "$Purple '$Grey [6] Trae                $Purple'$Reset"
-    Write-Host "$Purple '$Grey [7] Other               $Purple'$Reset"
+    Write-Host "$Purple '$Reset [1] Visual Studio Code  $Purple'$Reset"
+    Write-Host "$Purple '$Reset [2] Aide                $Purple'$Reset"
+    Write-Host "$Purple '$Reset [3] Cursor              $Purple'$Reset"
+    Write-Host "$Purple '$Reset [4] Windsurf            $Purple'$Reset"
+    Write-Host "$Purple '$Reset [5] VSCodium            $Purple'$Reset"
+    Write-Host "$Purple '$Reset [6] Trae                $Purple'$Reset"
+    Write-Host "$Purple '$Reset [7] Other               $Purple'$Reset"
     Write-Host "$Purple +-------------------------+$Reset"
-    Write-Host "$Purple '$Grey [8] Return              $Purple'$Reset"
+    Write-Host "$Purple '$Reset [8] Return              $Purple'$Reset"
     Write-Host "$Purple +-------------------------+$Reset"
     
     $choice = Read-Host "Select VSCode-based editor"
@@ -227,9 +227,9 @@ function Configure-OtherVSC {
 function Configure-WinTerm {
     Clear-Host
     Write-Host "$Purple +-----------------------------------------+$Reset"
-    Write-Host "$Purple '$Grey [1] Install Fira Code via Chocolatey    $Purple'$Reset"
-    Write-Host "$Purple '$Grey [2] Manual installation (open website)  $Purple'$Reset"
-    Write-Host "$Purple '$Grey [3] Skip (I already have Fira Code)     $Purple'$Reset"
+    Write-Host "$Purple '$Reset [1] Install Fira Code via Chocolatey    $Purple'$Reset"
+    Write-Host "$Purple '$Reset [2] Manual installation (open website)  $Purple'$Reset"
+    Write-Host "$Purple '$Reset [3] Skip (I already have Fira Code)     $Purple'$Reset"
     Write-Host "$Purple +-----------------------------------------+$Reset"
     
     $choice = Read-Host ">"
@@ -328,11 +328,11 @@ function Configure-FastFetch {
 function Show-WindowsCustomizationMenu {
     Clear-Host
     Write-Host "$Purple +--------------------------------------------------------+$Reset"
-    Write-Host "$Purple '$Grey [1] Set Short Date and Hours Format - Feb 17, 17:57    $Purple'$Reset"
-    Write-Host "$Purple '$Grey [2] Disable automatic pin of folders to Quick Access   $Purple'$Reset"
-    Write-Host "$Purple '$Grey [3] Selectively pull icons from folders in start menu  $Purple'$Reset"
+    Write-Host "$Purple '$Reset [1] Set Short Date and Hours Format - Feb 17, 17:57    $Purple'$Reset"
+    Write-Host "$Purple '$Reset [2] Disable automatic pin of folders to Quick Access   $Purple'$Reset"
+    Write-Host "$Purple '$Reset [3] Selectively pull icons from folders in start menu  $Purple'$Reset"
     Write-Host "$Purple +--------------------------------------------------------+$Reset"
-    Write-Host "$Purple '$Grey [4] Return to Main Menu                               $Purple'$Reset"
+    Write-Host "$Purple '$Reset [4] Return to Main Menu                               $Purple'$Reset"
     Write-Host "$Purple +--------------------------------------------------------+$Reset"
 
     $choice = Read-Host ">"
@@ -348,18 +348,18 @@ function Show-WindowsCustomizationMenu {
 
 function Set-ShortDateHours {
     Clear-Host
-    Write-Host "${Grey}Setting short date and hours format...$Reset"
+    Write-Host "${Reset}Setting short date and hours format...$Reset"
     Set-ItemProperty -Path "HKCU:\Control Panel\International" -Name sShortDate -Value "dd MMM yyyy"
     Set-ItemProperty -Path "HKCU:\Control Panel\International" -Name sShortTime -Value "HH:mm"
     Set-ItemProperty -Path "HKCU:\Control Panel\International" -Name sTimeFormat -Value "HH:mm:ss"
-    Write-Host "${Grey}Date and time format updated successfully. Changes will take effect after restart.$Reset"
+    Write-Host "${Reset}Date and time format updated successfully. Changes will take effect after restart.$Reset"
     pause
     Show-WindowsCustomizationMenu
 }
 
 function Disable-QuickAccess {
     Clear-Host
-    Write-Host "${Grey}Disabling automatic addition of folders to Quick Access...$Reset"
+    Write-Host "${Reset}Disabling automatic addition of folders to Quick Access...$Reset"
 
     Set-ItemProperty -Path 'HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer' -Name 'ShowFrequent' -Type DWord -Value 0
     Set-ItemProperty -Path 'HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer' -Name 'ShowRecent' -Type DWord -Value 0

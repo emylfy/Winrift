@@ -5,7 +5,7 @@ $Host.UI.RawUI.WindowTitle = "WinUtil Launcher"
 Clear-Host
 Write-Host ""
 Write-Host "$Purple +-----------------------------------+$Reset"
-Write-Host "$Purple '$Grey Launching Windows Utility Tool... $Purple'$Reset"
+Write-Host "$Purple '$Reset Launching Windows Utility Tool... $Purple'$Reset"
 Write-Host "$Purple +-----------------------------------+$Reset"
 
 try {

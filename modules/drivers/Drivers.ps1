@@ -19,18 +19,18 @@ function Show-DeviceMenu {
     )
 
     Write-Host "$Purple +------------------------+$Reset"
-    Write-Host "$Purple '$Grey [0] Nvidia App         $Purple'$Reset"
-    Write-Host "$Purple '$Grey [1] AMD Drivers        $Purple'$Reset"
+    Write-Host "$Purple '$Reset [0] Nvidia App         $Purple'$Reset"
+    Write-Host "$Purple '$Reset [1] AMD Drivers        $Purple'$Reset"
     Write-Host "$Purple +------------------------+$Reset"
-    Write-Host "$Purple '$Grey [2] HP                 $Purple'$Reset"
-    Write-Host "$Purple '$Grey [3] Lenovo             $Purple'$Reset"
-    Write-Host "$Purple '$Grey [4] Asus               $Purple'$Reset"
-    Write-Host "$Purple '$Grey [5] Acer               $Purple'$Reset"
-    Write-Host "$Purple '$Grey [6] MSI                $Purple'$Reset"
-    Write-Host "$Purple '$Grey [7] Huawei             $Purple'$Reset"
-    Write-Host "$Purple '$Grey [8] Xiaomi             $Purple'$Reset"
-    Write-Host "$Purple '$Grey [9] DELL/Alienware     $Purple'$Reset"
-    Write-Host "$Purple '$Grey [10] Gigabyte          $Purple'$Reset"
+    Write-Host "$Purple '$Reset [2] HP                 $Purple'$Reset"
+    Write-Host "$Purple '$Reset [3] Lenovo             $Purple'$Reset"
+    Write-Host "$Purple '$Reset [4] Asus               $Purple'$Reset"
+    Write-Host "$Purple '$Reset [5] Acer               $Purple'$Reset"
+    Write-Host "$Purple '$Reset [6] MSI                $Purple'$Reset"
+    Write-Host "$Purple '$Reset [7] Huawei             $Purple'$Reset"
+    Write-Host "$Purple '$Reset [8] Xiaomi             $Purple'$Reset"
+    Write-Host "$Purple '$Reset [9] DELL/Alienware     $Purple'$Reset"
+    Write-Host "$Purple '$Reset [10] Gigabyte          $Purple'$Reset"
     Write-Host "$Purple +------------------------+$Reset"
 
     $choice = Read-Host "Select your device manufacturer to install drivers"
@@ -53,10 +53,10 @@ function Show-LenovoMenu {
     Clear-Host
     Write-Host ""
     Write-Host "$Purple +--------------------------------------------+$Reset"
-    Write-Host "$Purple '$Grey [1] Install Lenovo Vantage                 $Purple'$Reset"
-    Write-Host "$Purple '$Grey [2] Open Lenovo Driver Page                $Purple'$Reset"
+    Write-Host "$Purple '$Reset [1] Install Lenovo Vantage                 $Purple'$Reset"
+    Write-Host "$Purple '$Reset [2] Open Lenovo Driver Page                $Purple'$Reset"
     Write-Host "$Purple +--------------------------------------------+$Reset"
-    Write-Host "$Purple '$Grey [3] Back to Manufacturer Selection         $Purple'$Reset"
+    Write-Host "$Purple '$Reset [3] Back to Manufacturer Selection         $Purple'$Reset"
     Write-Host "$Purple +--------------------------------------------+$Reset"
 
     $choice = Read-Host ">"
@@ -68,7 +68,7 @@ function Show-LenovoMenu {
             Show-LenovoMenu 
         }
         "1" {
-            Write-Host "$Grey Installing Lenovo Vantage... $Reset"
+            Write-Host "$Reset Installing Lenovo Vantage... $Reset"
             $result = winget install "9WZDNCRFJ4MV" --accept-package-agreements --accept-source-agreements
             
             if ($LASTEXITCODE -eq 0) {

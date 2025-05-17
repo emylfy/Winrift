@@ -6,7 +6,7 @@ $downloadUrl = "https://github.com/Greedeks/GTweak/releases/latest/download/gtwe
 $downloadPath = "$env:TEMP\gtweak.exe"
 
 Write-Host "$Purple +-------------------------+$Reset"
-Write-Host "$Purple '$Grey Launching GTweak...     $Purple'$Reset"
+Write-Host "$Purple '$Reset Launching GTweak...     $Purple'$Reset"
 Write-Host "$Purple +-------------------------+$Reset"
 
 try {

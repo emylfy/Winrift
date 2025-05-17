@@ -4,11 +4,11 @@ function Show-MainMenu {
     $Host.UI.RawUI.WindowTitle = "Simplify11 - UniGetUI"
     Clear-Host
     Write-Host "$Purple +------------------------------------------+$Reset"
-    Write-Host "$Purple '$Grey UniGetUI (formerly WingetUI)             $Purple'$Reset"
+    Write-Host "$Purple '$Reset UniGetUI (formerly WingetUI)             $Purple'$Reset"
     Write-Host "$Purple +------------------------------------------+$Reset"
-    Write-Host "$Purple '$Grey [1] Install and Launch                   $Purple'$Reset"
-    Write-Host "$Purple '$Grey [2] Open List of Apps by Category        $Purple'$Reset"
-    Write-Host "$Purple '$Grey [3] Try Fixing Winget if something wrong $Purple'$Reset"
+    Write-Host "$Purple '$Reset [1] Install and Launch                   $Purple'$Reset"
+    Write-Host "$Purple '$Reset [2] Open List of Apps by Category        $Purple'$Reset"
+    Write-Host "$Purple '$Reset [3] Try Fixing Winget if something wrong $Purple'$Reset"
     Write-Host "$Purple +------------------------------------------+$Reset"
     
     $choice = Read-Host "Select an option"
@@ -24,7 +24,7 @@ function Show-MainMenu {
 function Install-UniGetUI {
     Clear-Host
     Write-Host "$Purple +---                    ---+$Reset"
-    Write-Host "$Purple  '$Grey    Install UniGetUI    $Purple'$Reset"
+    Write-Host "$Purple  '$Reset    Install UniGetUI    $Purple'$Reset"
     Write-Host "$Purple +---                    ---+$Reset"
 
     & winget source update
@@ -32,10 +32,10 @@ function Install-UniGetUI {
     $isInstalled = & winget list --id MartiCliment.UniGetUI --accept-source-agreements | Select-String "MartiCliment.UniGetUI"
     
     if ($isInstalled) {
-        Write-Host "$Grey UniGetUI is already installed. Launching...$Reset"
+        Write-Host "$Reset UniGetUI is already installed. Launching...$Reset"
         Start-Process "unigetui:"
     } else {
-        Write-Host "$Grey Installing UniGetUI...$Reset"
+        Write-Host "$Reset Installing UniGetUI...$Reset"
         $result = & winget install MartiCliment.UniGetUI --accept-package-agreements --accept-source-agreements
         
         if ($LASTEXITCODE -eq 0) {
@@ -66,14 +66,14 @@ function Check-Winget {
 function Show-AppCategoryMenu {
     Clear-Host
     Write-Host "$Purple +--------------------------------+$Reset"
-    Write-Host "$Purple '$Grey App Categories                 $Purple'$Reset"
+    Write-Host "$Purple '$Reset App Categories                 $Purple'$Reset"
     Write-Host "$Purple +--------------------------------+$Reset"
-    Write-Host "$Purple '$Grey [1] Development                $Purple'$Reset"
-    Write-Host "$Purple '$Grey [2] Web Browsers               $Purple'$Reset"
-    Write-Host "$Purple '$Grey [3] Utilities, Microsoft tools $Purple'$Reset"
-    Write-Host "$Purple '$Grey [4] Productivity Suite         $Purple'$Reset"
-    Write-Host "$Purple '$Grey [5] Gaming Essentials          $Purple'$Reset"
-    Write-Host "$Purple '$Grey [6] Communications             $Purple'$Reset"
+    Write-Host "$Purple '$Reset [1] Development                $Purple'$Reset"
+    Write-Host "$Purple '$Reset [2] Web Browsers               $Purple'$Reset"
+    Write-Host "$Purple '$Reset [3] Utilities, Microsoft tools $Purple'$Reset"
+    Write-Host "$Purple '$Reset [4] Productivity Suite         $Purple'$Reset"
+    Write-Host "$Purple '$Reset [5] Gaming Essentials          $Purple'$Reset"
+    Write-Host "$Purple '$Reset [6] Communications             $Purple'$Reset"
     Write-Host "$Purple +--------------------------------+$Reset"
     
     $choice = Read-Host "Select a category"
