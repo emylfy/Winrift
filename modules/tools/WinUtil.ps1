@@ -11,8 +11,8 @@ Write-Host "$Purple +-----------------------------------+$Reset"
 try {
     Invoke-Expression (Invoke-RestMethod -Uri 'https://christitus.com/win')
 } catch {
-    Write-Host "$Red Failed to launch Windows Utility Tool: $_$Reset"
-    pause
+    Write-Host "$Red Failed to launch Windows Utility Tool: $($_.Exception.Message) $Reset"
+    exit 1
 }
 
 exit

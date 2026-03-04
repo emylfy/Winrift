@@ -30,8 +30,7 @@ function Open-OnlineVersion {
 function Run-Portable {
     Write-Host "$Green Running portable WinScript... $Reset"
     Invoke-Expression (Invoke-RestMethod -Uri "https://winscript.cc/irm")
-    Write-Host "$Green WinScript completed. $Reset"
     Show-WinScriptMenu
 }
 
-Show-WinScriptMenu
+exit

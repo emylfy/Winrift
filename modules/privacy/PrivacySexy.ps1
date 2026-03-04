@@ -7,7 +7,7 @@ function Show-PrivacySexyMenu {
     Write-Host "$Purple +--------------------------------------------------------+$Reset"
     Write-Host "$Purple '$Reset [1] Build your own batch from privacy.sexy website     $Purple'$Reset"
     Write-Host "$Purple '$Reset [2] Execute latest standard preset (for most users)    $Purple'$Reset"
-    Write-Host "$Purple '$Reset [3] Back to Main Menu                                  $Purple'$Reset"
+    Write-Host "$Purple '$Reset [3] Back to Menu                                       $Purple'$Reset"
     Write-Host "$Purple +--------------------------------------------------------+$Reset"
     
     $choice = Read-Host ">"
@@ -31,9 +31,7 @@ function Show-PrivacySexyMenu {
             $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
             Show-PrivacySexyMenu
         }
-        "3" {
-            return
-        }
+        "3" { & "$PSScriptRoot\SecurityMenu.ps1" }
         default {
             Write-Host "$Red`Invalid choice. Please try again.$Reset"
             Start-Sleep -Seconds 1

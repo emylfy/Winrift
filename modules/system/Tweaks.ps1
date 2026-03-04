@@ -7,6 +7,10 @@
 # https://github.com/Snowfliger/SyncOS
 # https://github.com/denis-g/windows10-latency-optimization
 
+# Every tweak in this script has been thoroughly tested and compared across multiple sources
+# Only the most effective values and best practices have been selected for this collection
+# Detailed information can be found in the source link provided for each tweak
+
 if (-not ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
     Write-Host "Not running as admin. Elevating..." -ForegroundColor Yellow
     . "$PSScriptRoot\..\..\scripts\AdminLaunch.ps1"
@@ -190,6 +194,27 @@ function Apply-PowerTweaks {
     Set-RegistryValue -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Power" -Name "EventProcessorEnabled" -Type "DWord" -Value "0" -Message "Disabled power event processor"
     Set-RegistryValue -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Power" -Name "CsEnabled" -Type "DWord" -Value "0" -Message "Disabled connected standby for better performance"
 
+    #region Source - https://www.youtube.com/watch?v=5omPOfsJNSo
+    # Tagged Energy Logging
+    # Turns off energy tracking logs that record how much power apps use.
+    Set-RegistryValue -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Power\EnergyEstimation\TaggedEnergy" -Name "DisableTaggedEnergyLogging" -Type "DWord" -Value "1" -Message "Disabled tagged energy logging"
+    Set-RegistryValue -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Power\EnergyEstimation\TaggedEnergy" -Name "TelemetryMaxApplication" -Type "DWord" -Value "0" -Message "Disabled energy telemetry per application"
+    Set-RegistryValue -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Power\EnergyEstimation\TaggedEnergy" -Name "TelemetryMaxTagPerApplication" -Type "DWord" -Value "0" -Message "Disabled energy tagging per application"
+
+    # CPU Throttling
+    # Prevents the system from forcing CPU packages into idle states (C-states).
+    Set-RegistryValue -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Throttle" -Name "PerfEnablePackageIdle" -Type "DWord" -Value "0" -Message "Disabled CPU package idle states"
+
+    # Processor Power Management
+    # Turns off Collaborative Processor Performance Control and Platform Energy Provider
+    Set-RegistryValue -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Processor" -Name "CPPCEnable" -Type "DWord" -Value "0" -Message "Disabled Collaborative Processor Performance Control"
+    Set-RegistryValue -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Processor" -Name "AllowPepPerfStates" -Type "DWord" -Value "0" -Message "Disabled Platform Energy Provider performance states"
+
+    # PCIe Power Saving
+    # Tells Windows to ignore PCIe power-saving features (ASPM).
+    Set-RegistryValue -Path "HKLM:\SYSTEM\CurrentControlSet\Services\pci\Parameters" -Name "ASPMOptOut" -Type "DWord" -Value "1" -Message "Disabled PCIe ASPM power saving"
+    #endregion
+    
     # Activate Hidden Ultimate Performance Power Plan
     Write-Host "Activating Ultimate Performance Power Plan"
     powercfg -duplicatescheme e9a42b02-d5df-448d-aa00-03f14749eb61 eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee
@@ -222,6 +247,20 @@ function Apply-SystemMaintenanceTweaks {
     
     # Disable Automatic maintenance
     Set-RegistryValue -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Schedule\Maintenance" -Name "MaintenanceDisabled" -Type "DWord" -Value "1" -Message "Disabled automatic maintenance for better performance"
+
+    #region Source - https://www.youtube.com/watch?v=5omPOfsJNSo
+    # I/O Operation Counting
+    # Disables operation counting in the I/O system.
+    Set-RegistryValue -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\I/O System" -Name "CountOperations" -Type "DWord" -Value "0" -Message "Disabled I/O operation counting"
+
+    # File System Shadow Copy Provider Encryption
+    # Turns off forced encryption in the File System Shadow Copy Provider.
+    Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\fssProv" -Name "EncryptProtocol" -Type "DWord" -Value "0" -Message "Disabled FSS provider encryption"
+
+    # Scheduler RPC
+    # Disables RPC over Scheduler, stopping certain scheduled background communications.
+    Set-RegistryValue -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Schedule" -Name "DisableRpcOver" -Type "DWord" -Value "1" -Message "Disabled RPC over Scheduler"
+    #endregion
 }
 
 function Apply-UIResponsivenessTweaks {

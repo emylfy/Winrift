@@ -31,12 +31,16 @@ function Show-DeviceMenu {
     Write-Host "$Purple '$Reset [8] Xiaomi             $Purple'$Reset"
     Write-Host "$Purple '$Reset [9] DELL/Alienware     $Purple'$Reset"
     Write-Host "$Purple '$Reset [10] Gigabyte          $Purple'$Reset"
+    Write-Host "$Purple '$Reset [Enter] Back to Menu   $Purple'$Reset"
     Write-Host "$Purple +------------------------+$Reset"
 
     $choice = Read-Host "Select your device manufacturer to install drivers"
     
     if ($choice -eq "3") {
         Show-LenovoMenu
+    }
+    elseif ($choice -eq "") {
+        & "$PSScriptRoot\..\..\simplify11.ps1"
     }
     elseif ($choice -in 0..10) {
         Start-Process $urls[$choice]
