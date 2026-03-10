@@ -122,8 +122,7 @@ function Show-WindowsCustomizationMenu {
 }
 
 function Simplify11 {
-    & "$PSScriptRoot\..\..\simplify11.ps1"
-    Show-MainMenu
+    return
 }
 
 Export-ModuleMember -Function `

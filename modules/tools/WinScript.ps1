@@ -11,13 +11,13 @@ function Show-WinScriptMenu {
     Write-Host "$Purple '$Reset [2] Run portable version          $Purple'$Reset"
     Write-Host "$Purple '$Reset [3] Back to menu                  $Purple'$Reset"
     Write-Host "$Purple +-----------------------------------+$Reset"
-    
+
     $choice = Read-Host "Select an option"
-    
+
     switch ($choice) {
         "1" { Open-OnlineVersion }
         "2" { Invoke-Portable }
-        "3" { & "$PSScriptRoot\..\..\simplify11.ps1" }
+        "3" { return }
         default { Show-WinScriptMenu }
     }
 }
@@ -38,5 +38,3 @@ function Invoke-Portable {
     }
     Show-WinScriptMenu
 }
-
-exit

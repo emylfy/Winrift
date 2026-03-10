@@ -31,7 +31,7 @@ function Show-DefendNotMenu {
             Show-DefendNotMenu
         }
         "2" { Start-Process "https://github.com/es3n1n/defendnot"; Show-DefendNotMenu }
-        "3" { & "$PSScriptRoot\SecurityMenu.ps1" }
+        "3" { return }
         default { Show-DefendNotMenu }
     }
 }

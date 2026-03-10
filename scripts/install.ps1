@@ -7,11 +7,20 @@ $shortcut = $wshShell.CreateShortcut($shortcutPath)
 $shortcut.TargetPath = "powershell.exe"
 $shortcut.Arguments = '-NoProfile -ExecutionPolicy Bypass "iwr \"https://dub.sh/simplify11\" | iex"'
 $shortcut.Description = "Launch Simplify11"
-$shortcut.WorkingDirectory = $startMenuPath
+$shortcut.WorkingDirectory = $env:USERPROFILE
 
-Invoke-WebRequest -Uri "https://raw.githubusercontent.com/emylfy/simplify11/refs/heads/main/media/icon.ico" -OutFile "$env:APPDATA\icon.ico"
+$icoDir = "$env:APPDATA\Simplify11"
+if (-not (Test-Path $icoDir)) {
+    New-Item -Path $icoDir -ItemType Directory -Force | Out-Null
+}
 
-$icoPath = "$env:APPDATA\icon.ico"
+try {
+    Invoke-WebRequest -Uri "https://raw.githubusercontent.com/emylfy/simplify11/refs/heads/main/media/icon.ico" -OutFile "$icoDir\icon.ico" -ErrorAction Stop
+} catch {
+    Write-Host "Warning: Could not download icon. Shortcut will use default icon." -ForegroundColor Yellow
+}
+
+$icoPath = "$icoDir\icon.ico"
 $shortcut.IconLocation = $icoPath
 $shortcut.Save()
 

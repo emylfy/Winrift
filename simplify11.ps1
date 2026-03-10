@@ -64,7 +64,15 @@ function Show-MainMenu {
 
             $autoStartChoices = @("4","5","7","8")
             if ($autoStartChoices -contains $choice) {
-                Start-AdminProcess -ScriptPath $scriptPaths[$choice] -NoExit
+                $targetScript = $scriptPaths[$choice]
+                if (-not (Test-Path $targetScript)) {
+                    Write-Host "$Red Module not found: $targetScript$Reset"
+                    Write-Host "$Yellow This module may not be included in your installation.$Reset"
+                    Read-Host "Press Enter to continue"
+                    Show-MainMenu
+                    break
+                }
+                Start-AdminProcess -ScriptPath $targetScript -NoExit
                 Show-MainMenu
                 break
             }

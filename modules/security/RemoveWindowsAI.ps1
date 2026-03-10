@@ -27,7 +27,7 @@ function Show-RemoveWindowsAIMenu {
             Show-RemoveWindowsAIMenu
         }
         "2" { Start-Process "https://github.com/zoicware/RemoveWindowsAI"; Show-RemoveWindowsAIMenu }
-        "3" { & "$PSScriptRoot\SecurityMenu.ps1" }
+        "3" { return }
         default { Show-RemoveWindowsAIMenu }
     }
 }

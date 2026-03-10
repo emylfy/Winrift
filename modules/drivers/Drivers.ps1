@@ -4,45 +4,45 @@ function Show-DeviceMenu {
     $Host.UI.RawUI.WindowTitle = "Simplify11 - Drivers"
     Clear-Host
 
-    $urls = @(
-        "https://www.nvidia.com/en-us/software/nvidia-app/",
-        "https://www.amd.com/en/support/download/drivers.html",
-        "https://support.hp.com/us-en/drivers",
-        "https://support.lenovo.com",
-        "https://www.asus.com/support/download-center/",
-        "https://www.acer.com/ac/en/US/content/drivers",
-        "https://www.msi.com/support/download",
-        "https://www.huawei.com/en/support",
-        "https://www.xiaomi.com/global/support",
-        "https://www.dell.com/support/home/products/computers?app=drivers",
-        "https://www.gigabyte.com/Support/Consumer/Download"
-    )
+    $urls = @{
+        "1"  = "https://www.nvidia.com/en-us/software/nvidia-app/"
+        "2"  = "https://www.amd.com/en/support/download/drivers.html"
+        "3"  = "https://support.hp.com/us-en/drivers"
+        "4"  = "https://support.lenovo.com"
+        "5"  = "https://www.asus.com/support/download-center/"
+        "6"  = "https://www.acer.com/ac/en/US/content/drivers"
+        "7"  = "https://www.msi.com/support/download"
+        "8"  = "https://www.huawei.com/en/support"
+        "9"  = "https://www.xiaomi.com/global/support"
+        "10" = "https://www.dell.com/support/home/products/computers?app=drivers"
+        "11" = "https://www.gigabyte.com/Support/Consumer/Download"
+    }
 
     Write-Host "$Purple +------------------------+$Reset"
-    Write-Host "$Purple '$Reset [0] Nvidia App         $Purple'$Reset"
-    Write-Host "$Purple '$Reset [1] AMD Drivers        $Purple'$Reset"
+    Write-Host "$Purple '$Reset [1] Nvidia App         $Purple'$Reset"
+    Write-Host "$Purple '$Reset [2] AMD Drivers        $Purple'$Reset"
     Write-Host "$Purple +------------------------+$Reset"
-    Write-Host "$Purple '$Reset [2] HP                 $Purple'$Reset"
-    Write-Host "$Purple '$Reset [3] Lenovo             $Purple'$Reset"
-    Write-Host "$Purple '$Reset [4] Asus               $Purple'$Reset"
-    Write-Host "$Purple '$Reset [5] Acer               $Purple'$Reset"
-    Write-Host "$Purple '$Reset [6] MSI                $Purple'$Reset"
-    Write-Host "$Purple '$Reset [7] Huawei             $Purple'$Reset"
-    Write-Host "$Purple '$Reset [8] Xiaomi             $Purple'$Reset"
-    Write-Host "$Purple '$Reset [9] DELL/Alienware     $Purple'$Reset"
-    Write-Host "$Purple '$Reset [10] Gigabyte          $Purple'$Reset"
+    Write-Host "$Purple '$Reset [3] HP                 $Purple'$Reset"
+    Write-Host "$Purple '$Reset [4] Lenovo             $Purple'$Reset"
+    Write-Host "$Purple '$Reset [5] Asus               $Purple'$Reset"
+    Write-Host "$Purple '$Reset [6] Acer               $Purple'$Reset"
+    Write-Host "$Purple '$Reset [7] MSI                $Purple'$Reset"
+    Write-Host "$Purple '$Reset [8] Huawei             $Purple'$Reset"
+    Write-Host "$Purple '$Reset [9] Xiaomi             $Purple'$Reset"
+    Write-Host "$Purple '$Reset [10] DELL/Alienware    $Purple'$Reset"
+    Write-Host "$Purple '$Reset [11] Gigabyte          $Purple'$Reset"
     Write-Host "$Purple '$Reset [Enter] Back to Menu   $Purple'$Reset"
     Write-Host "$Purple +------------------------+$Reset"
 
     $choice = Read-Host "Select your device manufacturer to install drivers"
-    
-    if ($choice -eq "3") {
+
+    if ($choice -eq "4") {
         Show-LenovoMenu
     }
     elseif ($choice -eq "") {
-        & "$PSScriptRoot\..\..\simplify11.ps1"
+        return
     }
-    elseif ($choice -in 0..10) {
+    elseif ($urls.ContainsKey($choice)) {
         Start-Process $urls[$choice]
         Show-DeviceMenu
     }
@@ -64,17 +64,17 @@ function Show-LenovoMenu {
     Write-Host "$Purple +--------------------------------------------+$Reset"
 
     $choice = Read-Host ">"
-    
+
     switch ($choice) {
         "3" { Show-DeviceMenu }
-        "2" { 
+        "2" {
             Start-Process "https://support.lenovo.com"
-            Show-LenovoMenu 
+            Show-LenovoMenu
         }
         "1" {
             Write-Host "$Reset Installing Lenovo Vantage... $Reset"
             $result = winget install "9WZDNCRFJ4MV" --accept-package-agreements --accept-source-agreements
-            
+
             if ($LASTEXITCODE -eq 0) {
                 Write-Host "$Green Successfully installed Lenovo Vantage. $Reset"
             }
@@ -82,7 +82,7 @@ function Show-LenovoMenu {
                 Write-Host "$Red Failed to install Lenovo Vantage. Please install manually from the Microsoft Store. $Reset"
                 Start-Process "ms-windows-store://pdp?hl=en-us&gl=us&ocid=pdpshare&referrer=storeforweb&productid=9WZDNCRFJ4MV&storecid=storeweb-pdp-open-cta"
             }
-            
+
             Start-Sleep -Seconds 2
             Show-LenovoMenu
         }

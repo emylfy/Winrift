@@ -16,7 +16,7 @@ function Show-MainMenu {
     switch ($choice) {
         "1" { Install-UniGetUI }
         "2" { Show-AppCategoryMenu }
-        "3" { Check-Winget }
+        "3" { Test-Winget }
         default { Show-MainMenu }
     }
 }
@@ -44,14 +44,14 @@ function Install-UniGetUI {
         } else {
             Write-Host "$Red Failed to install UniGetUI. Opening website for manual download...$Reset"
             Start-Process "https://www.marticliment.com/unigetui/"
-            Check-Winget
+            Test-Winget
         }
     }
     
     Show-MainMenu
 }
 
-function Check-Winget {
+function Test-Winget {
     $wingetExists = Get-Command winget -ErrorAction SilentlyContinue
     
     if (-not $wingetExists) {

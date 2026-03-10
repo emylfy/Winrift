@@ -32,7 +32,7 @@ function Show-SecurityMenu {
             Start-AdminProcess -ScriptPath "$PSScriptRoot\..\privacy\PrivacySexy.ps1" -NoExit
             Show-SecurityMenu
         }
-        "4" { & "$PSScriptRoot\..\..\simplify11.ps1" }
+        "4" { return }
         default { Show-SecurityMenu }
     }
 }

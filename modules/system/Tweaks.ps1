@@ -78,15 +78,15 @@ function Show-MainMenu {
     } while ($choice -notmatch '^[1-4]$')
     
     switch ($choice) {
-        "1" { Apply-UniversalTweaks }
+        "1" { Invoke-UniversalTweaks }
         "2" { Clear-SystemSpace }
         "3" { Show-GPUMenu }
-        "4" { & "$PSScriptRoot\..\..\simplify11.ps1" }
+        "4" { return }
         default { Show-MainMenu }
     }
 }
 
-function Apply-UniversalTweaks {
+function Invoke-UniversalTweaks {
     Clear-Host
     Write-Host ""
     Write-Host "$Purple +---------------------------------------------+$Reset"
@@ -118,19 +118,19 @@ function Apply-UniversalTweaks {
     New-SafeRestorePoint
 
     $tweakMap = @{
-        "1"  = { Apply-SystemLatencyTweaks }
-        "2"  = { Apply-InputDeviceTweaks }
-        "3"  = { Apply-SSDTweaks }
-        "4"  = { Apply-GPUTweaks }
-        "5"  = { Apply-NetworkTweaks }
-        "6"  = { Apply-CPUTweaks }
-        "7"  = { Apply-PowerTweaks }
-        "8"  = { Apply-SystemResponsivenessTweaks }
-        "9"  = { Apply-BootOptimizationTweaks }
-        "10" = { Apply-SystemMaintenanceTweaks }
-        "11" = { Apply-UIResponsivenessTweaks }
-        "12" = { Apply-MemoryTweaks }
-        "13" = { Apply-DirectXTweaks }
+        "1"  = { Invoke-SystemLatencyTweaks }
+        "2"  = { Invoke-InputDeviceTweaks }
+        "3"  = { Invoke-SSDTweaks }
+        "4"  = { Invoke-GPUTweaks }
+        "5"  = { Invoke-NetworkTweaks }
+        "6"  = { Invoke-CPUTweaks }
+        "7"  = { Invoke-PowerTweaks }
+        "8"  = { Invoke-SystemResponsivenessTweaks }
+        "9"  = { Invoke-BootOptimizationTweaks }
+        "10" = { Invoke-SystemMaintenanceTweaks }
+        "11" = { Invoke-UIResponsivenessTweaks }
+        "12" = { Invoke-MemoryTweaks }
+        "13" = { Invoke-DirectXTweaks }
     }
 
     if ($selection -eq "A" -or $selection -eq "a") {
@@ -176,7 +176,7 @@ function Apply-UniversalTweaks {
     Show-MainMenu
 }
 
-function Apply-SystemLatencyTweaks {
+function Invoke-SystemLatencyTweaks {
     Write-Host "`nApplying System Latency tweaks...`n"
     
     # System Latency Tweaks
@@ -190,7 +190,7 @@ function Apply-SystemLatencyTweaks {
     Set-RegistryValue -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\kernel" -Name "SerializeTimerExpiration" -Type "DWord" -Value "1" -Message "Enabled timer serialization for better system timing"
 }
 
-function Apply-InputDeviceTweaks {
+function Invoke-InputDeviceTweaks {
     Write-Host "`nApplying Input Device tweaks...`n"
     
     # Mouse & Keyboard Tweaks
@@ -208,7 +208,7 @@ function Apply-InputDeviceTweaks {
     Set-RegistryValue -Path "HKCU:\Control Panel\Accessibility\Keyboard Response" -Name "Flags" -Type "String" -Value "122" -Message "Modified keyboard response flags"
 }
 
-function Apply-SSDTweaks {
+function Invoke-SSDTweaks {
     Write-Host "`nApplying SSD/NVMe tweaks...`n"
     
     # Check if SSD/NVMe exists
@@ -238,7 +238,7 @@ function Apply-SSDTweaks {
     }
 }
 
-function Apply-GPUTweaks {
+function Invoke-GPUTweaks {
     Write-Host "`nApplying GPU Performance tweaks...`n"
     
     # GPU Performance Tweaks
@@ -247,7 +247,7 @@ function Apply-GPUTweaks {
     Set-RegistryValue -Path "HKLM:\SYSTEM\ControlSet001\Control\GraphicsDrivers\Scheduler" -Name "EnablePreemption" -Type "DWord" -Value "0" -Message "Disabled GPU preemption for better performance"
 }
 
-function Apply-NetworkTweaks {
+function Invoke-NetworkTweaks {
     Write-Host "`nApplying Network tweaks...`n"
     
     # Network Optimization
@@ -260,7 +260,7 @@ function Apply-NetworkTweaks {
     Set-RegistryValue -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile" -Name "NoLazyMode" -Type "DWord" -Value "1" -Message "Disabled lazy mode for network operations"
 }
 
-function Apply-CPUTweaks {
+function Invoke-CPUTweaks {
     Write-Host "`nApplying CPU Performance tweaks...`n"
     
     # CPU Tweaks
@@ -271,7 +271,7 @@ function Apply-CPUTweaks {
     Set-RegistryValue -Path "HKLM:\SYSTEM\CurrentControlSet\Services\MMCSS" -Name "Start" -Type "DWord" -Value "2" -Message "Configured Multimedia Class Scheduler Service for better performance"
 }
 
-function Apply-PowerTweaks {
+function Invoke-PowerTweaks {
     Write-Host "`nApplying Power Management tweaks...`n"
     
     # Power Management Tweaks
@@ -312,7 +312,7 @@ function Apply-PowerTweaks {
     powercfg -setactive eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee
 }
 
-function Apply-SystemResponsivenessTweaks {
+function Invoke-SystemResponsivenessTweaks {
     Write-Host "`nApplying System Responsiveness tweaks...`n"
     
     # Set Priority For Programs Instead Of Background Services
@@ -323,7 +323,7 @@ function Apply-SystemResponsivenessTweaks {
     Set-RegistryValue -Path "HKLM:\SYSTEM\ControlSet001\Control\PriorityControl" -Name "IRQ16Priority" -Type "DWord" -Value "2" -Message "Set IRQ16 priority for better system response"
 }
 
-function Apply-BootOptimizationTweaks {
+function Invoke-BootOptimizationTweaks {
     Write-Host "`nApplying Boot Optimization tweaks...`n"
     
     # Boot System & Software without limits
@@ -333,7 +333,7 @@ function Apply-BootOptimizationTweaks {
     Set-RegistryValue -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" -Name "DelayedDesktopSwitchTimeout" -Type "DWord" -Value "0" -Message "Removed desktop switch delay"
 }
 
-function Apply-SystemMaintenanceTweaks {
+function Invoke-SystemMaintenanceTweaks {
     Write-Host "`nApplying System Maintenance tweaks...`n"
     
     # Disable Automatic maintenance
@@ -354,7 +354,7 @@ function Apply-SystemMaintenanceTweaks {
     #endregion
 }
 
-function Apply-UIResponsivenessTweaks {
+function Invoke-UIResponsivenessTweaks {
     Write-Host "`nApplying UI Responsiveness tweaks...`n"
     
     # UI Responsiveness Tweaks
@@ -366,7 +366,7 @@ function Apply-UIResponsivenessTweaks {
     Set-RegistryValue -Path "HKLM:\SYSTEM\CurrentControlSet\Control" -Name "WaitToKillServiceTimeout" -Type "String" -Value "2000" -Message "Reduced wait time for killing services"
 }
 
-function Apply-MemoryTweaks {
+function Invoke-MemoryTweaks {
     Write-Host "`nApplying Memory Optimization tweaks...`n"
     
     # Memory Tweaks
@@ -383,7 +383,7 @@ function Apply-MemoryTweaks {
     Set-RegistryValue -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Memory Management" -Name "DisablePagingExecutive" -Type "DWord" -Value "1" -Message "Disabled paging of kernel and drivers"
 }
 
-function Apply-DirectXTweaks {
+function Invoke-DirectXTweaks {
     Write-Host "`nApplying DirectX tweaks...`n"
     
     # DirectX Optimizations
@@ -476,18 +476,18 @@ function Show-GPUMenu {
     $choice = Read-Host ">"
     
     switch ($choice) {
-        "1" { Apply-NvidiaTweaks }
-        "2" { Apply-AMDTweaks }
-        "3" { Apply-HybridTweaks }
+        "1" { Invoke-NvidiaTweaks }
+        "2" { Invoke-AMDTweaks }
+        "3" { Invoke-HybridTweaks }
         "4" { Show-MainMenu }
         default { Show-GPUMenu }
     }
 }
 
-function Apply-HybridTweaks {
+function Invoke-HybridTweaks {
     Write-Host "$Green Applying tweaks for hybrid GPU configuration (NVIDIA + AMD)...$Reset"
-    Apply-NvidiaTweaks -NoExit
-    Apply-AMDTweaks -NoExit
+    Invoke-NvidiaTweaks -NoExit
+    Invoke-AMDTweaks -NoExit
     Write-Host "$Green Successfully applied tweaks for both NVIDIA and AMD GPUs.$Reset"
     Write-Host ""
     Write-Host "$Purple Press any key to return to the GPU menu...$Reset"
@@ -495,7 +495,7 @@ function Apply-HybridTweaks {
     Show-GPUMenu
 }
 
-function Apply-NvidiaTweaks {
+function Invoke-NvidiaTweaks {
     param (
         [switch]$NoExit
     )
@@ -515,7 +515,7 @@ if (-not $NoExit) {
     }
 }
 
-function Apply-AMDTweaks {
+function Invoke-AMDTweaks {
     param (
         [switch]$NoExit
     )

@@ -31,7 +31,7 @@ function Show-PrivacySexyMenu {
             $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
             Show-PrivacySexyMenu
         }
-        "3" { & "$PSScriptRoot\SecurityMenu.ps1" }
+        "3" { return }
         default {
             Write-Host "$Red`Invalid choice. Please try again.$Reset"
             Start-Sleep -Seconds 1

@@ -7,12 +7,6 @@ if (!(Test-Path $tempPath)) {
     New-Item -ItemType Directory -Path $tempPath | Out-Null
 }
 
-try {
-    Add-MpPreference -ExclusionPath $tempPath -ErrorAction SilentlyContinue
-} catch {
-    Write-Host "Note: Running without admin rights, continuing normally..." -ForegroundColor Yellow
-}
-
 Write-Host "Downloading Simplify11..." -ForegroundColor Cyan
 Write-Progress -Activity "Downloading Simplify11" -Status "Initializing..." -PercentComplete 0
 
@@ -24,7 +18,7 @@ try {
 
     Write-Progress -Activity "Downloading Simplify11" -Status "Complete" -PercentComplete 100
     Write-Host "Download complete!" -ForegroundColor Green
-    
+
     Write-Host "Extracting files..." -ForegroundColor Cyan
     Write-Progress -Activity "Installing Simplify11" -Status "Extracting..." -PercentComplete 50
 
@@ -33,12 +27,12 @@ try {
     Write-Progress -Activity "Installing Simplify11" -Status "Complete" -PercentComplete 100
 
     Write-Host @"
- ____  _                 _ _  __       _ _ 
+ ____  _                 _ _  __       _ _
 / ___|(_)_ __ ___  _ __ | (_)/ _|_   _/ / |
 \___ \| | '_ ' _ \| '_ \| | | |_| | | | | |
  ___) | | | | | | | |_) | | |  _| |_| | | |
 |____/|_|_| |_| |_| .__/|_|_|_|  \__, |_|_|
-                  |_|             |___/     
+                  |_|             |___/
 "@ -ForegroundColor Cyan
 
     if (Get-Command wt -ErrorAction SilentlyContinue) {
