@@ -18,6 +18,27 @@ if (-not ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdenti
     exit
 }
 
+# Start logging
+$logDir = Join-Path $env:USERPROFILE "Simplify11\logs"
+if (-not (Test-Path $logDir)) { New-Item -Path $logDir -ItemType Directory -Force | Out-Null }
+$logFile = Join-Path $logDir "tweaks_$(Get-Date -Format 'yyyy-MM-dd_HH-mm-ss').log"
+Start-Transcript -Path $logFile -Append | Out-Null
+Write-Host "$Green[LOG]$Reset Session log: $logFile"
+
+function New-SafeRestorePoint {
+    Write-Host "`n$Purple Creating System Restore Point before applying tweaks...$Reset"
+    try {
+        # Enable System Restore on the system drive if not already enabled
+        Enable-ComputerRestore -Drive "$env:SystemDrive\" -ErrorAction SilentlyContinue
+        Checkpoint-Computer -Description "Simplify11 - Before System Tweaks $(Get-Date -Format 'yyyy-MM-dd HH:mm')" -RestorePointType MODIFY_SETTINGS -ErrorAction Stop
+        Write-Host "$Green[SUCCESS]$Reset System Restore Point created successfully."
+    } catch {
+        Write-Host "$Yellow[WARNING]$Reset Could not create restore point: $($_.Exception.Message)"
+        Write-Host "$Yellow[WARNING]$Reset Proceeding without restore point. Consider creating one manually."
+    }
+    Write-Host ""
+}
+
 function Set-RegistryValue {
     param (
         [string]$Path,
@@ -58,7 +79,7 @@ function Show-MainMenu {
     
     switch ($choice) {
         "1" { Apply-UniversalTweaks }
-        "2" { FreeUpSpace }
+        "2" { Clear-SystemSpace }
         "3" { Show-GPUMenu }
         "4" { & "$PSScriptRoot\..\..\simplify11.ps1" }
         default { Show-MainMenu }
@@ -66,20 +87,90 @@ function Show-MainMenu {
 }
 
 function Apply-UniversalTweaks {
-    Apply-SystemLatencyTweaks
-    Apply-InputDeviceTweaks
-    Apply-SSDTweaks
-    Apply-GPUTweaks
-    Apply-NetworkTweaks
-    Apply-CPUTweaks
-    Apply-PowerTweaks
-    Apply-SystemResponsivenessTweaks
-    Apply-BootOptimizationTweaks
-    Apply-SystemMaintenanceTweaks
-    Apply-UIResponsivenessTweaks
-    Apply-MemoryTweaks
-    Apply-DirectXTweaks
-    
+    Clear-Host
+    Write-Host ""
+    Write-Host "$Purple +---------------------------------------------+$Reset"
+    Write-Host "$Purple |$Reset  Select tweak categories to apply:          $Purple|$Reset"
+    Write-Host "$Purple +---------------------------------------------+$Reset"
+    Write-Host "$Purple |$Reset  [1]  System Latency                       $Purple|$Reset"
+    Write-Host "$Purple |$Reset  [2]  Input Device Optimization            $Purple|$Reset"
+    Write-Host "$Purple |$Reset  [3]  SSD/NVMe Performance                 $Purple|$Reset"
+    Write-Host "$Purple |$Reset  [4]  GPU Hardware Scheduling              $Purple|$Reset"
+    Write-Host "$Purple |$Reset  [5]  Network Optimization                 $Purple|$Reset"
+    Write-Host "$Purple |$Reset  [6]  CPU Performance                      $Purple|$Reset"
+    Write-Host "$Purple |$Reset  [7]  Power Management                     $Purple|$Reset"
+    Write-Host "$Purple |$Reset  [8]  System Responsiveness                $Purple|$Reset"
+    Write-Host "$Purple |$Reset  [9]  Boot Optimization                    $Purple|$Reset"
+    Write-Host "$Purple |$Reset  [10] System Maintenance                   $Purple|$Reset"
+    Write-Host "$Purple |$Reset  [11] UI Responsiveness                    $Purple|$Reset"
+    Write-Host "$Purple |$Reset  [12] Memory Optimization                  $Purple|$Reset"
+    Write-Host "$Purple |$Reset  [13] DirectX Enhancements                 $Purple|$Reset"
+    Write-Host "$Purple +---------------------------------------------+$Reset"
+    Write-Host "$Purple |$Reset  [A]  Apply ALL tweaks                     $Purple|$Reset"
+    Write-Host "$Purple |$Reset  [B]  Back to menu                         $Purple|$Reset"
+    Write-Host "$Purple +---------------------------------------------+$Reset"
+    Write-Host ""
+    Write-Host "$Yellow Enter numbers separated by commas (e.g. 1,3,5) or A for all:$Reset"
+    $selection = Read-Host ">"
+
+    if ($selection -eq "B" -or $selection -eq "b") { Show-MainMenu; return }
+
+    New-SafeRestorePoint
+
+    $tweakMap = @{
+        "1"  = { Apply-SystemLatencyTweaks }
+        "2"  = { Apply-InputDeviceTweaks }
+        "3"  = { Apply-SSDTweaks }
+        "4"  = { Apply-GPUTweaks }
+        "5"  = { Apply-NetworkTweaks }
+        "6"  = { Apply-CPUTweaks }
+        "7"  = { Apply-PowerTweaks }
+        "8"  = { Apply-SystemResponsivenessTweaks }
+        "9"  = { Apply-BootOptimizationTweaks }
+        "10" = { Apply-SystemMaintenanceTweaks }
+        "11" = { Apply-UIResponsivenessTweaks }
+        "12" = { Apply-MemoryTweaks }
+        "13" = { Apply-DirectXTweaks }
+    }
+
+    if ($selection -eq "A" -or $selection -eq "a") {
+        $selectedKeys = @("1","2","3","4","5","6","7","8","9","10","11","12","13")
+    } else {
+        $selectedKeys = $selection -split ',' | ForEach-Object { $_.Trim() }
+    }
+
+    $appliedCategories = @()
+    foreach ($key in $selectedKeys) {
+        if ($tweakMap.ContainsKey($key)) {
+            & $tweakMap[$key]
+            $appliedCategories += $key
+        } else {
+            Write-Host "$Yellow[SKIP]$Reset Unknown option: $key"
+        }
+    }
+
+    $categoryNames = @{
+        "1" = "System Latency"; "2" = "Input Device Optimization"; "3" = "SSD/NVMe Performance"
+        "4" = "GPU Hardware Scheduling"; "5" = "Network Optimization"; "6" = "CPU Performance"
+        "7" = "Power Management"; "8" = "System Responsiveness"; "9" = "Boot Optimization"
+        "10" = "System Maintenance"; "11" = "UI Responsiveness"; "12" = "Memory Optimization"
+        "13" = "DirectX Enhancements"
+    }
+
+    Write-Host ""
+    Write-Host "$Green +---------------------------------------------+$Reset"
+    Write-Host "$Green |          Tweaks Applied Successfully         |$Reset"
+    Write-Host "$Green +---------------------------------------------+$Reset"
+    Write-Host "$Reset  Categories applied:"
+    foreach ($cat in $appliedCategories) {
+        if ($categoryNames.ContainsKey($cat)) {
+            Write-Host "$Reset  - $($categoryNames[$cat])"
+        }
+    }
+    Write-Host ""
+    Write-Host "$Yellow  A system restart is recommended for all changes to take effect.$Reset"
+    Write-Host "$Green  Log saved to: $logFile$Reset"
+    Write-Host ""
     Write-Host "`n$Purple Press any key to return to the main menu...$Reset"
     $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
     Show-MainMenu
@@ -314,7 +405,7 @@ function Apply-DirectXTweaks {
 }
 
 
-function FreeUpSpace {
+function Clear-SystemSpace {
     $host.UI.RawUI.WindowTitle = "System Cleaner"
     Write-Host ""
     Write-Host "$Reset`Would you like to disable Reserved Storage?$Reset"

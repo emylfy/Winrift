@@ -26,7 +26,7 @@ function Disable-QuickAccess {
     Show-WindowsCustomizationMenu
 }
 
-function Extract-StartFolders {
+function Expand-StartFolders {
     Clear-Host
     $scriptDir = Split-Path -Parent $PSScriptRoot
     $organizerPath = Join-Path -Path $scriptDir -ChildPath "windots\Organizer.ps1"
@@ -37,5 +37,5 @@ function Extract-StartFolders {
 Export-ModuleMember -Function `
     Set-ShortDateHours, `
     Disable-QuickAccess, `
-    Extract-StartFolders
+    Expand-StartFolders
 

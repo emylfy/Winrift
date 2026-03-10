@@ -1,7 +1,16 @@
 . "$PSScriptRoot\scripts\Common.ps1"
 
+# Load version from version.json
+$versionFile = Join-Path $PSScriptRoot "version.json"
+if (Test-Path $versionFile) {
+    $versionInfo = Get-Content $versionFile -Raw | ConvertFrom-Json
+    $script:AppVersion = $versionInfo.version
+} else {
+    $script:AppVersion = "unknown"
+}
+
 function Show-MainMenu {
-    $Host.UI.RawUI.WindowTitle = "Simplify11 v26.01"
+    $Host.UI.RawUI.WindowTitle = "Simplify11 v$script:AppVersion"
     Clear-Host
     Write-Host
     Write-Host "$Purple +--------------------------------------------------------+$Reset"
@@ -19,12 +28,12 @@ function Show-MainMenu {
     Write-Host "$Purple '$Reset [9] Sparkle - Windows Package Manager                  $Purple'$Reset"
     Write-Host "$Purple '$Reset [10] GTweak - Tweaking tool and debloater              $Purple'$Reset"
     Write-Host "$Purple +--------------------------------------------------------+$Reset"
-    
+
     $choice = Read-Host ">"
-    
+
     switch ($choice) {
         "1" { Start-Process "https://github.com/emylfy/simplify11/blob/main/docs/autounattend_guide.md"; Show-MainMenu }
-        {"2","4","5","6","7","8","9","10" -contains $choice} {
+        {"2","3","4","5","6","7","8","9","10" -contains $choice} {
             . "$PSScriptRoot\scripts\AdminLaunch.ps1"
 
             $scriptPaths = @{
@@ -48,6 +57,7 @@ function Show-MainMenu {
                 "9"  = "https://github.com/Parcoil/Sparkle"               # Sparkle
                 # Internal modules / features
                 "2"  = "https://github.com/emylfy/simplify11"             # System Tweaks (internal)
+                "3"  = "https://github.com/emylfy/simplify11"             # Security Menu (internal)
                 "4"  = "https://github.com/emylfy/simplify11"             # Drivers (internal)
                 "5"  = "https://github.com/emylfy/windots"                # Windots
             }
@@ -113,11 +123,6 @@ function Show-MainMenu {
                     }
                 }
             }
-        }
-        "3" {
-            . "$PSScriptRoot\scripts\AdminLaunch.ps1"
-            Start-AdminProcess -ScriptPath "$PSScriptRoot\modules\security\SecurityMenu.ps1" -NoExit
-            Show-MainMenu
         }
         default { Show-MainMenu }
     }

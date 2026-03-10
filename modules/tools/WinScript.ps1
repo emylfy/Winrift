@@ -16,7 +16,7 @@ function Show-WinScriptMenu {
     
     switch ($choice) {
         "1" { Open-OnlineVersion }
-        "2" { Run-Portable }
+        "2" { Invoke-Portable }
         "3" { & "$PSScriptRoot\..\..\simplify11.ps1" }
         default { Show-WinScriptMenu }
     }
@@ -27,9 +27,15 @@ function Open-OnlineVersion {
     Show-WinScriptMenu
 }
 
-function Run-Portable {
+function Invoke-Portable {
     Write-Host "$Green Running portable WinScript... $Reset"
-    Invoke-Expression (Invoke-RestMethod -Uri "https://winscript.cc/irm")
+    try {
+        $scriptContent = Invoke-RestMethod -Uri "https://winscript.cc/irm" -ErrorAction Stop
+        Invoke-Expression $scriptContent
+    } catch {
+        Write-Host "$Red Failed to launch portable WinScript: $($_.Exception.Message) $Reset"
+        Read-Host "Press Enter to continue"
+    }
     Show-WinScriptMenu
 }
 

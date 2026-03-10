@@ -4,10 +4,16 @@ function Invoke-Rectify11 {
 }
 
 function Install-SpotX {
-    cls
+    Clear-Host
     Write-Host ""
     Write-Host "Installing SpotX..."
-    Invoke-Expression (Invoke-WebRequest -UseBasicParsing https://raw.githubusercontent.com/SpotX-Official/spotx-official.github.io/main/run.ps1)
+    try {
+        $scriptContent = (Invoke-WebRequest -UseBasicParsing https://raw.githubusercontent.com/SpotX-Official/spotx-official.github.io/main/run.ps1 -ErrorAction Stop).Content
+        Invoke-Expression $scriptContent
+        Write-Host "$Green SpotX installed successfully.$Reset"
+    } catch {
+        Write-Host "$Red Failed to install SpotX: $($_.Exception.Message)$Reset"
+    }
     Read-Host "Press Enter to continue"
     Show-SpotifyToolsMenu
 }
@@ -62,7 +68,7 @@ function Install-Steam {
     Show-MainMenu
 }
 
-function Apply-Cursor {
+function Set-Cursor {
     Clear-Host
     Write-Host "\nOpening macOS cursor download link in browser..."
     try {
@@ -85,5 +91,5 @@ Export-ModuleMember -Function `
     Install-SpotX, `
     Install-Spicetify, `
     Install-Steam, `
-    Apply-Cursor
+    Set-Cursor
 

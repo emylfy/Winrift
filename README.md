@@ -1,6 +1,6 @@
 <h1>Simplify11 <img src="https://raw.githubusercontent.com/emylfy/simplify11/refs/heads/main/media/icon.ico" width="24px" alt="Simplify11 icon"></h1>
 
-**A powerful toolkit for quick setup, optimization, and personalization of Windows 11. Automates post-installation configuration, enhances system performance, and provides access to the best Windows tools in one place.**
+**The complete Windows 11 fresh install toolkit — from ISO to fully customized desktop in one script.** Automates post-installation configuration, applies performance tweaks, installs drivers and software, and sets up your personalized desktop environment.
 
 <p align="center">
 	<img src="media/logo.png" alt="Simplify11 Logo" width="70%">
@@ -10,6 +10,8 @@
 	<a href="#-features">Features</a> •
 	<a href="#-installation">Installation</a> •
 	<a href="#-integrations">Integrations</a> •
+	<a href="#-compatibility">Compatibility</a> •
+	<a href="#-faq">FAQ</a> •
 	<a href="#-credits">Credits</a>
 </p>
 
@@ -71,6 +73,10 @@ Creates a shortcut in the Start Menu to launch the latest version:
 iwr "https://dub.sh/s11install" | iex
 ```
 
+### Important
+
+> **Always create a system restore point before running system tweaks.** Simplify11 creates one automatically when applying tweaks, but having a manual backup is recommended. Some tweaks modify Windows registry settings and may not be easily reversible. Tested on Windows 11 24H2.
+
 ## 🔄 Integrations
 
 <div align="center">
@@ -108,6 +114,42 @@ iwr "https://dub.sh/s11install" | iex
 </td>
 </tr>
 </table>
+
+![](https://github.com/emylfy/simplify11/blob/main/media/separator.png)
+
+## 💻 Compatibility
+
+| Windows Version | Status |
+| :---: | :---: |
+| Windows 11 24H2 | Fully tested |
+| Windows 11 23H2 | Supported |
+| Windows 11 22H2 | Should work (not actively tested) |
+| Windows 10 | Not supported |
+| Insider Builds | Use at your own risk |
+
+**Requirements:** PowerShell 5.1+ (included with Windows 11), Administrator privileges for system tweaks.
+
+![](https://github.com/emylfy/simplify11/blob/main/media/separator.png)
+
+## ❓ FAQ
+
+**Is this safe to use?**
+All tweaks have been tested across multiple sources and only the most effective, well-documented registry modifications are included. A System Restore Point is created automatically before applying any tweaks.
+
+**Can I undo the changes?**
+A System Restore Point is created before tweaks are applied. You can revert to it via Settings > System > Recovery > Go Back, or by booting into Advanced Startup and choosing System Restore.
+
+**Does this disable Windows Update?**
+No. Simplify11 does not touch Windows Update settings. Updates will continue to work normally.
+
+**Can I choose which tweaks to apply?**
+Yes! The tweaks menu lets you select individual categories (SSD, GPU, CPU, Network, etc.) or apply all at once.
+
+**Where are the logs stored?**
+Session logs are saved to `%USERPROFILE%\Simplify11\logs\` with timestamps.
+
+**Why use this instead of WinUtil or Win11Debloat?**
+Simplify11 covers the entire journey from Windows ISO creation (autounattend.xml) through system tweaks and all the way to desktop customization (Windots, themes, dotfiles). No other tool offers this complete fresh-install-to-finished-desktop pipeline.
 
 ![](https://github.com/emylfy/simplify11/blob/main/media/separator.png)
 

@@ -1,4 +1,4 @@
-function Configure-VSCode {
+function Set-VSCodeConfig {
     param (
         [string]$targetPath
     )
@@ -15,7 +15,7 @@ function Configure-VSCode {
     Show-VSCodeMenu
 }
 
-function Configure-OtherVSC {
+function Set-OtherVSCConfig {
     Write-Host ""
     Write-Host "Please specify the path to your VSCode-based editor's user directory:"
     $editorPath = Read-Host "Enter path"
@@ -32,7 +32,7 @@ function Configure-OtherVSC {
     Show-VSCodeMenu
 }
 
-function Configure-WinTerm {
+function Set-WinTermConfig {
     Clear-Host
     Write-Host "$Purple +-----------------------------------------+$Reset"
     Write-Host "$Purple '$Reset [1] Install Fira Code via Chocolatey    $Purple'$Reset"
@@ -88,7 +88,7 @@ function Configure-WinTerm {
     Show-ConfigsMenu
 }
 
-function Configure-Pwsh {
+function Set-PwshConfig {
     try {
         Write-Host "Installing Terminal-Icons module..."
         Install-Module -Name Terminal-Icons -Scope CurrentUser -Force
@@ -102,7 +102,7 @@ function Configure-Pwsh {
     Show-ConfigsMenu
 }
 
-function Configure-OhMyPosh {
+function Set-OhMyPoshConfig {
     try {
         if (-not (Test-Path "$env:USERPROFILE\.config\ohmyposh")) {
             New-Item -Path "$env:USERPROFILE\.config\ohmyposh" -ItemType Directory -Force | Out-Null
@@ -117,7 +117,7 @@ function Configure-OhMyPosh {
     Show-ConfigsMenu
 }
 
-function Configure-FastFetch {
+function Set-FastFetchConfig {
     try {
         if (-not (Test-Path "$env:USERPROFILE\.config\fastfetch")) {
             New-Item -Path "$env:USERPROFILE\.config\fastfetch" -ItemType Directory -Force | Out-Null
@@ -134,10 +134,10 @@ function Configure-FastFetch {
 }
 
 Export-ModuleMember -Function `
-    Configure-VSCode, `
-    Configure-OtherVSC, `
-    Configure-WinTerm, `
-    Configure-Pwsh, `
-    Configure-OhMyPosh, `
-    Configure-FastFetch
+    Set-VSCodeConfig, `
+    Set-OtherVSCConfig, `
+    Set-WinTermConfig, `
+    Set-PwshConfig, `
+    Set-OhMyPoshConfig, `
+    Set-FastFetchConfig
 

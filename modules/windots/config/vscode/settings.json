@@ -1,88 +1,35 @@
 {
-	// Core Editor Settings
-	"editor.accessibilitySupport": "off",
-	"editor.bracketPairColorization.enabled": false,
-	"editor.codeActionsOnSave": {
-		"source.organizeImports": "explicit"
-	},
-	"editor.cursorBlinking": "expand",
-	"editor.cursorStyle": "line-thin",
-	"editor.cursorSmoothCaretAnimation": "explicit",
-	"editor.defaultFormatter": "esbenp.prettier-vscode",
-	"editor.detectIndentation": true,
-	"editor.folding": false,
-	"editor.fontFamily": "Fira Code",
-	"editor.fontLigatures": true,
-	"editor.fontSize": 16,
-	"editor.fontWeight": "400",
-	"editor.formatOnSave": true,
-	"editor.glyphMargin": false,
-	"editor.gotoLocation.multipleDefinitions": "goto",
-	"editor.hideCursorInOverviewRuler": true,
-	"editor.inlayHints.fontFamily": "Fira Code",
-	"editor.inlineSuggest.enabled": true,
-	"editor.insertSpaces": false,
-	"editor.linkedEditing": true,
-	"editor.minimap.enabled": false,
-	"editor.multiCursorModifier": "ctrlCmd",
-	"editor.scrollBeyondLastLine": true,
-	"editor.scrollbar.horizontal": "hidden",
-	"editor.smoothScrolling": true,
-	"editor.stickyScroll.enabled": false,
-	"editor.stickyScroll.scrollWithEditor": false,
-	"editor.suggestSelection": "first",
-	"editor.tabSize": 2,
-	"editor.tokenColorCustomizations": {
-		"textMateRules": [
-			{
-				"scope": [
-					"comment",
-					"entity.name.type.class",
-					"keyword",
-					"constant",
-					"storage.modifier",
-					"storage.type.class.js"
-				],
-				"settings": {
-					"fontStyle": "italic"
-				}
-			},
-			{
-				"scope": [
-					"invalid",
-					"keyword.operator",
-					"constant.numeric.css",
-					"keyword.other.unit.px.css",
-					"constant.numeric.decimal.js",
-					"constant.numeric.json"
-				],
-				"settings": {
-					"fontStyle": ""
-				}
-			}
-		]
-	},
-	"editor.unicodeHighlight.ambiguousCharacters": false,
-	"editor.unicodeHighlight.allowedCharacters": {
-		"а": true,
-		"с": true,
-		"Т": true,
-		"б": true,
-		"е": true,
-		" ": true
-	},
-	"editor.wrappingIndent": "same",
-	"editor.wordWrapColumn": 80,
+	// ─── Workbench ────────────────────────────────────────────────────────────
+	// General UI layout, sidebar, scrolling, and list behavior
 
-	// Window Management
-	"window.commandCenter": false,
-	"window.confirmBeforeClose": "keyboardOnly",
-	"window.density.editorTabHeight": "compact",
-	"window.openFilesInNewWindow": "off",
-	"window.title": " ",
-	"window.titleBarStyle": "custom",
-	"window.zoomLevel": 1,
-	"workbench.colorTheme": "Dark Knight",
+	"workbench.sideBar.location": "left", // Move sidebar to the left side
+	"workbench.statusBar.visible": false, // Hide the bottom status bar completely
+	"workbench.list.smoothScrolling": true, // Smooth scrolling in lists and trees
+	"workbench.tree.enableStickyScroll": false, // Disable sticky scroll in tree views (explorer, etc.)
+	"workbench.tree.indent": 16, // Tree indentation width in pixels
+	"workbench.tree.renderIndentGuides": "none", // Remove indent guide lines in tree views
+
+	// ─── Explorer ─────────────────────────────────────────────────────────────
+	// File tree behavior, auto-save, and hidden folders
+
+	"explorer.compactFolders": false, // Show each folder on its own line (no collapsing single-child folders)
+	"explorer.confirmDelete": false, // Skip "are you sure?" when deleting files
+	"explorer.confirmDragAndDrop": false, // Skip confirmation when moving files via drag & drop
+	"files.autoSave": "afterDelay", // Auto-save files after a short delay when you stop typing
+	"files.defaultLanguage": "plaintext", // New untitled files default to plain text
+	"files.exclude": { // Hide these folders from the explorer
+		"**/.expo": true,
+		"**/.expo-shared": true,
+		"**/.idea": true,
+		"**/.nuxt": true
+	},
+	"files.insertFinalNewline": true, // Add empty newline at end of file on save
+	"files.trimTrailingWhitespace": true, // Remove trailing spaces from lines on save
+
+	// ─── Tabbar & Toolbar ─────────────────────────────────────────────────────
+	// Tab labels, tab sizing, breadcrumbs, navigation, and editor toolbar
+
+	// Custom tab labels for Next.js App Router — shows route path instead of generic "page.tsx"
 	"workbench.editor.customLabels.patterns": {
 		"**/app/**/[[]*[]]/[[]*[]]/page.tsx": "${dirname(2)}/${dirname(1)}/${dirname}/page.tsx",
 		"**/app/**/[[]*[]]/page.tsx": "${dirname(1)}/${dirname}/page.tsx",
@@ -91,103 +38,132 @@
 		"**/app/**/[[]*[]]/layout.tsx": "${dirname(1)}/${dirname}/layout.tsx",
 		"**/app/**/layout.tsx": "${dirname}/layout.tsx"
 	},
-	"workbench.editor.editorActionsLocation": "hidden",
-	"workbench.editor.empty.hint": "hidden",
-	"workbench.editor.tabSizing": "shrink",
-	"workbench.iconTheme": "catppuccin noctis icons",
-	"workbench.layoutControl.enabled": false,
-	"workbench.productIconTheme": "macos-modern",
-	"workbench.startupEditor": "newUntitledFile",
-	"workbench.statusBar.visible": false,
-	"workbench.tree.enableStickyScroll": false,
+	"workbench.editor.editorActionsLocation": "hidden", // Hide action buttons (split, more…) from tab bar
+	"workbench.editor.empty.hint": "hidden", // Hide "open file" hint when no editors are open
+	"workbench.editor.showTabs": "single", // Show only the active tab (hide tab bar)
+	"workbench.editor.tabSizing": "shrink", // Tabs shrink to fit more in the tab bar
+	"workbench.navigationControl.enabled": false, // Hide top-right corner navigation arrows
+	"window.density.editorTabHeight": "compact", // Thinner tab height
+	"breadcrumbs.enabled": false, // Disable breadcrumbs entirely
+	"breadcrumbs.icons": false, // Hide icons in breadcrumb navigation
+	"breadcrumbs.showArrays": false, // Hide arrays from breadcrumbs
+	"breadcrumbs.showBooleans": false, // Hide booleans from breadcrumbs
+	"breadcrumbs.showClasses": false, // Hide classes from breadcrumbs
+	"breadcrumbs.showConstructors": false, // Hide constructors from breadcrumbs
+	"breadcrumbs.showEnumMembers": false, // Hide enum members from breadcrumbs
+	"breadcrumbs.showEvents": false, // Hide events from breadcrumbs
+	"breadcrumbs.showFields": false, // Hide fields from breadcrumbs
+	"breadcrumbs.showFiles": false, // Hide file names from breadcrumbs
+	"breadcrumbs.showFunctions": false, // Hide functions from breadcrumbs
+	"breadcrumbs.showKeys": false, // Hide object keys from breadcrumbs
+	"breadcrumbs.showMethods": false, // Hide methods from breadcrumbs
+	"breadcrumbs.symbolPath": "off", // Hide symbol path in breadcrumbs
 
-	// Terminal
-	"terminal.integrated.cursorStyle": "line",
-	"terminal.integrated.fontFamily": "PragmataPro Liga",
-	"terminal.integrated.fontSize": 13,
-	"terminal.integrated.tabs.enabled": false,
+	// ─── Cursor ───────────────────────────────────────────────────────────────
+	// Cursor appearance, animation, and multi-cursor behavior
 
-	// Debugging
-	"debug.focusWindowOnBreak": false,
-	"debug.showBreakpointsInOverviewRuler": false,
-	"debug.showInlineBreakpointCandidates": false,
-	"debug.toolBarLocation": "hidden",
+	"editor.cursorBlinking": "phase", // Cursor fades in/out smoothly
+	"editor.cursorSmoothCaretAnimation": "on", // Smooth cursor movement always on
+	"editor.cursorStyle": "line-thin", // Thin line cursor
+	"editor.cursorWidth": 2, // Cursor width in pixels
+	"editor.multiCursorModifier": "ctrlCmd", // Use Cmd/Ctrl + Click to add additional cursors
 
-	// File Management
-	"explorer.compactFolders": false,
-	"explorer.confirmDelete": false,
-	"explorer.confirmDragAndDrop": false,
-	"files.autoSave": "afterDelay",
-	"files.defaultLanguage": "plaintext",
-	"files.exclude": {
-		"**/.expo": true,
-		"**/.expo-shared": true,
-		"**/.idea": true,
-		"**/.nuxt": true
+	// ─── Editor ───────────────────────────────────────────────────────────────
+	// Core editing behavior, scrolling, suggestions, and indentation
+
+	"editor.accessibilitySupport": "off", // Disable accessibility features for better performance
+	"editor.bracketPairColorization.enabled": false, // No colored bracket pairs
+	"editor.codeActionsOnSave": { // Run these code actions automatically on save
+		"source.organizeImports": "explicit"
+	},
+	"editor.detectIndentation": true, // Auto-detect file indentation style
+	"editor.folding": false, // Disable code folding
+	"editor.formatOnSave": true, // Auto-format file on save
+	"editor.glyphMargin": false, // Hide the glyph margin (left of line numbers)
+	"editor.gotoLocation.multipleDefinitions": "goto", // Jump directly to definition instead of showing peek
+	"editor.hideCursorInOverviewRuler": true, // Hide cursor position indicator from scrollbar
+	"editor.inlineSuggest.enabled": true, // Show inline suggestions (ghost text)
+	"editor.insertSpaces": false, // Use tabs, not spaces
+	"editor.linkedEditing": true, // Edit matching HTML opening/closing tags simultaneously
+	"editor.minimap.enabled": false, // Hide the minimap
+	"editor.scrollBeyondLastLine": true, // Allow scrolling past the last line
+	"editor.scrollbar.horizontal": "hidden", // Hide horizontal scrollbar
+	"editor.smoothScrolling": true, // Animate editor scrolling
+	"editor.stickyScroll.enabled": false, // Disable sticky scroll (pinned scope headers)
+	"editor.stickyScroll.scrollWithEditor": false, // Sticky scroll does not follow editor scroll position
+	"editor.stickyScroll.scrolling": true, // Allow scrolling within the sticky scroll area
+	"editor.suggestSelection": "first", // Always pre-select the first suggestion in the list
+	"editor.tabSize": 2, // Tab width equals 2 spaces
+	"editor.unicodeHighlight.ambiguousCharacters": false, // Don't warn about visually ambiguous unicode characters
+	"editor.unicodeHighlight.allowedCharacters": { // Whitelist specific Cyrillic characters to avoid false warnings
+		"а": true,
+		"с": true,
+		"Т": true,
+		"б": true,
+		"е": true,
+		" ": true
+	},
+	"editor.wordWrapColumn": 80, // Wrap lines at column 80 (when word wrap is enabled)
+	"editor.wrappingIndent": "same", // Wrapped lines keep the same indentation level
+
+	// ─── Editor Fonts & Lines ─────────────────────────────────────────────────
+	// Font family, size, weight, ligatures, and line height
+
+	"custom-ui-style.font.sansSerif": "Maple Mono", // UI font for menus, sidebar, and panels
+	"editor.fontFamily": "Fira Code", // Editor code font
+	"editor.fontLigatures": true, // Enable font ligatures (e.g. => renders as arrow)
+	"editor.fontSize": 16, // Editor font size in pixels
+	"editor.fontWeight": "400", // Normal (regular) font weight
+	"editor.inlayHints.fontFamily": "Fira Code", // Font used for inlay hints
+	"editor.letterSpacing": 0.05, // Slight letter spacing for improved readability
+	"editor.lineHeight": 1.8, // Line height multiplier (spacious lines)
+
+	// ─── Editor Tokens ────────────────────────────────────────────────────────
+	// Syntax highlighting overrides — italic and non-italic scopes
+
+	"editor.tokenColorCustomizations": {
+		"textMateRules": [
+			{
+				// Make these tokens italic (comments, keywords, classes, constants)
+				"scope": [
+					"comment",
+					"constant",
+					"entity.name.type.class",
+					"keyword",
+					"storage.modifier",
+					"storage.type.class.js"
+				],
+				"settings": {
+					"fontStyle": "italic"
+				}
+			},
+			{
+				// Remove italic from these tokens (operators, numbers)
+				"scope": [
+					"constant.numeric.css",
+					"constant.numeric.decimal.js",
+					"constant.numeric.json",
+					"invalid",
+					"keyword.operator",
+					"keyword.other.unit.px.css"
+				],
+				"settings": {
+					"fontStyle": ""
+				}
+			}
+		]
 	},
 
-	// Language Specific
-	"html.autoClosingTags": true,
-	"html.completion.attributeDefaultValue": "singlequotes",
-	"javascript.autoClosingTags": true,
-	"javascript.experimental.updateImportsOnPaste": true,
-	"javascript.format.semicolons": "remove",
-	"javascript.preferences.quoteStyle": "single",
-	"javascript.updateImportsOnFileMove.enabled": "always",
-	"js/ts.implicitProjectConfig.experimentalDecorators": true,
-	"typescript.autoClosingTags": true,
-	"typescript.experimental.updateImportsOnPaste": true,
-	"typescript.format.semicolons": "remove",
-	"typescript.preferences.quoteStyle": "single",
-	"typescript.updateImportsOnFileMove.enabled": "always",
+	// ─── Themes ───────────────────────────────────────────────────────────────
+	// Color themes (auto light/dark), icon theme, and frosted glass effect
 
-	// Formatters
-	"prettier.arrowParens": "avoid",
-	"prettier.jsxSingleQuote": true,
-	"prettier.semi": false,
-	"prettier.singleQuote": true,
-	"prettier.useTabs": true,
-
-	// Extensions
-	"cSpell.enabledFileTypes": {
-		"*": true,
-		"blade": true,
-		"jsx": true,
-		"tsx": true,
-		"ts": true,
-		"js": true,
-		"scss": true,
-		"sass": true,
-		"vue": true,
-		"json": false
-	},
-	"cSpell.enabled": true,
-	"cSpell.language": "en,ru",
-	"emmet.includeLanguages": {
-		"blade": "html",
-		"javascript": "javascriptreact"
-	},
-	"emmet.triggerExpansionOnTab": true,
-
-	// Miscellaneous
-	"breadcrumbs.icons": false,
-	"breadcrumbs.showKeys": false,
-	"breadcrumbs.showFiles": false,
-	"breadcrumbs.symbolPath": "off",
-	"breadcrumbs.showArrays": false,
-	"breadcrumbs.showEvents": false,
-	"breadcrumbs.showFields": false,
-	"breadcrumbs.showClasses": false,
-	"breadcrumbs.showMethods": false,
-	"breadcrumbs.showBooleans": false,
-	"breadcrumbs.showFunctions": false,
-	"breadcrumbs.showConstants": false,
-	"breadcrumbs.showEnumMembers": false,
-	"breadcrumbs.showConstructors": false,
-	"catppuccin-noctis-icons.folders.associations": {},
-	"catppuccin-noctis-icons.hidesExplorerArrows": true,
-	"diffEditor.ignoreTrimWhitespace": false,
-	"frosted-glass-theme.filter": {
+	"window.autoDetectColorScheme": true, // Automatically switch between light and dark theme based on OS setting
+	"workbench.preferredDarkColorTheme": "Electronic Dawn", // Dark color theme
+	"workbench.preferredLightColorTheme": "Solarized Light", // Light color theme
+	"workbench.iconTheme": "catppuccin noctis icons", // File and folder icon set
+	"workbench.productIconTheme": "macos-modern", // macOS-style UI icons
+	"catppuccin-noctis-icons.hidesExplorerArrows": true, // Hide folder expand/collapse arrows in the explorer
+	"frosted-glass-theme.filter": { // Frosted glass / acrylic blur effect settings
 		"default": {
 			"filter": "saturate(var(--fgt-saturate)) url(#fgt-acrylic-{key})",
 			"disableBackgroundColor": true,
@@ -197,10 +173,89 @@
 		"minimap": "blur(30px)",
 		"terminalOverlay": "blur(30px)"
 	},
-	"git.enableSmartCommit": true,
-	"git.openRepositoryInParentFolders": "never",
-	"markdown.updateLinksOnFileMove.enabled": "always",
-	"security.workspace.trust.untrustedFiles": "open",
-	"symbols.hidesExplorerArrows": true,
-	"window.menuBarVisibility": "compact"
+
+	// ─── Window ───────────────────────────────────────────────────────────────
+	// Window behavior, title, zoom, and chrome controls
+
+	"window.commandCenter": false, // Hide the command center button in the title bar
+	"window.confirmBeforeClose": "keyboardOnly", // Ask for confirmation only when closing via keyboard shortcut
+	"window.layoutControl.enabled": false, // Hide the layout control button in the title bar (alias for workbench)
+	"window.openFilesInNewWindow": "off", // Open files in the current window instead of a new one
+	"window.title": " ", // Empty title bar text for a clean, minimal look
+	"window.zoomLevel": 1, // Zoom level +1 (slightly zoomed in)
+	"workbench.activityBar.location": "hidden", // Hide the activity bar (icons for Explorer, Search, etc.)
+	"workbench.layoutControl.enabled": false, // Hide the editor layout control button in the title bar
+	"workbench.startupEditor": "newUntitledFile", // Open a new untitled file on startup instead of the welcome page
+
+	// ─── Git ──────────────────────────────────────────────────────────────────
+	// Git commit, sync, fetch, and diff behavior
+
+	"git.autofetch": true, // Automatically fetch from remote in the background
+	"git.confirmSync": false, // Skip the sync confirmation popup
+	"git.enableSmartCommit": true, // Commit all changes if nothing is staged
+	"git.openRepositoryInParentFolders": "never", // Don't auto-detect Git repos in parent folders
+	"scm.diffDecorations": "none", // Remove git diff decorations (colored bars) from editor gutter
+
+	// ─── Terminal ─────────────────────────────────────────────────────────────
+	// Integrated terminal appearance and behavior
+
+	"terminal.integrated.cursorStyle": "line", // Thin line cursor in the terminal
+	"terminal.integrated.fontFamily": "", // Use the system default terminal font
+	"terminal.integrated.fontSize": 13, // Terminal font size in pixels
+	"terminal.integrated.tabs.enabled": false, // Hide the terminal tab bar
+
+	// ─── Languages & Formatters ───────────────────────────────────────────────
+	// Language-specific settings, formatters, and Emmet
+
+	"diffEditor.ignoreTrimWhitespace": false, // Show whitespace differences in the diff editor
+	"emmet.includeLanguages": { // Enable Emmet abbreviation expansion in additional file types
+		"blade": "html",
+		"javascript": "javascriptreact"
+	},
+	"emmet.triggerExpansionOnTab": true, // Expand Emmet abbreviations with the Tab key
+	"html.autoClosingTags": true, // Automatically close HTML tags when typing the opening tag
+	"html.completion.attributeDefaultValue": "singlequotes", // Use single quotes for HTML attribute values
+	"js/ts.format.semicolons": "remove", // Remove semicolons when formatting JS/TS files
+	"js/ts.implicitProjectConfig.experimentalDecorators": true, // Enable experimental decorator syntax support
+	"js/ts.preferences.quoteStyle": "single", // Prefer single quotes in JS/TS files
+	"js/ts.updateImportsOnFileMove.enabled": "always", // Auto-update import paths when files are moved or renamed
+	"markdown.updateLinksOnFileMove.enabled": "always", // Auto-update markdown links when files are moved or renamed
+	"prettier.arrowParens": "avoid", // Omit parentheses for single-argument arrow functions: x => x
+	"prettier.jsxSingleQuote": true, // Use single quotes in JSX attributes
+	"prettier.semi": false, // Omit semicolons
+	"prettier.singleQuote": true, // Use single quotes everywhere
+	"prettier.useTabs": true, // Indent with tabs instead of spaces
+
+	// ─── Spell Check ──────────────────────────────────────────────────────────
+	// cSpell spell checker configuration
+
+	"cSpell.enabled": true, // Enable the spell checker
+	"cSpell.enabledFileTypes": { // Enable or disable spell checking per file type
+		"*": true,
+		"blade": true,
+		"js": true,
+		"json": false,
+		"jsx": true,
+		"sass": true,
+		"scss": true,
+		"ts": true,
+		"tsx": true,
+		"vue": true
+	},
+	"cSpell.language": "en,ru", // Check spelling in both English and Russian
+
+	// ─── Misc ─────────────────────────────────────────────────────────────────
+	// Security, AI features, debug, and extension settings
+
+	"chat.agentsControl.enabled": true, // Enable the chat agents control panel
+	"chat.disableAIFeatures": true, // Disable Copilot and other AI-powered features
+	"chat.viewSessions.enabled": false, // Hide the Copilot chat sessions view
+	"debug.focusWindowOnBreak": false, // Don't steal window focus when hitting a breakpoint
+	"debug.showBreakpointsInOverviewRuler": false, // Hide breakpoint markers from the scrollbar overview ruler
+	"debug.showInlineBreakpointCandidates": false, // Hide inline breakpoint placement indicators
+	"debug.toolBarLocation": "hidden", // Hide the floating debug toolbar
+	"extensions.ignoreRecommendations": true, // Suppress extension recommendation notifications
+	"security.workspace.trust.untrustedFiles": "open", // Open files from untrusted workspaces without a warning
+	"update.mode": "none", // Disable VS Code automatic updates
+	"workbench.tips.enabled": false // Disable tip of the day notifications
 }

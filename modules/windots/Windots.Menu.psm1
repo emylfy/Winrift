@@ -19,7 +19,7 @@ function Show-MainMenu {
         "2" { Invoke-Rectify11 }
         "3" { Show-SpotifyToolsMenu }
         "4" { Install-Steam }
-        "5" { Apply-Cursor }
+        "5" { Set-Cursor }
         "6" { Show-WindowsCustomizationMenu }
         "7" { Simplify11 }
         default { Show-MainMenu }
@@ -62,10 +62,10 @@ function Show-ConfigsMenu {
     
     switch ($choice) {
         "1" { Show-VSCodeMenu }
-        "2" { Configure-WinTerm }
-        "3" { Configure-Pwsh }
-        "4" { Configure-OhMyPosh }
-        "5" { Configure-FastFetch }
+        "2" { Set-WinTermConfig }
+        "3" { Set-PwshConfig }
+        "4" { Set-OhMyPoshConfig }
+        "5" { Set-FastFetchConfig }
         "6" { Show-MainMenu }
         default { Show-ConfigsMenu }
     }
@@ -88,13 +88,13 @@ function Show-VSCodeMenu {
     $choice = Read-Host "Select VSCode-based editor"
     
     switch ($choice) {
-        "1" { Configure-VSCode "$env:USERPROFILE\AppData\Roaming\Code\User" }
-        "2" { Configure-VSCode "$env:USERPROFILE\AppData\Roaming\Aide\User" }
-        "3" { Configure-VSCode "$env:USERPROFILE\AppData\Roaming\Cursor\User" }
-        "4" { Configure-VSCode "$env:USERPROFILE\AppData\Roaming\Windsurf\User" }
-        "5" { Configure-VSCode "$env:USERPROFILE\AppData\Roaming\VSCodium\User" }
-        "6" { Configure-VSCode "$env:USERPROFILE\AppData\Roaming\Trae\User" }
-        "7" { Configure-OtherVSC }
+        "1" { Set-VSCodeConfig "$env:USERPROFILE\AppData\Roaming\Code\User" }
+        "2" { Set-VSCodeConfig "$env:USERPROFILE\AppData\Roaming\Aide\User" }
+        "3" { Set-VSCodeConfig "$env:USERPROFILE\AppData\Roaming\Cursor\User" }
+        "4" { Set-VSCodeConfig "$env:USERPROFILE\AppData\Roaming\Windsurf\User" }
+        "5" { Set-VSCodeConfig "$env:USERPROFILE\AppData\Roaming\VSCodium\User" }
+        "6" { Set-VSCodeConfig "$env:USERPROFILE\AppData\Roaming\Trae\User" }
+        "7" { Set-OtherVSCConfig }
         "8" { Show-ConfigsMenu }
         default { Show-VSCodeMenu }
     }
@@ -115,7 +115,7 @@ function Show-WindowsCustomizationMenu {
     switch ($choice) {
         "1" { Set-ShortDateHours }
         "2" { Disable-QuickAccess }
-        "3" { Extract-StartFolders }
+        "3" { Expand-StartFolders }
         "4" { Show-MainMenu }
         default { Show-WindowsCustomizationMenu }
     }
