@@ -2,42 +2,28 @@
 
 function Show-MainMenu {
     $Host.UI.RawUI.WindowTitle = "Simplify11 - UniGetUI"
-    Clear-Host
-    Write-Host "$Purple +------------------------------------------+$Reset"
-    Write-Host "$Purple '$Reset UniGetUI (formerly WingetUI)             $Purple'$Reset"
-    Write-Host "$Purple +------------------------------------------+$Reset"
-    Write-Host "$Purple '$Reset [1] Install and Launch                   $Purple'$Reset"
-    Write-Host "$Purple '$Reset [2] Open List of Apps by Category        $Purple'$Reset"
-    Write-Host "$Purple '$Reset [3] Try Fixing Winget if something wrong $Purple'$Reset"
-    Write-Host "$Purple +------------------------------------------+$Reset"
-    
-    $choice = Read-Host "Select an option"
-    
-    switch ($choice) {
-        "1" { Install-UniGetUI }
-        "2" { Show-AppCategoryMenu }
-        "3" { Test-Winget }
-        default { Show-MainMenu }
-    }
+    Show-Menu -Title "UniGetUI (formerly WingetUI)" -Options @(
+        @{ Key = "1"; Label = "Install and Launch"; Action = { Install-UniGetUI } },
+        @{ Key = "2"; Label = "Open List of Apps by Category"; Action = { Show-AppCategoryMenu } },
+        @{ Key = "3"; Label = "Try Fixing Winget if something wrong"; Action = { Test-Winget } }
+    ) -BackLabel "Back to Simplify11" -BackAction { & "$PSScriptRoot\..\..\simplify11.ps1" }
 }
 
 function Install-UniGetUI {
     Clear-Host
-    Write-Host "$Purple +---                    ---+$Reset"
-    Write-Host "$Purple  '$Reset    Install UniGetUI    $Purple'$Reset"
-    Write-Host "$Purple +---                    ---+$Reset"
+    Write-Header -Text "Install UniGetUI"
 
     & winget source update
-    
+
     $isInstalled = & winget list --id MartiCliment.UniGetUI --accept-source-agreements | Select-String "MartiCliment.UniGetUI"
-    
+
     if ($isInstalled) {
         Write-Host "$Reset UniGetUI is already installed. Launching...$Reset"
         Start-Process "unigetui:"
     } else {
         Write-Host "$Reset Installing UniGetUI...$Reset"
         $result = & winget install MartiCliment.UniGetUI --accept-package-agreements --accept-source-agreements
-        
+
         if ($LASTEXITCODE -eq 0) {
             Write-Host "$Green Successfully installed UniGetUI.$Reset"
             Start-Process "unigetui:"
@@ -47,76 +33,60 @@ function Install-UniGetUI {
             Test-Winget
         }
     }
-    
-    Show-MainMenu
+
+    Read-Host "Press Enter to continue"
 }
 
 function Test-Winget {
     $wingetExists = Get-Command winget -ErrorAction SilentlyContinue
-    
+
     if (-not $wingetExists) {
         Write-Host "$Red Winget is not installed. Please install Windows App Installer from Microsoft Store.$Reset"
         Start-Process "ms-windows-store://pdp/?ProductId=9nblggh4nns1"
-        Read-Host "Press Enter to continue"
+    } else {
+        Write-Host "$Green Winget is installed and available.$Reset"
     }
-    
-    Show-MainMenu
+
+    Read-Host "Press Enter to continue"
 }
 
 function Show-AppCategoryMenu {
-    Clear-Host
-    Write-Host "$Purple +--------------------------------+$Reset"
-    Write-Host "$Purple '$Reset App Categories                 $Purple'$Reset"
-    Write-Host "$Purple +--------------------------------+$Reset"
-    Write-Host "$Purple '$Reset [1] Development                $Purple'$Reset"
-    Write-Host "$Purple '$Reset [2] Web Browsers               $Purple'$Reset"
-    Write-Host "$Purple '$Reset [3] Utilities, Microsoft tools $Purple'$Reset"
-    Write-Host "$Purple '$Reset [4] Productivity Suite         $Purple'$Reset"
-    Write-Host "$Purple '$Reset [5] Gaming Essentials          $Purple'$Reset"
-    Write-Host "$Purple '$Reset [6] Communications             $Purple'$Reset"
-    Write-Host "$Purple +--------------------------------+$Reset"
-    
-    $choice = Read-Host "Select a category"
-    
-    $bundleName = switch ($choice) {
-        "1" { "development" }
-        "2" { "browsers" }
-        "3" { "utilities" }
-        "4" { "productivity" }
-        "5" { "games" }
-        "6" { "communications" }
-        default { Show-AppCategoryMenu; return }
-    }
-    
-    # Fix for getting the script path reliably
-    $scriptPath = if ($PSScriptRoot) {
-        $PSScriptRoot
-    } elseif ($MyInvocation.MyCommand.Path) {
-        Split-Path -Parent $MyInvocation.MyCommand.Path
-    } else {
-        $PWD.Path
-    }
-    
-    $bundlePath = Join-Path -Path (Split-Path -Parent $scriptPath) -ChildPath "unigetui\ubundle\$bundleName.ubundle"
-    
+    $bundleDir = Join-Path $PSScriptRoot "..\..\config\bundles"
+
+    Show-Menu -Title "App Categories" -Options @(
+        @{ Key = "1"; Label = "Development"; Action = { Open-Bundle $bundleDir "Development" } },
+        @{ Key = "2"; Label = "Web Browsers"; Action = { Open-Bundle $bundleDir "Browsers" } },
+        @{ Key = "3"; Label = "Utilities, Microsoft tools"; Action = { Open-Bundle $bundleDir "Utilities" } },
+        @{ Key = "4"; Label = "Productivity Suite"; Action = { Open-Bundle $bundleDir "Productivity" } },
+        @{ Key = "5"; Label = "Gaming Essentials"; Action = { Open-Bundle $bundleDir "Games" } },
+        @{ Key = "6"; Label = "Communications"; Action = { Open-Bundle $bundleDir "Communications" } }
+    ) -BackLabel "Back to UniGetUI"
+}
+
+function Open-Bundle {
+    param(
+        [string]$BundleDir,
+        [string]$BundleName
+    )
+
+    $bundlePath = Join-Path $BundleDir "$BundleName.ubundle"
     Write-Host "Opening bundle: $bundlePath"
-    
+
     try {
         Start-Process "$env:LOCALAPPDATA\Programs\UniGetUI\UniGetUI.exe" -ArgumentList "/launch", "`"$bundlePath`"" -ErrorAction Stop
-        Read-Host "Press Enter to continue"
     }
     catch {
         try {
             Start-Process $bundlePath -ErrorAction Stop
         }
         catch {
-            Write-Host "Make sure that you installed UniGetUI."
-            Install-UniGetUI
+            Write-Host "$Yellow Make sure that UniGetUI is installed.$Reset"
+            Read-Host "Press Enter to continue"
             return
         }
     }
-    
-    Show-AppCategoryMenu
+
+    Read-Host "Press Enter to continue"
 }
 
 Show-MainMenu

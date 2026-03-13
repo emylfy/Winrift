@@ -1,0 +1,29 @@
+{
+    "tools": [
+        {
+            "id": "winutil",
+            "name": "WinUtil",
+            "description": "Install Programs, Tweaks, Fixes, Updates",
+            "type": "irm",
+            "url": "https://christitus.com/win",
+            "docs": "https://github.com/ChrisTitusTech/winutil"
+        },
+        {
+            "id": "sparkle",
+            "name": "Sparkle",
+            "description": "Windows Package Manager",
+            "type": "irm",
+            "url": "https://raw.githubusercontent.com/Parcoil/Sparkle/v2/get.ps1",
+            "docs": "https://github.com/Parcoil/Sparkle"
+        },
+        {
+            "id": "gtweak",
+            "name": "GTweak",
+            "description": "Tweaking tool and debloater",
+            "type": "download",
+            "url": "https://github.com/Greedeks/GTweak/releases/latest/download/gtweak.exe",
+            "filename": "gtweak.exe",
+            "docs": "https://github.com/Greedeks/GTweak"
+        }
+    ]
+}

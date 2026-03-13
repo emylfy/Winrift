@@ -7,75 +7,107 @@
 </p>
 
 <p align="center">
+	<a href="#-quick-start">Quick Start</a> •
+	<a href="#-what-it-does">What It Does</a> •
+	<a href="#%EF%B8%8F-safety">Safety</a> •
 	<a href="#-features">Features</a> •
-	<a href="#-installation">Installation</a> •
 	<a href="#-integrations">Integrations</a> •
-	<a href="#-compatibility">Compatibility</a> •
-	<a href="#-faq">FAQ</a> •
-	<a href="#-credits">Credits</a>
+	<a href="#-faq">FAQ</a>
 </p>
 
 <div align="center">
  <p>
  <a href="https://github.com/emylfy/simplify11/stargazers"><img src="https://img.shields.io/github/stars/emylfy/simplify11?style=for-the-badge&logo=starship&color=C9CBFF&logoColor=C9CBFF&labelColor=302D41" alt="GitHub Stars"></a>&nbsp;&nbsp;
- <a href="https://github.com/emylfy/simplify11/"><img src="https://img.shields.io/github/repo-size/emylfy/simplify11?style=for-the-badge&logo=git&logoColor=f9e2af&label=Size&labelColor=302D41&color=f9e2af" alt="Repository Size"></a>&nbsp;&nbsp;
- <a href="https://github.com/emylfy/simplify11/commits/main/"><img src="https://img.shields.io/github/last-commit/emylfy/simplify11?style=for-the-badge&logo=github&logoColor=eba0ac&label=Last%20Commit&labelColor=302D41&color=eba0ac" alt="Last Commit"></a>&nbsp;&nbsp;
+ <a href="https://github.com/emylfy/simplify11/releases"><img src="https://img.shields.io/github/v/release/emylfy/simplify11?style=for-the-badge&logo=github&color=a6e3a1&logoColor=a6e3a1&labelColor=302D41&label=Version" alt="Version"></a>&nbsp;&nbsp;
  <a href="https://github.com/emylfy/simplify11/blob/main/LICENSE"><img src="https://img.shields.io/github/license/emylfy/simplify11?style=for-the-badge&logo=apache&color=CBA6F7&logoColor=CBA6F7&labelColor=302D41&label=License" alt="GitHub License"></a>&nbsp;&nbsp;
+ <a href="https://github.com/emylfy/simplify11/commits/main/"><img src="https://img.shields.io/github/last-commit/emylfy/simplify11?style=for-the-badge&logo=github&logoColor=eba0ac&label=Last%20Commit&labelColor=302D41&color=eba0ac" alt="Last Commit"></a>&nbsp;&nbsp;
  </p>
 </div>
 
+<p align="center">
+	<img src="media/screenshot-main.png" alt="Simplify11 Main Menu" width="80%">
+</p>
+
 ![](https://github.com/emylfy/simplify11/blob/main/media/separator.png)
 
-## ✨ Features
+## ⚡ Quick Start
 
-<div align="center">
-
-### Everything you need for perfect Windows 11 setup
-
-</div>
-
-### 🛠️ System Configuration
-
-- Windows installation [answer file](https://github.com/emylfy/simplify11/blob/main/docs/autounattend_guide.md) creation guide
-- System performance tweaks for SSD, GPU, CPU optimization
-- Driver Installation support for NVIDIA, AMD and other device manufacturers
-- Customization options including [Windots](https://github.com/emylfy/windots) integration
-
-### ⚡ Optimization
-
-- Enhanced input responsiveness
-- System performance improvements
-- DirectX enhancements
-- Disk space management and cleanup
-
-### 📦 Software Management
-
-- UniGetUI — modern graphical interface for Windows Package Manager
-- Software Categories:
-  - Development, Browsers, System Tools
-  - Productivity, Gaming, Microsoft Apps
-
-## ⚡ Installation
-
-### Quick Start
-
-Launch Simplify11 from PowerShell:
+Launch Simplify11 directly from PowerShell:
 
 ```powershell
 iwr "https://dub.sh/simplify11" | iex
 ```
 
-### Full Installation
-
-Creates a shortcut in the Start Menu to launch the latest version:
+Or install a Start Menu shortcut for quick access:
 
 ```powershell
 iwr "https://dub.sh/s11install" | iex
 ```
 
-### Important
+![](https://github.com/emylfy/simplify11/blob/main/media/separator.png)
 
-> **Always create a system restore point before running system tweaks.** Simplify11 creates one automatically when applying tweaks, but having a manual backup is recommended. Some tweaks modify Windows registry settings and may not be easily reversible. Tested on Windows 11 24H2.
+## ✨ What It Does
+
+The **only** tool that covers the entire journey from Windows ISO to finished, customized desktop:
+
+🛠️ **System Tweaks** — 13 categories of performance optimizations for SSD, GPU, CPU, network, memory, DirectX and more. Pick exactly what you want or apply all at once.
+
+🔒 **Security & Privacy** — Disable Windows Defender, remove Copilot & Recall, enforce privacy settings via privacy.sexy presets.
+
+🖥️ **Drivers** — Quick links to NVIDIA, AMD, and all major OEM driver pages. Lenovo Vantage one-click install.
+
+🎨 **Desktop Customization** — [Windots](https://github.com/emylfy/windots) integration for terminal configs, VS Code themes, Oh My Posh, FastFetch, Spotify tools, and more.
+
+📦 **Software Management** — UniGetUI with curated app bundles (dev tools, browsers, utilities, gaming, productivity, communications).
+
+![](https://github.com/emylfy/simplify11/blob/main/media/separator.png)
+
+## 🛡️ Safety
+
+- **Automatic System Restore Point** is created before applying any tweaks
+- **Selective tweaks** — choose individual categories, never forced to apply everything
+- **Session logging** — every change is logged to `%USERPROFILE%\Simplify11\logs\`
+- **No Windows Update changes** — updates continue to work normally
+- **Open source** — every line of code is auditable
+
+> Tested on Windows 11 24H2. Always recommended to create a manual restore point as backup.
+
+## 📸 Screenshots
+
+<p align="center">
+	<img src="media/screenshot-tweaks.png" alt="System Tweaks Menu" width="45%">&nbsp;&nbsp;
+	<img src="media/screenshot-security.png" alt="Security Menu" width="45%">
+</p>
+
+<p align="center">
+	<img src="media/demo.gif" alt="Simplify11 Demo" width="80%">
+</p>
+
+![](https://github.com/emylfy/simplify11/blob/main/media/separator.png)
+
+## 🔧 Features
+
+<div align="center">
+
+| Category | What's Included |
+| :--- | :--- |
+| System Latency | Interrupt steering, timer serialization |
+| Input Devices | Mouse/keyboard buffer optimization, StickyKeys disable |
+| SSD/NVMe | TRIM, prefetch disable, 8.3 filename disable |
+| GPU | Hardware scheduling, preemption control |
+| Network | Throttling bypass, lazy mode disable |
+| CPU | MMCSS config, lazy mode timeout |
+| Power | Throttling disable, Ultimate Performance plan, ASPM bypass |
+| Memory | Large system cache, paging executive, page combining |
+| DirectX | D3D11/D3D12 multithreading, deferred contexts, tiling |
+| Boot | Startup delay removal, desktop switch optimization |
+| UI | Auto-end tasks, reduced timeouts, instant menus |
+| GPU Vendor | NVIDIA per-CPU DPC, AMD latency optimizations |
+| Disk Space | Reserved storage, WinSxS cleanup, pagefile management |
+
+</div>
+
+![](https://github.com/emylfy/simplify11/blob/main/media/separator.png)
 
 ## 🔄 Integrations
 
@@ -117,6 +149,24 @@ iwr "https://dub.sh/s11install" | iex
 
 ![](https://github.com/emylfy/simplify11/blob/main/media/separator.png)
 
+## 🏆 Why Simplify11?
+
+<div align="center">
+
+| Feature | Simplify11 | WinUtil | Win11Debloat | Sophia |
+| :--- | :---: | :---: | :---: | :---: |
+| ISO to Desktop pipeline | ✅ | ❌ | ❌ | ❌ |
+| autounattend.xml guide | ✅ | ❌ | ❌ | ❌ |
+| Desktop customization (Windots) | ✅ | ❌ | ❌ | ❌ |
+| Driver installation | ✅ | ❌ | ❌ | ❌ |
+| One-command launch | ✅ | ✅ | ✅ | ✅ |
+| Selective tweaks | ✅ | ✅ | ✅ | ✅ |
+| GUI | ❌ | ✅ | ❌ | ❌ |
+
+</div>
+
+![](https://github.com/emylfy/simplify11/blob/main/media/separator.png)
+
 ## 💻 Compatibility
 
 | Windows Version | Status |
@@ -153,6 +203,10 @@ Simplify11 covers the entire journey from Windows ISO creation (autounattend.xml
 
 ![](https://github.com/emylfy/simplify11/blob/main/media/separator.png)
 
+## 🤝 Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for setup, testing, and PR guidelines.
+
 ## 🌟 Credits
 
 <div align="center">
@@ -163,6 +217,20 @@ Simplify11 covers the entire journey from Windows ISO creation (autounattend.xml
 | [ashish0kumar/windots](https://github.com/ashish0kumar/windots) | Windows customization and dotfiles management |
 
 </div>
+
+## 📜 License
+
+This project is licensed under the [Apache-2.0 License](LICENSE).
+
+## ⭐ Star History
+
+<a href="https://star-history.com/#emylfy/simplify11&Date">
+ <picture>
+   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=emylfy/simplify11&type=Date&theme=dark" />
+   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=emylfy/simplify11&type=Date" />
+   <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=emylfy/simplify11&type=Date" />
+ </picture>
+</a>
 
 <div align="center">
 

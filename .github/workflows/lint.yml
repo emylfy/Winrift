@@ -1,0 +1,45 @@
+name: PSScriptAnalyzer
+
+on:
+  push:
+    branches: [main]
+    paths: ['**.ps1', '**.psm1', '**.psd1']
+  pull_request:
+    branches: [main]
+    paths: ['**.ps1', '**.psm1', '**.psd1']
+
+jobs:
+  lint:
+    name: Lint PowerShell
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install PSScriptAnalyzer
+        shell: pwsh
+        run: |
+          Set-PSRepository PSGallery -InstallationPolicy Trusted
+          Install-Module -Name PSScriptAnalyzer -Force -Scope CurrentUser
+
+      - name: Run PSScriptAnalyzer
+        shell: pwsh
+        run: |
+          $results = Invoke-ScriptAnalyzer -Path . -Recurse -Settings @{
+            Rules = @{
+              PSUseApprovedVerbs = @{ Enable = $true }
+              PSAvoidUsingCmdletAliases = @{ Enable = $true }
+              PSAvoidUsingWriteHost = @{ Enable = $false }
+            }
+            ExcludeRules = @(
+              'PSAvoidUsingWriteHost',
+              'PSAvoidUsingInvokeExpression',
+              'PSUseShouldProcessForStateChangingFunctions'
+            )
+          }
+
+          if ($results) {
+            $results | Format-Table -AutoSize
+            Write-Warning "PSScriptAnalyzer found $($results.Count) issue(s)."
+          } else {
+            Write-Host "No issues found." -ForegroundColor Green
+          }

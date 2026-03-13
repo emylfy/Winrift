@@ -17,8 +17,16 @@ and this project uses [Calendar Versioning](https://calver.org/) (YY.M format).
 - `CONTRIBUTING.md` with setup, testing, and PR guidelines
 - GitHub issue templates for bug reports and feature requests
 - Comprehensive `.gitignore` for Windows, IDE, and temp files
-- README: disclaimers, FAQ section, and compatibility table
 - Safety check for missing modules in main menu — shows friendly error instead of crashing
+- Reusable `Show-Menu` framework in `Common.ps1` — eliminates hundreds of lines of duplicated menu code
+- `Write-Header` helper in `Common.ps1` for consistent section headers
+- `Test-AdminRights` helper in `Common.ps1` for checking admin elevation
+- `config/` directory for centralized configuration: `version.json`, `tools.json`, `bundles/`
+- Config-driven `ExternalLauncher.ps1` — single file handles all external tool launches via `tools.json`
+- `Get-AppVersion` function in `Common.ps1` — centralized version loading from `config/version.json`
+- PSScriptAnalyzer CI workflow (`.github/workflows/lint.yml`) — lints all `.ps1`/`.psm1`/`.psd1` on push and PR
+- README.md fully rewritten — Quick Start at top, feature comparison table, screenshot placeholders, star history badge
+- Screenshot template filenames defined: `media/screenshot-main.png`, `media/screenshot-tweaks.png`, `media/screenshot-security.png`, `media/demo.gif`
 
 ### Fixed
 - Main menu option "3" (Security Menu) now gets consistent sub-menu (Run/Docs/Back) like all other options
@@ -30,11 +38,24 @@ and this project uses [Calendar Versioning](https://calver.org/) (YY.M format).
 - Icon install path in `install.ps1` now uses `$env:APPDATA\Simplify11` subfolder instead of bare `$env:APPDATA`
 - Shortcut `WorkingDirectory` corrected from Start Menu path to `$env:USERPROFILE`
 - Version tag in `CHANGELOG.md` aligned to `[26.3]` to match `version.json` (CalVer)
+- UniGetUI bundle path resolution simplified — bundles now live in `config/bundles/` with a single reliable path
+- ASCII art in `launch.ps1` corrected for proper rendering
+- All main menu options now behave consistently — every option auto-starts its module (removed inconsistent sub-menu pattern for some options)
+- Version loading centralized via `Get-AppVersion` — `simplify11.ps1` no longer reads `version.json` directly
 
 ### Removed
 - `Add-MpPreference` Defender exclusion from `launch.ps1` — unnecessary for zip download and raised security concerns
+- `modules/privacy/` directory — `PrivacySexy.ps1` merged into `modules/security/`
+- Individual tool wrapper files (`WinUtil.ps1`, `Sparkle.ps1`, `GTweak.ps1`) — replaced by `ExternalLauncher.ps1`
+- `.DS_Store` tracked file removed from repository
 
 ### Changed
+- **Architecture**: `Common.ps1` expanded from 5 color variables to a full shared utilities module containing `Set-RegistryValue`, `New-SafeRestorePoint`, `Show-Menu`, `Write-Header`, and `Test-AdminRights`
+- **Architecture**: All module menus refactored to use the shared `Show-Menu` framework (SecurityMenu, DefendNot, RemoveWindowsAI, PrivacySexy, WinScript, UniGetUI, Drivers/Lenovo, Windots, Tweaks)
+- **Architecture**: `Tweaks.ps1` no longer contains its own `Set-RegistryValue` and `New-SafeRestorePoint` — uses shared versions from `Common.ps1`
+- **Structure**: `version.json` moved to `config/version.json`
+- **Structure**: UniGetUI `.ubundle` files moved to `config/bundles/`
+- **Structure**: External tools defined in `config/tools.json` instead of hardcoded wrapper scripts
 - Function names standardized to use approved PowerShell verbs:
   - `Apply-Cursor` → `Set-Cursor`
   - `FreeUpSpace` → `Clear-SystemSpace`

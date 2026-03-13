@@ -40,6 +40,7 @@ function Show-DeviceMenu {
         Show-LenovoMenu
     }
     elseif ($choice -eq "") {
+        & "$PSScriptRoot\..\..\simplify11.ps1"
         return
     }
     elseif ($urls.ContainsKey($choice)) {
@@ -54,44 +55,23 @@ function Show-DeviceMenu {
 }
 
 function Show-LenovoMenu {
-    Clear-Host
-    Write-Host ""
-    Write-Host "$Purple +--------------------------------------------+$Reset"
-    Write-Host "$Purple '$Reset [1] Install Lenovo Vantage                 $Purple'$Reset"
-    Write-Host "$Purple '$Reset [2] Open Lenovo Driver Page                $Purple'$Reset"
-    Write-Host "$Purple +--------------------------------------------+$Reset"
-    Write-Host "$Purple '$Reset [3] Back to Manufacturer Selection         $Purple'$Reset"
-    Write-Host "$Purple +--------------------------------------------+$Reset"
-
-    $choice = Read-Host ">"
-
-    switch ($choice) {
-        "3" { Show-DeviceMenu }
-        "2" {
-            Start-Process "https://support.lenovo.com"
-            Show-LenovoMenu
-        }
-        "1" {
+    Show-Menu -Title "Lenovo" -Options @(
+        @{ Key = "1"; Label = "Install Lenovo Vantage"; Action = {
             Write-Host "$Reset Installing Lenovo Vantage... $Reset"
             $result = winget install "9WZDNCRFJ4MV" --accept-package-agreements --accept-source-agreements
 
             if ($LASTEXITCODE -eq 0) {
                 Write-Host "$Green Successfully installed Lenovo Vantage. $Reset"
-            }
-            else {
+            } else {
                 Write-Host "$Red Failed to install Lenovo Vantage. Please install manually from the Microsoft Store. $Reset"
                 Start-Process "ms-windows-store://pdp?hl=en-us&gl=us&ocid=pdpshare&referrer=storeforweb&productid=9WZDNCRFJ4MV&storecid=storeweb-pdp-open-cta"
             }
-
             Start-Sleep -Seconds 2
-            Show-LenovoMenu
-        }
-        default {
-            Write-Host "$Red Invalid choice. $Reset"
-            Start-Sleep -Seconds 1
-            Show-LenovoMenu
-        }
-    }
+        }},
+        @{ Key = "2"; Label = "Open Lenovo Driver Page"; Action = {
+            Start-Process "https://support.lenovo.com"
+        }}
+    ) -BackLabel "Back to Manufacturer Selection"
 }
 
 Show-DeviceMenu

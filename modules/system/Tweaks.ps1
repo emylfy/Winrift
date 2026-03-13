@@ -11,7 +11,7 @@
 # Only the most effective values and best practices have been selected for this collection
 # Detailed information can be found in the source link provided for each tweak
 
-if (-not ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
+if (-not (Test-AdminRights)) {
     Write-Host "Not running as admin. Elevating..." -ForegroundColor Yellow
     . "$PSScriptRoot\..\..\scripts\AdminLaunch.ps1"
     Start-AdminProcess -ScriptPath $PSCommandPath
@@ -25,65 +25,15 @@ $logFile = Join-Path $logDir "tweaks_$(Get-Date -Format 'yyyy-MM-dd_HH-mm-ss').l
 Start-Transcript -Path $logFile -Append | Out-Null
 Write-Host "$Green[LOG]$Reset Session log: $logFile"
 
-function New-SafeRestorePoint {
-    Write-Host "`n$Purple Creating System Restore Point before applying tweaks...$Reset"
-    try {
-        # Enable System Restore on the system drive if not already enabled
-        Enable-ComputerRestore -Drive "$env:SystemDrive\" -ErrorAction SilentlyContinue
-        Checkpoint-Computer -Description "Simplify11 - Before System Tweaks $(Get-Date -Format 'yyyy-MM-dd HH:mm')" -RestorePointType MODIFY_SETTINGS -ErrorAction Stop
-        Write-Host "$Green[SUCCESS]$Reset System Restore Point created successfully."
-    } catch {
-        Write-Host "$Yellow[WARNING]$Reset Could not create restore point: $($_.Exception.Message)"
-        Write-Host "$Yellow[WARNING]$Reset Proceeding without restore point. Consider creating one manually."
-    }
-    Write-Host ""
-}
-
-function Set-RegistryValue {
-    param (
-        [string]$Path,
-        [string]$Name,
-        [string]$Type,
-        $Value,
-        [string]$Message
-    )
-    
-    try {
-        if (-not (Test-Path $Path)) {
-            New-Item -Path $Path -Force | Out-Null
-        }
-        Set-ItemProperty -Path $Path -Name $Name -Type $Type -Value $Value -Force
-        Write-Host "$Green[SUCCESS]$Reset $Message"
-    }
-    catch {
-        Write-Host "$Red[FAILED]$Reset Failed to set $Name at $Path"
-        Write-Host "Error: $_"
-    }
-}
+# Set-RegistryValue, New-SafeRestorePoint, and Test-AdminRights are provided by Common.ps1
 
 function Show-MainMenu {
     $Host.UI.RawUI.WindowTitle = "Simplify11 - System Tweaks"
-    Clear-Host
-    Write-Host ""
-    Write-Host "$Purple +-------------------------------------+$Reset"
-    Write-Host "$Purple |$Reset [1] Universal Tweaks                $Purple|$Reset"
-    Write-Host "$Purple |$Reset [2] Free Up Space                   $Purple|$Reset"
-    Write-Host "$Purple |$Reset [3] NVIDIA/AMD GPU Tweaks           $Purple|$Reset"
-    Write-Host "$Purple +-------------------------------------+$Reset"
-    Write-Host "$Purple |$Reset [4] Back to menu                    $Purple|$Reset"
-    Write-Host "$Purple +-------------------------------------+$Reset"
-    
-    do {
-        $choice = Read-Host "Enter your choice (1-4)"
-    } while ($choice -notmatch '^[1-4]$')
-    
-    switch ($choice) {
-        "1" { Invoke-UniversalTweaks }
-        "2" { Clear-SystemSpace }
-        "3" { Show-GPUMenu }
-        "4" { return }
-        default { Show-MainMenu }
-    }
+    Show-Menu -Title "System Tweaks" -BackLabel "Back to Simplify11" -Options @(
+        @{ Key = "1"; Label = "Universal Tweaks"; Action = { Invoke-UniversalTweaks } },
+        @{ Key = "2"; Label = "Free Up Space"; Action = { Clear-SystemSpace } },
+        @{ Key = "3"; Label = "NVIDIA/AMD GPU Tweaks"; Action = { Show-GPUMenu } }
+    ) -BackAction { & "$PSScriptRoot\..\..\simplify11.ps1" }
 }
 
 function Invoke-UniversalTweaks {
@@ -461,27 +411,11 @@ function Clear-SystemSpace {
 }
 
 function Show-GPUMenu {
-    Clear-Host
-    Write-Host ""
-    Write-Host "$Purple +-------------------------------------+$Reset"
-    Write-Host "$Purple |$Reset Select your GPU manufacturer:       $Purple|$Reset"
-    Write-Host "$Purple +-------------------------------------+$Reset"
-    Write-Host "$Purple |$Reset [1] NVIDIA                          $Purple|$Reset"
-    Write-Host "$Purple |$Reset [2] AMD                             $Purple|$Reset"
-    Write-Host "$Purple |$Reset [3] Both (Hybrid Laptop)            $Purple|$Reset"
-    Write-Host "$Purple +-------------------------------------+$Reset"
-    Write-Host "$Purple |$Reset [4] Back to Main Menu               $Purple|$Reset"
-    Write-Host "$Purple +-------------------------------------+$Reset"
-    
-    $choice = Read-Host ">"
-    
-    switch ($choice) {
-        "1" { Invoke-NvidiaTweaks }
-        "2" { Invoke-AMDTweaks }
-        "3" { Invoke-HybridTweaks }
-        "4" { Show-MainMenu }
-        default { Show-GPUMenu }
-    }
+    Show-Menu -Title "GPU Tweaks" -Options @(
+        @{ Key = "1"; Label = "NVIDIA"; Action = { Invoke-NvidiaTweaks } },
+        @{ Key = "2"; Label = "AMD"; Action = { Invoke-AMDTweaks } },
+        @{ Key = "3"; Label = "Both (Hybrid Laptop)"; Action = { Invoke-HybridTweaks } }
+    ) -BackLabel "Back to System Tweaks"
 }
 
 function Invoke-HybridTweaks {

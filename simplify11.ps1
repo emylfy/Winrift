@@ -1,13 +1,6 @@
 . "$PSScriptRoot\scripts\Common.ps1"
 
-# Load version from version.json
-$versionFile = Join-Path $PSScriptRoot "version.json"
-if (Test-Path $versionFile) {
-    $versionInfo = Get-Content $versionFile -Raw | ConvertFrom-Json
-    $script:AppVersion = $versionInfo.version
-} else {
-    $script:AppVersion = "unknown"
-}
+$script:AppVersion = Get-AppVersion -RootPath $PSScriptRoot
 
 function Show-MainMenu {
     $Host.UI.RawUI.WindowTitle = "Simplify11 v$script:AppVersion"
@@ -31,106 +24,45 @@ function Show-MainMenu {
 
     $choice = Read-Host ">"
 
+    . "$PSScriptRoot\scripts\AdminLaunch.ps1"
+
+    $scriptPaths = @{
+        "2"  = "$PSScriptRoot\modules\system\Tweaks.ps1"
+        "3"  = "$PSScriptRoot\modules\security\SecurityMenu.ps1"
+        "4"  = "$PSScriptRoot\modules\drivers\Drivers.ps1"
+        "5"  = "$PSScriptRoot\modules\windots\windots.ps1"
+        "7"  = "$PSScriptRoot\modules\tools\WinScript.ps1"
+        "8"  = "$PSScriptRoot\modules\unigetui\UniGetUI.ps1"
+    }
+
+    # External tools handled by config-driven launcher
+    $externalTools = @{
+        "6"  = "winutil"
+        "9"  = "sparkle"
+        "10" = "gtweak"
+    }
+
     switch ($choice) {
-        "1" { Start-Process "https://github.com/emylfy/simplify11/blob/main/docs/autounattend_guide.md"; Show-MainMenu }
-        {"2","3","4","5","6","7","8","9","10" -contains $choice} {
-            . "$PSScriptRoot\scripts\AdminLaunch.ps1"
-
-            $scriptPaths = @{
-                "2"  = "$PSScriptRoot\modules\system\Tweaks.ps1"
-                "3"  = "$PSScriptRoot\modules\security\SecurityMenu.ps1"
-                "4"  = "$PSScriptRoot\modules\drivers\Drivers.ps1"
-                "5"  = "$PSScriptRoot\modules\windots\windots.ps1"
-                "6"  = "$PSScriptRoot\modules\tools\WinUtil.ps1"
-                "7"  = "$PSScriptRoot\modules\tools\WinScript.ps1"
-                "8"  = "$PSScriptRoot\modules\unigetui\UniGetUI.ps1"
-                "9"  = "$PSScriptRoot\modules\tools\Sparkle.ps1"
-                "10" = "$PSScriptRoot\modules\tools\GTweak.ps1"
-            }
-
-            $docsUrls = @{
-                # External integrations
-                "6"  = "https://github.com/ChrisTitusTech/winutil"        # WinUtil
-                "7"  = "https://github.com/flick9000/winscript"           # WinScript
-                "8"  = "https://github.com/marticliment/UniGetUI"         # UniGetUI
-                "10" = "https://github.com/Greedeks/GTweak"               # GTweak
-                "9"  = "https://github.com/Parcoil/Sparkle"               # Sparkle
-                # Internal modules / features
-                "2"  = "https://github.com/emylfy/simplify11"             # System Tweaks (internal)
-                "3"  = "https://github.com/emylfy/simplify11"             # Security Menu (internal)
-                "4"  = "https://github.com/emylfy/simplify11"             # Drivers (internal)
-                "5"  = "https://github.com/emylfy/windots"                # Windots
-            }
-
-            $autoStartChoices = @("4","5","7","8")
-            if ($autoStartChoices -contains $choice) {
-                $targetScript = $scriptPaths[$choice]
-                if (-not (Test-Path $targetScript)) {
-                    Write-Host "$Red Module not found: $targetScript$Reset"
-                    Write-Host "$Yellow This module may not be included in your installation.$Reset"
-                    Read-Host "Press Enter to continue"
-                    Show-MainMenu
-                    break
-                }
-                Start-AdminProcess -ScriptPath $targetScript -NoExit
+        "1" {
+            Start-Process "https://github.com/emylfy/simplify11/blob/main/docs/autounattend_guide.md"
+            Show-MainMenu
+        }
+        { $scriptPaths.ContainsKey($_) } {
+            $targetScript = $scriptPaths[$choice]
+            if (-not (Test-Path $targetScript)) {
+                Write-Host "$Red Module not found: $targetScript$Reset"
+                Write-Host "$Yellow This module may not be included in your installation.$Reset"
+                Read-Host "Press Enter to continue"
                 Show-MainMenu
-                break
+                return
             }
-
-            $toolNames = @{
-                "2"  = "System Tweaks"
-                "3"  = "Security Menu"
-                "4"  = "Drivers"
-                "5"  = "Windots"
-                "6"  = "WinUtil"
-                "7"  = "WinScript"
-                "8"  = "UniGetUI"
-                "9"  = "Sparkle"
-                "10" = "GTweak"
-            }
-
-            $innerWidth = 44
-
-            while ($true) {
-                Write-Host
-                Write-Host "$Purple +----------------------------------------------+$Reset"
-                $toolName = $toolNames[$choice]
-                if (-not $toolName) { $toolName = "selected tool" }
-                $contentRun = "[1] Run $toolName"
-                Write-Host "$Purple '$Reset $($contentRun.PadRight($innerWidth)) $Purple'$Reset"
-                Write-Host "$Purple '$Reset [2] Open documentation / project source      $Purple'$Reset"
-                Write-Host "$Purple '$Reset [3] Back to main menu                        $Purple'$Reset"
-                Write-Host "$Purple +----------------------------------------------+$Reset"
-
-                $toolAction = Read-Host "Select action"
-
-                switch ($toolAction) {
-                    "1" {
-                        Start-AdminProcess -ScriptPath $scriptPaths[$choice] -NoExit
-                        Show-MainMenu
-                        break
-                    }
-                    "2" {
-                        if ($docsUrls.ContainsKey($choice)) {
-                            Clear-Host
-                            Start-Process $docsUrls[$choice]
-                            Show-MainMenu
-                            break
-                        } else {
-                            Clear-Host
-                            Write-Host "$Yellow No documentation URL defined for this tool.$Reset"
-                            Show-MainMenu
-                            break
-                        }
-                    }
-                    "3" {
-                        Show-MainMenu
-                        break
-                    }
-                    default {
-                    }
-                }
-            }
+            Start-AdminProcess -ScriptPath $targetScript -NoExit
+            Show-MainMenu
+        }
+        { $externalTools.ContainsKey($_) } {
+            $launcherPath = "$PSScriptRoot\modules\tools\ExternalLauncher.ps1"
+            Start-AdminProcess -ScriptPath $launcherPath -Arguments "-ToolId $($externalTools[$choice])" -NoExit
+            Show-MainMenu
         }
         default { Show-MainMenu }
     }
