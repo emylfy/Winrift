@@ -2,21 +2,38 @@
 
 function Show-WinScriptMenu {
     $Host.UI.RawUI.WindowTitle = "WinScript Launcher"
-    Show-Menu -Title "Winscript - Make Windows Yours" -Options @(
-        @{ Key = "1"; Label = "Open online version"; Action = {
-            Start-Process "https://winscript.cc/online/"
-        }},
-        @{ Key = "2"; Label = "Run portable version"; Action = {
-            Write-Host "$Green Running portable WinScript... $Reset"
-            try {
-                $scriptContent = Invoke-RestMethod -Uri "https://winscript.cc/irm" -ErrorAction Stop
-                Invoke-Expression $scriptContent
-            } catch {
-                Write-Host "$Red Failed to launch portable WinScript: $($_.Exception.Message) $Reset"
-                Read-Host "Press Enter to continue"
+
+    while ($true) {
+        Clear-Host
+        Show-MenuBox -Title "WinScript - Make Windows Yours" -Items @(
+            "[1] Open online version",
+            "[2] Run portable version",
+            "---",
+            "[3] Back to menu"
+        )
+
+        $choice = Read-Host "Select an option"
+
+        switch ($choice) {
+            "1" {
+                Start-Process "https://winscript.cc/online/"
+                break
             }
-        }}
-    ) -BackLabel "Back to Simplify11" -BackAction { & "$PSScriptRoot\..\..\simplify11.ps1" }
+            "2" {
+                Write-Log -Message "Running portable WinScript..." -Level INFO
+                try {
+                    $scriptContent = Invoke-RestMethod -Uri "https://winscript.cc/irm" -ErrorAction Stop
+                    Invoke-Expression $scriptContent
+                } catch {
+                    Write-Log -Message "Failed to launch portable WinScript: $($_.Exception.Message)" -Level ERROR
+                    Read-Host "Press Enter to continue"
+                }
+                break
+            }
+            "3" { return }
+            default { }
+        }
+    }
 }
 
 Show-WinScriptMenu

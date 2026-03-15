@@ -2,7 +2,6 @@
 
 function Show-DeviceMenu {
     $Host.UI.RawUI.WindowTitle = "Simplify11 - Drivers"
-    Clear-Host
 
     $urls = @{
         "1"  = "https://www.nvidia.com/en-us/software/nvidia-app/"
@@ -18,60 +17,77 @@ function Show-DeviceMenu {
         "11" = "https://www.gigabyte.com/Support/Consumer/Download"
     }
 
-    Write-Host "$Purple +------------------------+$Reset"
-    Write-Host "$Purple '$Reset [1] Nvidia App         $Purple'$Reset"
-    Write-Host "$Purple '$Reset [2] AMD Drivers        $Purple'$Reset"
-    Write-Host "$Purple +------------------------+$Reset"
-    Write-Host "$Purple '$Reset [3] HP                 $Purple'$Reset"
-    Write-Host "$Purple '$Reset [4] Lenovo             $Purple'$Reset"
-    Write-Host "$Purple '$Reset [5] Asus               $Purple'$Reset"
-    Write-Host "$Purple '$Reset [6] Acer               $Purple'$Reset"
-    Write-Host "$Purple '$Reset [7] MSI                $Purple'$Reset"
-    Write-Host "$Purple '$Reset [8] Huawei             $Purple'$Reset"
-    Write-Host "$Purple '$Reset [9] Xiaomi             $Purple'$Reset"
-    Write-Host "$Purple '$Reset [10] DELL/Alienware    $Purple'$Reset"
-    Write-Host "$Purple '$Reset [11] Gigabyte          $Purple'$Reset"
-    Write-Host "$Purple '$Reset [Enter] Back to Menu   $Purple'$Reset"
-    Write-Host "$Purple +------------------------+$Reset"
+    while ($true) {
+        Clear-Host
+        Show-MenuBox -Title "Select your device manufacturer to install drivers" -Items @(
+            "[1]  Nvidia App",
+            "[2]  AMD Drivers",
+            "---",
+            "[3]  HP",
+            "[4]  Lenovo",
+            "[5]  Asus",
+            "[6]  Acer",
+            "[7]  MSI",
+            "[8]  Huawei",
+            "[9]  Xiaomi",
+            "[10] DELL/Alienware",
+            "[11] Gigabyte",
+            "---",
+            "[Enter] Back to Menu"
+        )
 
-    $choice = Read-Host "Select your device manufacturer to install drivers"
+        $choice = Read-Host "Select your device manufacturer"
 
-    if ($choice -eq "4") {
-        Show-LenovoMenu
-    }
-    elseif ($choice -eq "") {
-        & "$PSScriptRoot\..\..\simplify11.ps1"
-        return
-    }
-    elseif ($urls.ContainsKey($choice)) {
-        Start-Process $urls[$choice]
-        Show-DeviceMenu
-    }
-    else {
-        Write-Host "$Red Invalid choice. Returning to main menu. $Reset"
-        Start-Sleep -Seconds 2
-        Show-DeviceMenu
+        if ($choice -eq "") {
+            return
+        } elseif ($choice -eq "4") {
+            Show-LenovoMenu
+        } elseif ($urls.ContainsKey($choice)) {
+            Start-Process $urls[$choice]
+        } else {
+            Write-Log -Message "Invalid choice. Please try again." -Level ERROR
+            Start-Sleep -Seconds 1
+        }
     }
 }
 
 function Show-LenovoMenu {
-    Show-Menu -Title "Lenovo" -Options @(
-        @{ Key = "1"; Label = "Install Lenovo Vantage"; Action = {
-            Write-Host "$Reset Installing Lenovo Vantage... $Reset"
-            $result = winget install "9WZDNCRFJ4MV" --accept-package-agreements --accept-source-agreements
+    while ($true) {
+        Clear-Host
+        Show-MenuBox -Title "Lenovo Driver Options" -Items @(
+            "[1] Install Lenovo Vantage",
+            "[2] Open Lenovo Driver Page",
+            "---",
+            "[3] Back to Manufacturer Selection"
+        )
 
-            if ($LASTEXITCODE -eq 0) {
-                Write-Host "$Green Successfully installed Lenovo Vantage. $Reset"
-            } else {
-                Write-Host "$Red Failed to install Lenovo Vantage. Please install manually from the Microsoft Store. $Reset"
-                Start-Process "ms-windows-store://pdp?hl=en-us&gl=us&ocid=pdpshare&referrer=storeforweb&productid=9WZDNCRFJ4MV&storecid=storeweb-pdp-open-cta"
+        $choice = Read-Host ">"
+
+        switch ($choice) {
+            "1" {
+                Write-Log -Message "Installing Lenovo Vantage..." -Level INFO
+                try {
+                    winget install "9WZDNCRFJ4MV" --accept-package-agreements --accept-source-agreements
+                    if ($LASTEXITCODE -eq 0) {
+                        Write-Log -Message "Successfully installed Lenovo Vantage." -Level SUCCESS
+                    } else {
+                        Write-Log -Message "Failed to install Lenovo Vantage. Please install manually from the Microsoft Store." -Level ERROR
+                        Start-Process "ms-windows-store://pdp?hl=en-us&gl=us&ocid=pdpshare&referrer=storeforweb&productid=9WZDNCRFJ4MV&storecid=storeweb-pdp-open-cta"
+                    }
+                } catch {
+                    Write-Log -Message "Error installing Lenovo Vantage: $($_.Exception.Message)" -Level ERROR
+                }
+                Start-Sleep -Seconds 2
+                break
             }
-            Start-Sleep -Seconds 2
-        }},
-        @{ Key = "2"; Label = "Open Lenovo Driver Page"; Action = {
-            Start-Process "https://support.lenovo.com"
-        }}
-    ) -BackLabel "Back to Manufacturer Selection"
+            "2" {
+                Start-Process "https://support.lenovo.com"
+                break
+            }
+            "3" { return }
+            default { }
+        }
+    }
 }
 
 Show-DeviceMenu

@@ -18,9 +18,40 @@ Thanks for your interest in contributing to Simplify11! This guide will help you
 
 Simplify11 is a PowerShell-based project. You'll need:
 
-- Windows 11 (for testing)
+- Windows 11 (for testing) — [Download Windows 11 ISO](https://www.microsoft.com/software-download/windows11)
 - PowerShell 5.1+ (included with Windows)
 - A code editor (VS Code recommended with the PowerShell extension)
+- **Recommended:** [PSScriptAnalyzer](https://github.com/PowerShell/PSScriptAnalyzer) for linting
+
+### Setting up PSScriptAnalyzer
+
+Install PSScriptAnalyzer to catch common PowerShell issues before submitting:
+
+```powershell
+Install-Module -Name PSScriptAnalyzer -Scope CurrentUser -Force
+```
+
+Run it against your changes:
+
+```powershell
+# Analyze a single file
+Invoke-ScriptAnalyzer -Path .\modules\system\Tweaks.ps1
+
+# Analyze the entire project
+Invoke-ScriptAnalyzer -Path . -Recurse
+
+# Show only errors and warnings
+Invoke-ScriptAnalyzer -Path . -Recurse -Severity Error, Warning
+```
+
+### Testing on a VM (Recommended)
+
+Testing tweaks on a live system can cause irreversible changes. Use a Windows 11 VM instead:
+
+1. Download the [Windows 11 ISO](https://www.microsoft.com/software-download/windows11) from Microsoft
+2. Create a VM in [VirtualBox](https://www.virtualbox.org/) (free) or Hyper-V (built into Windows Pro/Enterprise)
+3. Install Windows 11, then snapshot the VM **before** testing tweaks
+4. Restore the snapshot between test runs to start clean
 
 ### Project Structure
 
@@ -46,9 +77,11 @@ simplify11/
 
 - Use **approved PowerShell verbs** for function names (`Get-`, `Set-`, `New-`, `Remove-`, `Invoke-`, etc.)
   - Run `Get-Verb` in PowerShell to see the full list
+  - Full reference: [PowerShell Approved Verbs](https://learn.microsoft.com/en-us/powershell/scripting/developer/cmdlet/approved-verbs-for-windows-powershell-commands)
 - Use **4-space indentation** (no tabs)
 - Include error handling (`try/catch`) for any external downloads or network operations
 - Add descriptive `-Message` parameters to `Set-RegistryValue` calls
+- Use `Write-Log` (from `scripts/Common.ps1`) instead of bare `Write-Host` for user feedback
 
 ### Adding New Tweaks
 
@@ -56,6 +89,30 @@ simplify11/
 2. Include source links as comments above registry modifications
 3. Test thoroughly on a clean Windows 11 installation
 4. Document what the tweak does and why
+
+**Template for a new tweak function:**
+
+```powershell
+function Invoke-MyNewTweak {
+    # Source: https://example.com/source-of-this-tweak
+    # What it does: Brief description of the effect on the system
+    Write-Log -Message "Applying My New Tweak..." -Level INFO -LogFile $script:LogFile
+
+    try {
+        Set-RegistryValue -Path "HKCU:\Software\Example" `
+                          -Name "SettingName" `
+                          -Value 1 `
+                          -Type DWord `
+                          -Description "Enables example behavior"
+
+        Write-Log -Message "My New Tweak applied successfully." -Level SUCCESS -LogFile $script:LogFile
+    } catch {
+        Write-Log -Message "Failed to apply My New Tweak: $($_.Exception.Message)" -Level ERROR -LogFile $script:LogFile
+    }
+}
+```
+
+Then register it in the tweak map inside `Invoke-UniversalTweaks` in `modules/system/Tweaks.Universal.ps1`.
 
 ### Commit Messages
 
@@ -68,11 +125,12 @@ Write clear, concise commit messages:
 
 Before submitting a PR:
 
-1. Test your changes on a **clean Windows 11 VM** (recommended)
+1. Test your changes on a **clean Windows 11 VM** (recommended) — see [VM setup above](#testing-on-a-vm-recommended)
 2. Create a **System Restore Point** before testing tweaks
 3. Verify the menu navigation works correctly
 4. Check that all function names use approved PowerShell verbs
 5. Ensure no tabs are mixed with spaces
+6. Run PSScriptAnalyzer and fix any errors or warnings
 
 ## Submitting a Pull Request
 

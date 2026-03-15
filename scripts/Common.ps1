@@ -1,91 +1,73 @@
-# ── Simplify11 Shared Utilities ──────────────────────────────────────────────
-# Colors, menu framework, registry helpers, and common functions
-# Used by every module in the project — dot-source this file first.
-
-# ── ANSI Color Constants ────────────────────────────────────────────────────
 $Purple = "$([char]0x1b)[38;5;141m"
 $Reset = "$([char]0x1b)[0m"
 $Red = "$([char]0x1b)[38;5;203m"
 $Green = "$([char]0x1b)[38;5;120m"
 $Yellow = "$([char]0x1b)[38;5;220m"
 
-# ── Menu Framework ──────────────────────────────────────────────────────────
-function Show-Menu {
+function Write-Log {
     param(
-        [string]$Title,
-        [hashtable[]]$Options,       # @{ Key="1"; Label="System Tweaks"; Action={...} }
-        [string]$BackLabel = "Back to menu",
-        [scriptblock]$BackAction = $null,
-        [switch]$NoLoop,
-        [string]$Prompt = ">"
+        [string]$Message,
+        [ValidateSet('INFO','SUCCESS','WARNING','ERROR','SKIP')]
+        [string]$Level = 'INFO',
+        [string]$LogFile = ""
     )
 
-    while ($true) {
-        Clear-Host
-        Write-Host ""
+    $prefix = switch ($Level) {
+        'SUCCESS' { "$Green[SUCCESS]$Reset" }
+        'WARNING' { "$Yellow[WARNING]$Reset" }
+        'ERROR'   { "$Red[FAILED]$Reset" }
+        'SKIP'    { "$Yellow[SKIP]$Reset" }
+        default   { "$Purple[INFO]$Reset" }
+    }
 
-        # Calculate inner width from longest label
-        $maxLen = ($Title.Length)
-        foreach ($opt in $Options) {
-            $line = " [$($opt.Key)] $($opt.Label)"
-            if ($line.Length -gt $maxLen) { $maxLen = $line.Length }
-        }
-        $backLine = " [0] $BackLabel"
-        if ($backLine.Length -gt $maxLen) { $maxLen = $backLine.Length }
-        $innerWidth = $maxLen + 2
-        $border = "+" + ("-" * ($innerWidth + 2)) + "+"
+    Write-Host "$prefix $Message"
 
-        # Draw menu
-        Write-Host "$Purple $border$Reset"
-        Write-Host "$Purple '$Purple  $($Title.PadRight($innerWidth)) $Purple'$Reset"
-        Write-Host "$Purple $border$Reset"
-        foreach ($opt in $Options) {
-            $line = " [$($opt.Key)] $($opt.Label)"
-            Write-Host "$Purple '$Reset$($line.PadRight($innerWidth + 1))$Purple'$Reset"
-        }
-        Write-Host "$Purple $border$Reset"
-        Write-Host "$Purple '$Reset$($backLine.PadRight($innerWidth + 1))$Purple'$Reset"
-        Write-Host "$Purple $border$Reset"
-
-        $choice = Read-Host $Prompt
-
-        if ($choice -eq "0") {
-            if ($BackAction) { & $BackAction }
-            return
-        }
-
-        $matched = $false
-        foreach ($opt in $Options) {
-            if ($opt.Key -eq $choice) {
-                & $opt.Action
-                $matched = $true
-                break
-            }
-        }
-
-        if (-not $matched) {
-            Write-Host "$Red Invalid choice. Please try again.$Reset"
-            Start-Sleep -Seconds 1
-        }
-
-        if ($NoLoop) { return }
+    if ($LogFile -ne "") {
+        $timestamp = Get-Date -Format 'yyyy-MM-dd HH:mm:ss'
+        $plainLine = "[$timestamp] [$Level] $Message"
+        try {
+            Add-Content -Path $LogFile -Value $plainLine -ErrorAction SilentlyContinue
+        } catch { }
     }
 }
 
-# ── Header Helper ───────────────────────────────────────────────────────────
-function Write-Header {
+function Show-MenuBox {
     param(
-        [string]$Text,
+        [string]$Title,
+        [string[]]$Items,
         [int]$Width = 56
     )
-    $border = "+" + ("-" * ($Width + 2)) + "+"
+
+    $border = "$Purple +" + ("-" * $Width) + "+$Reset"
+    $titlePadded = $Title.PadRight($Width - 2)
     Write-Host ""
-    Write-Host "$Purple $border$Reset"
-    Write-Host "$Purple '$Purple  $($Text.PadRight($Width)) $Purple'$Reset"
-    Write-Host "$Purple $border$Reset"
+    Write-Host $border
+    Write-Host "$Purple '$Purple $titlePadded $Purple'$Reset"
+    Write-Host $border
+    foreach ($item in $Items) {
+        if ($item -eq "---") {
+            Write-Host $border
+        } else {
+            $itemPadded = $item.PadRight($Width - 2)
+            Write-Host "$Purple '$Reset $itemPadded $Purple'$Reset"
+        }
+    }
+    Write-Host $border
 }
 
-# ── Registry Helper ─────────────────────────────────────────────────────────
+function New-SafeRestorePoint {
+    Write-Host "`n$Purple Creating System Restore Point before applying tweaks...$Reset"
+    try {
+        Enable-ComputerRestore -Drive "$env:SystemDrive\" -ErrorAction SilentlyContinue
+        Checkpoint-Computer -Description "Simplify11 - Before System Tweaks $(Get-Date -Format 'yyyy-MM-dd HH:mm')" -RestorePointType MODIFY_SETTINGS -ErrorAction Stop
+        Write-Log -Message "System Restore Point created successfully." -Level SUCCESS
+    } catch {
+        Write-Log -Message "Could not create restore point: $($_.Exception.Message)" -Level WARNING
+        Write-Log -Message "Proceeding without restore point. Consider creating one manually." -Level WARNING
+    }
+    Write-Host ""
+}
+
 function Set-RegistryValue {
     param (
         [string]$Path,
@@ -100,45 +82,9 @@ function Set-RegistryValue {
             New-Item -Path $Path -Force | Out-Null
         }
         Set-ItemProperty -Path $Path -Name $Name -Type $Type -Value $Value -Force
-        Write-Host "$Green[SUCCESS]$Reset $Message"
+        Write-Log -Message $Message -Level SUCCESS
     }
     catch {
-        Write-Host "$Red[FAILED]$Reset Failed to set $Name at $Path"
-        Write-Host "Error: $_"
+        Write-Log -Message "Failed to set $Name at $Path. Error: $_" -Level ERROR
     }
-}
-
-# ── Restore Point Helper ───────────────────────────────────────────────────
-function New-SafeRestorePoint {
-    param(
-        [string]$Description = "Simplify11 - Before System Tweaks"
-    )
-    Write-Host "`n$Purple Creating System Restore Point before applying tweaks...$Reset"
-    try {
-        Enable-ComputerRestore -Drive "$env:SystemDrive\" -ErrorAction SilentlyContinue
-        Checkpoint-Computer -Description "$Description $(Get-Date -Format 'yyyy-MM-dd HH:mm')" -RestorePointType MODIFY_SETTINGS -ErrorAction Stop
-        Write-Host "$Green[SUCCESS]$Reset System Restore Point created successfully."
-    } catch {
-        Write-Host "$Yellow[WARNING]$Reset Could not create restore point: $($_.Exception.Message)"
-        Write-Host "$Yellow[WARNING]$Reset Proceeding without restore point. Consider creating one manually."
-    }
-    Write-Host ""
-}
-
-# ── Admin Check ─────────────────────────────────────────────────────────────
-function Test-AdminRights {
-    return ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
-}
-
-# ── Version Loader ─────────────────────────────────────────────────────────
-function Get-AppVersion {
-    param(
-        [string]$RootPath
-    )
-    $versionFile = Join-Path $RootPath "config\version.json"
-    if (Test-Path $versionFile) {
-        $versionInfo = Get-Content $versionFile -Raw | ConvertFrom-Json
-        return $versionInfo.version
-    }
-    return "unknown"
 }
