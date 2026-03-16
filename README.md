@@ -100,7 +100,7 @@
 **Step 2.** Run the launcher:
 
 ```powershell
-iwr "https://dub.sh/simplify11" | iex
+irm https://raw.githubusercontent.com/emylfy/simplify11/main/scripts/launch.ps1 | iex
 ```
 
 **Step 3.** The interactive menu opens automatically. No further installation needed.
@@ -110,7 +110,7 @@ iwr "https://dub.sh/simplify11" | iex
 Creates a shortcut to always launch the latest version:
 
 ```powershell
-iwr "https://dub.sh/s11install" | iex
+irm https://raw.githubusercontent.com/emylfy/simplify11/main/scripts/install.ps1 | iex
 ```
 
 ### Security Note
