@@ -32,19 +32,21 @@ function Show-MainMenu {
         Clear-Host
         Show-MenuBox -Title "System Tweaks" -Items @(
             "[1] Universal Tweaks",
-            "[2] Free Up Space",
-            "[3] NVIDIA/AMD GPU Tweaks",
+            "[2] NVIDIA/AMD GPU Tweaks",
+            "[3] Free Up Space",
             "---",
-            "[4] Back to menu"
+            "[4] Open Documentation",
+            "[5] Back to menu"
         )
 
-        $choice = Read-Host "Enter your choice (1-4)"
+        $choice = Read-Host "Enter your choice (1-5)"
 
         switch ($choice) {
             "1" { Invoke-UniversalTweaks; break }
-            "2" { Clear-SystemSpace; break }
-            "3" { Show-GPUMenu; break }
-            "4" { return }
+            "2" { Show-GPUMenu; break }
+            "3" { Clear-SystemSpace; break }
+            "4" { Start-Process "https://github.com/emylfy/simplify11/blob/main/docs/tweaks_guide.md"; break }
+            "5" { Invoke-ReturnToMenu; return }
             default { }
         }
     }

@@ -39,7 +39,7 @@ function Show-DeviceMenu {
         $choice = Read-Host "Select your device manufacturer"
 
         if ($choice -eq "") {
-            return
+            Invoke-ReturnToMenu; return
         } elseif ($choice -eq "4") {
             Show-LenovoMenu
         } elseif ($urls.ContainsKey($choice)) {

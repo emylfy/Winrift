@@ -29,7 +29,7 @@ function Show-DefendNotMenu {
                 break
             }
             "2" { Start-Process "https://github.com/es3n1n/defendnot"; break }
-            "3" { return }
+            "3" { Invoke-ReturnToMenu; return }
             default { }
         }
     }

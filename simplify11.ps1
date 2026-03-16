@@ -1,4 +1,5 @@
 . "$PSScriptRoot\scripts\Common.ps1"
+$PSScriptRoot | Set-Content "$env:TEMP\simplify11_launchdir.txt" -Force
 
 # Load version from version.json
 $versionFile = Join-Path $PSScriptRoot "version.json"
@@ -54,7 +55,7 @@ function Show-MainMenu {
     }
 
     # Auto-start choices: launch directly without sub-menu (have their own interactive menus)
-    $autoStartChoices = @("4", "5", "8")
+    $autoStartChoices = @("2", "3", "4", "5", "7", "8")
 
     :outerLoop while ($true) {
         Clear-Host

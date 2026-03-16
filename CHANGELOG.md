@@ -5,58 +5,43 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project uses [Calendar Versioning](https://calver.org/) (YY.M format).
 
-## [26.3] - 2026-03-10
+## [26.3] - 2026-03-16
 
-### Added
-- System Restore Point creation before applying any tweaks
-- Selective tweak application — choose which categories to apply
-- Session logging via `Start-Transcript` (logs saved to `~/Simplify11/logs/`)
-- "What was changed" summary displayed after tweak application
-- Version system via `version.json` (replaces hardcoded version string)
-- `CHANGELOG.md` for tracking project changes
-- `CONTRIBUTING.md` with setup, testing, and PR guidelines
-- GitHub issue templates for bug reports and feature requests
-- Comprehensive `.gitignore` for Windows, IDE, and temp files
-- Safety check for missing modules in main menu — shows friendly error instead of crashing
-- Reusable `Show-Menu` framework in `Common.ps1` — eliminates hundreds of lines of duplicated menu code
-- `Write-Header` helper in `Common.ps1` for consistent section headers
-- `Test-AdminRights` helper in `Common.ps1` for checking admin elevation
-- `config/` directory for centralized configuration: `version.json`, `tools.json`, `bundles/`
-- Config-driven `ExternalLauncher.ps1` — single file handles all external tool launches via `tools.json`
-- `Get-AppVersion` function in `Common.ps1` — centralized version loading from `config/version.json`
-- PSScriptAnalyzer CI workflow (`.github/workflows/lint.yml`) — lints all `.ps1`/`.psm1`/`.psd1` on push and PR
-- README.md fully rewritten — Quick Start at top, feature comparison table, screenshot placeholders, star history badge
-- Screenshot template filenames defined: `media/screenshot-main.png`, `media/screenshot-tweaks.png`, `media/screenshot-security.png`, `media/demo.gif`
+### March 16 — Bundle overhaul, return-to-menu navigation, and documentation rewrite
 
-### Fixed
-- Main menu option "3" (Security Menu) now gets consistent sub-menu (Run/Docs/Back) like all other options
-- Inconsistent tab/space indentation in `AdminLaunch.ps1`
-- Error handling added to all external script downloads (`irm | iex` patterns)
-- Menu "back" actions no longer spawn new PowerShell processes — replaced with `return` to prevent stack overflow from recursive process chains
-- Removed orphaned unreachable `exit` statement in `WinScript.ps1`
-- Drivers menu now uses 1-based numbering instead of 0-based, with hashtable lookup replacing fragile array indexing
-- Icon install path in `install.ps1` now uses `$env:APPDATA\Simplify11` subfolder instead of bare `$env:APPDATA`
-- Shortcut `WorkingDirectory` corrected from Start Menu path to `$env:USERPROFILE`
-- Version tag in `CHANGELOG.md` aligned to `[26.3]` to match `version.json` (CalVer)
-- UniGetUI bundle path resolution simplified — bundles now live in `config/bundles/` with a single reliable path
-- ASCII art in `launch.ps1` corrected for proper rendering
-- All main menu options now behave consistently — every option auto-starts its module (removed inconsistent sub-menu pattern for some options)
-- Version loading centralized via `Get-AppVersion` — `simplify11.ps1` no longer reads `version.json` directly
+- Added `Invoke-ReturnToMenu` in `Common.ps1` — reads saved launch directory from temp file and re-launches `simplify11.ps1` in the same window
+- Added launch directory persistence — `simplify11.ps1` writes `$PSScriptRoot` to `$env:TEMP\simplify11_launchdir.txt` at startup so child modules can navigate back
+- Added `CreativeMedia.ubundle` — new bundle with Audacity, CapCut, Affinity, OBS Studio, Spotify, YouTube Music
+- Added "Creative & Media" category in UniGetUI app category menu
+- Added "Back to menu" option in UniGetUI install prompt
+- Added "Open Documentation" option in Tweaks menu
+- Added Claude, Android Studio, fastfetch, scrcpy, Android SDK Platform-Tools, FFmpeg to Development bundle
+- Added Telegram Desktop to Communications bundle
+- Changed "Back to menu" across all modules to use `Invoke-ReturnToMenu` — returns to main menu instead of leaving empty prompt (Drivers, DefendNot, PrivacySexy, RemoveWindowsAI, SecurityMenu, Tweaks, WinScript, UniGetUI, Windots)
+- Changed `Windots.Menu.psm1` — dot-sources `Common.ps1` for module scope access to `Invoke-ReturnToMenu`
+- Changed Tweaks menu reordered — GPU Tweaks moved before Free Up Space
+- Changed UniGetUI refactored — conditional install prompt (`Show-InstallPrompt`) shown only when not installed, then straight to app categories
+- Changed media/creative apps split from Productivity into new CreativeMedia bundle; dev tools moved from Utilities to Development; Raycast to Productivity; Proton Pass and RustDesk to Utilities; Flow Launcher to Productivity
+- Changed bundle `export_version` upgraded to 3; removed verbose `InstallationOptions`/`Updates` metadata from Games and Utilities bundles
+- Changed bundle `incompatible_packages_info` text updated from "WingetUI" to "UniGetUI"
+- Changed `ExternalLauncher.ps1` — moved `Common.ps1` import after `param` block (fixes script parameter handling)
+- Changed UniGetUI bundle path resolution updated to use project root `config\bundles\` with PascalCase names
+- Changed `docs/autounattend_guide.md` fully rewritten — stage-by-stage installation breakdown, removed apps table, warnings section, and improved installation methods
+- Changed `iwr` replaced with `irm` and dub.sh shortlinks replaced with direct GitHub raw URLs
+- Changed updated project logo
+- Removed unused `Simplify11` function from `Windots.Menu.psm1`
 
-### Removed
-- `Add-MpPreference` Defender exclusion from `launch.ps1` — unnecessary for zip download and raised security concerns
-- `modules/privacy/` directory — `PrivacySexy.ps1` merged into `modules/security/`
-- Individual tool wrapper files (`WinUtil.ps1`, `Sparkle.ps1`, `GTweak.ps1`) — replaced by `ExternalLauncher.ps1`
-- `.DS_Store` tracked file removed from repository
+### March 15 — Loop menus, Show-MenuBox, logging, and Tweaks submodules
 
-### Changed
-- **Architecture**: `Common.ps1` expanded from 5 color variables to a full shared utilities module containing `Set-RegistryValue`, `New-SafeRestorePoint`, `Show-Menu`, `Write-Header`, and `Test-AdminRights`
-- **Architecture**: All module menus refactored to use the shared `Show-Menu` framework (SecurityMenu, DefendNot, RemoveWindowsAI, PrivacySexy, WinScript, UniGetUI, Drivers/Lenovo, Windots, Tweaks)
-- **Architecture**: `Tweaks.ps1` no longer contains its own `Set-RegistryValue` and `New-SafeRestorePoint` — uses shared versions from `Common.ps1`
-- **Structure**: `version.json` moved to `config/version.json`
-- **Structure**: UniGetUI `.ubundle` files moved to `config/bundles/`
-- **Structure**: External tools defined in `config/tools.json` instead of hardcoded wrapper scripts
-- Function names standardized to use approved PowerShell verbs:
+- Added reusable `Show-Menu` framework in `Common.ps1` — eliminates hundreds of lines of duplicated menu code
+- Added `Write-Header` helper in `Common.ps1` for consistent section headers
+- Added `Test-AdminRights` helper in `Common.ps1` for checking admin elevation
+- Added `Get-AppVersion` function in `Common.ps1` — centralized version loading from `config/version.json`
+- Added screenshot template filenames defined: `media/screenshot-main.png`, `media/screenshot-tweaks.png`, `media/screenshot-security.png`, `media/demo.gif`
+- Changed all module menus refactored to use the shared `Show-Menu` framework (SecurityMenu, DefendNot, RemoveWindowsAI, PrivacySexy, WinScript, UniGetUI, Drivers/Lenovo, Windots, Tweaks)
+- Changed `Tweaks.ps1` split into submodules: `Tweaks.Universal.ps1`, `Tweaks.GPU.ps1`, `Tweaks.Cleanup.ps1`
+- Changed README.md fully rewritten — Quick Start at top, feature comparison table, screenshot placeholders, star history badge
+- Changed function names standardized to use approved PowerShell verbs:
   - `Apply-Cursor` → `Set-Cursor`
   - `FreeUpSpace` → `Clear-SystemSpace`
   - `Extract-StartFolders` → `Expand-StartFolders`
@@ -68,10 +53,100 @@ and this project uses [Calendar Versioning](https://calver.org/) (YY.M format).
   - `Run-Portable` → `Invoke-Portable`
   - All `Apply-*` tweaks functions → `Invoke-*` in `Tweaks.ps1`
   - `Check-Winget` → `Test-Winget` in `UniGetUI.ps1`
+- Fixed all main menu options now behave consistently — every option auto-starts its module
+- Fixed version loading centralized via `Get-AppVersion` — `simplify11.ps1` no longer reads `version.json` directly
+- Fixed version tag in `CHANGELOG.md` aligned to `[26.3]` to match `version.json` (CalVer)
 
-## [Pre-release] - Prior versions
+### March 13 — Architecture refactor with shared utilities, config-driven tools, and CI
 
-- Initial toolkit with system tweaks, driver links, privacy tools, and third-party integrations
+- Added `config/` directory for centralized configuration: `version.json`, `tools.json`, `bundles/`
+- Added config-driven `ExternalLauncher.ps1` — single file handles all external tool launches via `tools.json`
+- Added PSScriptAnalyzer CI workflow (`.github/workflows/lint.yml`) — lints all `.ps1`/`.psm1`/`.psd1` on push and PR
+- Changed `Common.ps1` expanded from 5 color variables to a full shared utilities module containing `Set-RegistryValue`, `New-SafeRestorePoint`, `Show-Menu`, `Write-Header`, and `Test-AdminRights`
+- Changed `Tweaks.ps1` no longer contains its own `Set-RegistryValue` and `New-SafeRestorePoint` — uses shared versions from `Common.ps1`
+- Changed `version.json` moved to `config/version.json`
+- Changed UniGetUI `.ubundle` files moved to `config/bundles/`
+- Changed external tools defined in `config/tools.json` instead of hardcoded wrapper scripts
+- Removed `modules/privacy/` directory — `PrivacySexy.ps1` merged into `modules/security/`
+- Removed individual tool wrapper files (`WinUtil.ps1`, `Sparkle.ps1`, `GTweak.ps1`) — replaced by `ExternalLauncher.ps1`
+- Removed `.DS_Store` tracked file from repository
+
+### March 10 — Code quality, safety, docs, and UX
+
+- Added System Restore Point creation before applying any tweaks
+- Added selective tweak application — choose which categories to apply
+- Added session logging via `Start-Transcript` (logs saved to `~/Simplify11/logs/`)
+- Added "What was changed" summary displayed after tweak application
+- Added version system via `version.json` (replaces hardcoded version string)
+- Added `CHANGELOG.md` for tracking project changes
+- Added `CONTRIBUTING.md` with setup, testing, and PR guidelines
+- Added GitHub issue templates for bug reports and feature requests
+- Added comprehensive `.gitignore` for Windows, IDE, and temp files
+- Added safety check for missing modules in main menu — shows friendly error instead of crashing
+- Fixed inconsistent tab/space indentation in `AdminLaunch.ps1`
+- Fixed main menu option "3" (Security Menu) now gets consistent sub-menu like all other options
+- Fixed error handling added to all external script downloads (`irm | iex` patterns)
+- Fixed menu "back" actions no longer spawn new PowerShell processes — replaced with `return` to prevent stack overflow
+- Fixed removed orphaned unreachable `exit` statement in `WinScript.ps1`
+- Fixed Drivers menu now uses 1-based numbering instead of 0-based, with hashtable lookup replacing fragile array indexing
+- Fixed icon install path in `install.ps1` now uses `$env:APPDATA\Simplify11` subfolder instead of bare `$env:APPDATA`
+- Fixed shortcut `WorkingDirectory` corrected from Start Menu path to `$env:USERPROFILE`
+- Fixed ASCII art in `launch.ps1` corrected for proper rendering
+- Removed `Add-MpPreference` Defender exclusion from `launch.ps1` — unnecessary for zip download and raised security concerns
+
+## [25.05.1] - 2025-05-17
+
+### Added
+- SSD-specific tweak section in system optimizations
+- Enhanced `Organizer.ps1` with refined file filtering and new exclusions
+- Trae, GitHub Desktop, Spotify, and Android SDK Platform-Tools added to bundles
+- Windots integration — configurations for VSCode, Windows Terminal, PowerShell, Oh My Posh, and FastFetch
+- Visual customizations: Rectify11, SpotX, Spicetify, Steam Millennium (Space Theme), and macOS cursor
+
+### Changed
+- Reorganized configuration files and scripts
+- UI enhancements and simplified admin process elevation
+- Strengthened PowerShell reliability through improved error management for profiles
+
+### Fixed
+- Removed outdated tweaks
+- Fixed GPU tweak exit issue
+
+## [25.05] - 2025-05-01
+
+### Added
+- GTweak launcher integration
+- WizTree and RyTuneX added to Utilities bundle
+- Privacy.sexy now supports launching latest standard preset from privacylearn.com
+
+### Fixed
+- Corrected UniGetUI bundle paths
+- Removed tweak that caused "USB not recognized" after executing Universal tweaks
+
+## [25.04] - 2025-04-06
+
+### Added
+- WinScript now operational in portable mode without installation requirement
+- Expanded UniGetUI bundles with additional packages
+
+### Changed
+- All scripts now run on PowerShell, resolving issues where tweaks would fail silently
+
+### Fixed
+- Refactored project structure for better organization
+- Fixed script launch from command
+- Updated README
+
+## [25.03] - 2025-03-18
+
+Initial public release (pre-release).
+
 - Console menu system with 10 main options
-- Autounattend.xml configuration guide
-- Windots integration for Windows ricing and customization
+- System tweaks: SSD, GPU, CPU, network, and memory optimizations
+- Driver manufacturer links for NVIDIA, AMD, HP, Lenovo, ASUS, MSI
+- Privacy tools and security hardening
+- Third-party tool integrations (WinUtil, WinScript, privacy.sexy)
+- Autounattend.xml configuration guide for automated Windows installation
+- UniGetUI bundles by category (Development, Browsers, Utilities, Productivity, Games, Communications)
+- Windots integration for Windows ricing and desktop customization
+- Gradual transition from batch scripts to PowerShell

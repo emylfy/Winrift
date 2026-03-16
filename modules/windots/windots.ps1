@@ -14,3 +14,4 @@ Import-Module "$PSScriptRoot\Windots.Customization.psm1" -Force
 
 # Entry point
 Show-MainMenu
+Invoke-ReturnToMenu

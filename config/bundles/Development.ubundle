@@ -2,10 +2,10 @@
   "export_version": 3,
   "packages": [
     {
-      "Id": "9PFXXSHC64H3",
-      "Name": "Raycast",
-      "Version": "Unknown",
-      "Source": "msstore",
+      "Id": "Anthropic.Claude",
+      "Name": "Claude",
+      "Version": "1.1.6679",
+      "Source": "winget",
       "ManagerName": "Winget"
     },
     {
@@ -54,6 +54,13 @@
       "Id": "GoLang.Go",
       "Name": "Go Programming Language",
       "Version": "1.24.0",
+      "Source": "winget",
+      "ManagerName": "Winget"
+    },
+    {
+      "Id": "Google.AndroidStudio",
+      "Name": "Android Studio",
+      "Version": "2025.3.1.8",
       "Source": "winget",
       "ManagerName": "Winget"
     },
@@ -152,6 +159,34 @@
       "Id": "Warp.Warp",
       "Name": "Warp",
       "Version": "v0.2025.03.12.08.02.stable_03",
+      "Source": "winget",
+      "ManagerName": "Winget"
+    },
+    {
+      "Id": "Fastfetch-cli.Fastfetch",
+      "Name": "fastfetch",
+      "Version": "2.36.1",
+      "Source": "winget",
+      "ManagerName": "Winget"
+    },
+    {
+      "Id": "Genymobile.scrcpy",
+      "Name": "scrcpy",
+      "Version": "3.2",
+      "Source": "winget",
+      "ManagerName": "Winget"
+    },
+    {
+      "Id": "Google.PlatformTools",
+      "Name": "Android SDK Platform-Tools",
+      "Version": "36.0.0",
+      "Source": "winget",
+      "ManagerName": "Winget"
+    },
+    {
+      "Id": "Gyan.FFmpeg",
+      "Name": "FFmpeg",
+      "Version": "7.1",
       "Source": "winget",
       "ManagerName": "Winget"
     },

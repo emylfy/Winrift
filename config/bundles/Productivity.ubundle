@@ -9,30 +9,16 @@
       "ManagerName": "Winget"
     },
     {
+      "Id": "9PFXXSHC64H3",
+      "Name": "Raycast",
+      "Version": "Unknown",
+      "Source": "msstore",
+      "ManagerName": "Winget"
+    },
+    {
       "Id": "AnyAssociation.Anytype",
       "Name": "Anytype",
       "Version": "0.45.3",
-      "Source": "winget",
-      "ManagerName": "Winget"
-    },
-    {
-      "Id": "Audacity.Audacity",
-      "Name": "Audacity",
-      "Version": "3.7.7",
-      "Source": "winget",
-      "ManagerName": "Winget"
-    },
-    {
-      "Id": "ByteDance.CapCut",
-      "Name": "CapCut",
-      "Version": "5.8.0.2216",
-      "Source": "winget",
-      "ManagerName": "Winget"
-    },
-    {
-      "Id": "Canva.Affinity",
-      "Name": "Affinity",
-      "Version": "3.0.3.4027",
       "Source": "winget",
       "ManagerName": "Winget"
     },
@@ -44,23 +30,9 @@
       "ManagerName": "Winget"
     },
     {
-      "Id": "OBSProject.OBSStudio",
-      "Name": "OBS Studio",
-      "Version": "31.0.1",
-      "Source": "winget",
-      "ManagerName": "Winget"
-    },
-    {
-      "Id": "Proton.ProtonPass",
-      "Name": "Proton Pass",
-      "Version": "1.29.3",
-      "Source": "winget",
-      "ManagerName": "Winget"
-    },
-    {
-      "Id": "RustDesk.RustDesk",
-      "Name": "RustDesk",
-      "Version": "1.4.1",
+      "Id": "Flow-Launcher.Flow-Launcher",
+      "Name": "Flow Launcher",
+      "Version": "1.19.5",
       "Source": "winget",
       "ManagerName": "Winget"
     },
@@ -68,20 +40,6 @@
       "Id": "RustemMussabekov.Raindrop",
       "Name": "Raindrop.io",
       "Version": "5.6.72",
-      "Source": "winget",
-      "ManagerName": "Winget"
-    },
-    {
-      "Id": "Spotify.Spotify",
-      "Name": "Spotify",
-      "Version": "1.2.63.394.g126b0d89",
-      "Source": "winget",
-      "ManagerName": "Winget"
-    },
-    {
-      "Id": "th-ch.YouTubeMusic",
-      "Name": "YouTube Music",
-      "Version": "3.8.0",
       "Source": "winget",
       "ManagerName": "Winget"
     }

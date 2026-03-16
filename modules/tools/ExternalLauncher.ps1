@@ -1,5 +1,3 @@
-. "$PSScriptRoot\..\..\scripts\Common.ps1"
-
 # Config-driven external tool launcher
 # All tool definitions live in config/tools.json — no more per-tool wrapper files
 
@@ -7,6 +5,8 @@ param(
     [Parameter(Mandatory = $true)]
     [string]$ToolId
 )
+
+. "$PSScriptRoot\..\..\scripts\Common.ps1"
 
 $toolsFile = Join-Path $PSScriptRoot "..\..\config\tools.json"
 if (-not (Test-Path $toolsFile)) {

@@ -32,7 +32,7 @@ function Show-PrivacySexyMenu {
                 $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
                 break
             }
-            "3" { return }
+            "3" { Invoke-ReturnToMenu; return }
             default { }
         }
     }

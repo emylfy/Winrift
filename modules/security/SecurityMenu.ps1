@@ -35,7 +35,7 @@ function Show-SecurityMenu {
                 Start-AdminProcess -ScriptPath "$PSScriptRoot\..\privacy\PrivacySexy.ps1" -NoExit
                 break
             }
-            "4" { return }
+            "4" { Invoke-ReturnToMenu; return }
             default { }
         }
     }
