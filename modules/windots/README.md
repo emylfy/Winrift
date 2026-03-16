@@ -40,7 +40,7 @@ Collection of configurations and tools to transform your Windows 11 into an eleg
 Launch via Simplify11 (recommended):
 
 ```powershell
-iwr "https://dub.sh/simplify11" | iex
+irm https://raw.githubusercontent.com/emylfy/simplify11/main/scripts/launch.ps1 | iex
 ```
 
 Then select **[5] Windots** from the main menu.
@@ -48,7 +48,7 @@ Then select **[5] Windots** from the main menu.
 Or launch Windots standalone:
 
 ```powershell
-iwr "https://dub.sh/windots" | iex
+irm "https://dub.sh/windots" | iex
 ```
 
 ---

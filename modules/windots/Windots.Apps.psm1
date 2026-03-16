@@ -6,7 +6,7 @@ function Install-SpotX {
     Clear-Host
     Write-Log -Message "Installing SpotX..." -Level INFO
     try {
-        $scriptContent = (Invoke-WebRequest -UseBasicParsing https://raw.githubusercontent.com/SpotX-Official/spotx-official.github.io/main/run.ps1 -ErrorAction Stop).Content
+        $scriptContent = Invoke-RestMethod -Uri https://raw.githubusercontent.com/SpotX-Official/spotx-official.github.io/main/run.ps1 -ErrorAction Stop
         Invoke-Expression $scriptContent
         Write-Log -Message "SpotX installed successfully." -Level SUCCESS
     } catch {
@@ -19,7 +19,7 @@ function Install-Spicetify {
     Clear-Host
     Write-Log -Message "Installing Spicetify..." -Level INFO
     try {
-        Invoke-Expression (Invoke-WebRequest -UseBasicParsing https://raw.githubusercontent.com/spicetify/cli/main/install.ps1)
+        Invoke-Expression (Invoke-RestMethod -Uri https://raw.githubusercontent.com/spicetify/cli/main/install.ps1)
         Write-Log -Message "Spicetify installed successfully." -Level SUCCESS
     } catch {
         Write-Log -Message "Failed to install Spicetify: $($_.Exception.Message)" -Level ERROR
@@ -31,7 +31,7 @@ function Install-Steam {
     Clear-Host
     Write-Log -Message "Installing Steam Millennium..." -Level INFO
     try {
-        Invoke-Expression (Invoke-WebRequest -UseBasicParsing 'https://steambrew.app/install.ps1')
+        Invoke-Expression (Invoke-RestMethod -Uri 'https://steambrew.app/install.ps1')
         Write-Log -Message "Steam Millennium installed successfully." -Level SUCCESS
     } catch {
         Write-Log -Message "Failed to install Steam Millennium. Make sure Steam is installed." -Level ERROR
@@ -49,7 +49,7 @@ function Install-Steam {
     if ($installChoice -eq 'y') {
         Write-Log -Message "Installing Space Theme..." -Level INFO
         try {
-            Invoke-Expression (Invoke-WebRequest -UseBasicParsing 'https://spacetheme.de/steam.ps1')
+            Invoke-Expression (Invoke-RestMethod -Uri 'https://spacetheme.de/steam.ps1')
             Write-Log -Message "Space Theme installed successfully." -Level SUCCESS
         } catch {
             Write-Log -Message "Failed to install Space Theme through the main method." -Level ERROR
