@@ -7,13 +7,11 @@
 </p>
 
 <p align="center">
-	<a href="#-why-simplify11">Why Simplify11?</a> •
 	<a href="#-features">Features</a> •
 	<a href="#-installation">Installation</a> •
 	<a href="#-troubleshooting">Troubleshooting</a> •
 	<a href="#-integrations">Integrations</a> •
 	<a href="#-compatibility">Compatibility</a> •
-	<a href="#-faq">FAQ</a> •
 	<a href="#-credits">Credits</a>
 </p>
 
@@ -27,22 +25,6 @@
 </div>
 
 > **No other tool covers this complete pipeline:** Windows ISO → System tweaks → Driver install → Desktop customization
-
-![](https://github.com/emylfy/simplify11/blob/main/media/separator.png)
-
-## 🎯 Why Simplify11?
-
-| Feature | Simplify11 | WinUtil | Win11Debloat |
-| :--- | :---: | :---: | :---: |
-| Autounattend.xml ISO guide | ✅ | ❌ | ❌ |
-| GPU-specific tweaks (NVIDIA/AMD) | ✅ | ❌ | ❌ |
-| Desktop ricing (Windots, themes) | ✅ | ❌ | ❌ |
-| Driver installation links | ✅ | ❌ | ❌ |
-| Package manager GUI (UniGetUI) | ✅ | ❌ | ❌ |
-| Selective tweaks by category | ✅ | ✅ | ❌ |
-| System restore before tweaks | ✅ | ❌ | ✅ |
-| Session logs with timestamps | ✅ | ❌ | ❌ |
-| Multi-tool hub (10+ tools) | ✅ | ❌ | ❌ |
 
 ![](https://github.com/emylfy/simplify11/blob/main/media/separator.png)
 
@@ -200,25 +182,6 @@ irm https://raw.githubusercontent.com/emylfy/simplify11/main/scripts/install.ps1
 | Insider Builds | Use at your own risk ⚠️ |
 
 **Requirements:** PowerShell 5.1+ (included with Windows 11), Administrator privileges for system tweaks, Internet connection.
-
-![](https://github.com/emylfy/simplify11/blob/main/media/separator.png)
-
-## ❓ FAQ
-
-**Is this safe to use?**
-All tweaks have been tested across multiple sources and only the most effective, well-documented registry modifications are included. A System Restore Point is created automatically before applying any tweaks. Full source code is available for review.
-
-**Can I undo the changes?**
-A System Restore Point is created before tweaks are applied. You can revert to it via **Settings → System → Recovery → Advanced startup**, or by booting into Advanced Startup and choosing System Restore.
-
-**Does this disable Windows Update?**
-No. Simplify11 does not touch Windows Update settings. Updates will continue to work normally.
-
-**Can I choose which tweaks to apply?**
-Yes! The tweaks menu lets you select individual categories (SSD, GPU, CPU, Network, Memory, DirectX, etc.) or apply all at once with progress feedback.
-
-**Where are the logs stored?**
-Session logs are saved to `%USERPROFILE%\Simplify11\logs\` with timestamps. Separate logs exist for tweaks, security tools, and Windots operations.
 
 ![](https://github.com/emylfy/simplify11/blob/main/media/separator.png)
 

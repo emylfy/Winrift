@@ -1,26 +1,17 @@
 . "$PSScriptRoot\..\..\scripts\Common.ps1"
 
 function Show-GPUMenu {
-    while ($true) {
-        Clear-Host
-        Show-MenuBox -Title "GPU-Specific Tweaks" -Items @(
-            "[1] NVIDIA",
-            "[2] AMD",
-            "[3] Both (Hybrid Laptop)",
-            "---",
-            "[4] Back to Main Menu"
-        )
-
-        $choice = Read-Host ">"
-
-        switch ($choice) {
-            "1" { Invoke-NvidiaTweaks; break }
-            "2" { Invoke-AMDTweaks; break }
-            "3" { Invoke-HybridTweaks; break }
-            "4" { return }
-            default { }
-        }
-    }
+    Invoke-MenuLoop -Title "GPU-Specific Tweaks" -Items @(
+        "[1] NVIDIA",
+        "[2] AMD",
+        "[3] Both (Hybrid Laptop)",
+        "---",
+        "[4] Back to menu"
+    ) -Actions @{
+        "1" = { Invoke-NvidiaTweaks }
+        "2" = { Invoke-AMDTweaks }
+        "3" = { Invoke-HybridTweaks }
+    } -ExitKey "4"
 }
 
 function Invoke-HybridTweaks {
@@ -58,6 +49,8 @@ function Invoke-AMDTweaks {
     )
 
     # source - https://youtu.be/nuUV2RoPOWc , https://github.com/AlchemyTweaks/Verified-Tweaks/blob/main/AMD%20Radeon/AMD%20Tweak%20Melody
+    # {4d36e968-e325-11ce-bfc1-08002be10318} = Display Adapters device class GUID
+    # \0000 = first/primary display adapter instance
     $amdPath = "HKLM:\SYSTEM\CurrentControlSet\Control\Class\{4d36e968-e325-11ce-bfc1-08002be10318}\0000"
     Set-RegistryValue -Path $amdPath -Name "AllowSnapshot" -Type "DWord" -Value "0" -Message "Disabled AMD snapshot feature"
     Set-RegistryValue -Path $amdPath -Name "AllowSubscription" -Type "DWord" -Value "0" -Message "Disabled AMD subscription feature"

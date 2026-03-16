@@ -52,42 +52,29 @@ function Show-DeviceMenu {
 }
 
 function Show-LenovoMenu {
-    while ($true) {
-        Clear-Host
-        Show-MenuBox -Title "Lenovo Driver Options" -Items @(
-            "[1] Install Lenovo Vantage",
-            "[2] Open Lenovo Driver Page",
-            "---",
-            "[3] Back to Manufacturer Selection"
-        )
-
-        $choice = Read-Host ">"
-
-        switch ($choice) {
-            "1" {
-                Write-Log -Message "Installing Lenovo Vantage..." -Level INFO
-                try {
-                    winget install "9WZDNCRFJ4MV" --accept-package-agreements --accept-source-agreements
-                    if ($LASTEXITCODE -eq 0) {
-                        Write-Log -Message "Successfully installed Lenovo Vantage." -Level SUCCESS
-                    } else {
-                        Write-Log -Message "Failed to install Lenovo Vantage. Please install manually from the Microsoft Store." -Level ERROR
-                        Start-Process "ms-windows-store://pdp?hl=en-us&gl=us&ocid=pdpshare&referrer=storeforweb&productid=9WZDNCRFJ4MV&storecid=storeweb-pdp-open-cta"
-                    }
-                } catch {
-                    Write-Log -Message "Error installing Lenovo Vantage: $($_.Exception.Message)" -Level ERROR
+    Invoke-MenuLoop -Title "Lenovo Driver Options" -Items @(
+        "[1] Install Lenovo Vantage",
+        "[2] Open Lenovo Driver Page",
+        "---",
+        "[3] Back to Manufacturer Selection"
+    ) -Actions @{
+        "1" = {
+            Write-Log -Message "Installing Lenovo Vantage..." -Level INFO
+            try {
+                winget install "9WZDNCRFJ4MV" --accept-package-agreements --accept-source-agreements
+                if ($LASTEXITCODE -eq 0) {
+                    Write-Log -Message "Successfully installed Lenovo Vantage." -Level SUCCESS
+                } else {
+                    Write-Log -Message "Failed to install Lenovo Vantage. Please install manually from the Microsoft Store." -Level ERROR
+                    Start-Process "ms-windows-store://pdp?hl=en-us&gl=us&ocid=pdpshare&referrer=storeforweb&productid=9WZDNCRFJ4MV&storecid=storeweb-pdp-open-cta"
                 }
-                Start-Sleep -Seconds 2
-                break
+            } catch {
+                Write-Log -Message "Error installing Lenovo Vantage: $($_.Exception.Message)" -Level ERROR
             }
-            "2" {
-                Start-Process "https://support.lenovo.com"
-                break
-            }
-            "3" { return }
-            default { }
+            Start-Sleep -Seconds 2
         }
-    }
+        "2" = { Start-Process "https://support.lenovo.com" }
+    } -ExitKey "3"
 }
 
 Show-DeviceMenu

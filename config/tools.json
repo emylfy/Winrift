@@ -24,6 +24,89 @@
             "url": "https://github.com/Greedeks/GTweak/releases/latest/download/gtweak.exe",
             "filename": "gtweak.exe",
             "docs": "https://github.com/Greedeks/GTweak"
+        },
+        {
+            "id": "defendnot",
+            "name": "DefendNot",
+            "description": "Disable Windows Defender via WSC API",
+            "type": "irm",
+            "url": "https://dnot.sh/",
+            "docs": "https://github.com/es3n1n/defendnot"
+        },
+        {
+            "id": "privacysexy",
+            "name": "Privacy.sexy",
+            "description": "Privacy and security hardening scripts",
+            "type": "download",
+            "url": "https://privacylearn.com/downloads/windows/standard.bat",
+            "filename": "standard.bat",
+            "docs": "https://privacy.sexy"
+        },
+        {
+            "id": "removewindowsai",
+            "name": "RemoveWindowsAI",
+            "description": "Remove Copilot, Recall and AI features",
+            "type": "irm",
+            "url": "https://raw.githubusercontent.com/zoicware/RemoveWindowsAI/main/RemoveWindowsAi.ps1",
+            "docs": "https://github.com/zoicware/RemoveWindowsAI"
+        },
+        {
+            "id": "winscript",
+            "name": "WinScript",
+            "description": "Build your Windows script from scratch",
+            "type": "irm",
+            "url": "https://winscript.cc/irm",
+            "docs": "https://winscript.cc/online/"
+        },
+        {
+            "id": "spotx",
+            "name": "SpotX",
+            "description": "Spotify ad blocker and enhancer",
+            "type": "irm",
+            "url": "https://raw.githubusercontent.com/SpotX-Official/spotx-official.github.io/main/run.ps1",
+            "docs": "https://github.com/SpotX-Official/SpotX"
+        },
+        {
+            "id": "spicetify",
+            "name": "Spicetify",
+            "description": "Spotify customization tool",
+            "type": "irm",
+            "url": "https://raw.githubusercontent.com/spicetify/cli/main/install.ps1",
+            "docs": "https://spicetify.app"
+        },
+        {
+            "id": "steam-millennium",
+            "name": "Steam Millennium",
+            "description": "Steam client customization framework",
+            "type": "download",
+            "url": "https://github.com/SteamClientHomebrew/Installer/releases/latest/download/MillenniumInstaller-Windows.exe",
+            "filename": "MillenniumInstaller-Windows.exe",
+            "docs": "https://github.com/SteamClientHomebrew/Millennium"
+        },
+        {
+            "id": "spacetheme",
+            "name": "Space Theme",
+            "description": "Steam Space Theme skin",
+            "type": "irm",
+            "url": "https://spacetheme.de/steam.ps1",
+            "fallbackUrl": "https://github.com/SpaceTheme/Steam/releases",
+            "docs": "https://github.com/SpaceTheme/Steam"
+        },
+        {
+            "id": "macos-cursor",
+            "name": "macOS Cursor",
+            "description": "macOS cursor theme for Windows",
+            "type": "browser",
+            "url": "https://github.com/ful1e5/apple_cursor/releases/download/v2.0.1/macOS-Windows.zip",
+            "docs": "https://github.com/ful1e5/apple_cursor"
+        },
+        {
+            "id": "chocolatey",
+            "name": "Chocolatey",
+            "description": "Windows package manager",
+            "type": "irm",
+            "url": "https://community.chocolatey.org/install.ps1",
+            "docs": "https://chocolatey.org"
         }
     ]
 }
