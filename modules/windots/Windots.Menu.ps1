@@ -1,5 +1,3 @@
-. "$PSScriptRoot\..\..\scripts\Common.ps1"
-
 function Show-MainMenu {
     while ($true) {
         Clear-Host
@@ -132,10 +130,3 @@ function Show-WindowsCustomizationMenu {
         }
     }
 }
-
-Export-ModuleMember -Function `
-    Show-MainMenu, `
-    Show-SpotifyToolsMenu, `
-    Show-ConfigsMenu, `
-    Show-VSCodeMenu, `
-    Show-WindowsCustomizationMenu

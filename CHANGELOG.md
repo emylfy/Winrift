@@ -7,6 +7,29 @@ and this project uses [Calendar Versioning](https://calver.org/) (YY.M format).
 
 ## [26.3] - 2026-03-16
 
+### March 16 — Windots refactor, Pester tests, and CI pipeline
+
+- Added `Copy-ConfigFiles` helper in `Windots.Configs.ps1` — reusable config-copy-with-logging for all dotfile installers
+- Added `Test-IsExcluded` function in `Organizer.ps1` — centralizes file/folder exclusion logic
+- Added `Assert-AdminOrElevate`, `Initialize-Logging`, `Invoke-MenuLoop` utilities in `Common.ps1`
+- Added smart install prompts for Oh My Posh and FastFetch — detect missing tools and offer install/skip/cancel
+- Added Pester test suite (`tests/`) — Common.ps1 functions, config validation, ExternalLauncher params, module exports, script syntax
+- Added Pester CI job in `.github/workflows/lint.yml` with NUnit XML artifact upload
+- Added DefendNot, RemoveWindowsAI, and Sparkle to README tools grid
+- Changed Windots modules from `.psm1` to `.ps1` — dot-sourced instead of `Import-Module`, all `Export-ModuleMember` blocks removed
+- Changed `Organizer.ps1` migrated from `Write-Host` to `Write-Log` throughout
+- Changed `ExternalLauncher.ps1` header from `Write-Header` to `Write-Log`
+- Changed `Windots.Customization.ps1` uses shared `Set-RegistryValue` instead of `Set-ItemProperty` with inline try/catch
+- Changed `Set-OtherVSCConfig` delegates to `Set-VSCodeConfig` instead of duplicating copy logic
+- Changed `Set-VSCodeConfig` validates target path before copying
+- Changed Steam Millennium install from piped `irm | iex` to direct `.exe` download
+- Changed CI workflow renamed from "PSScriptAnalyzer" to "CI"; path triggers expanded to include `config/**` and `tests/**`
+- Changed README tools grid expanded to 8 entries (two rows of 4 at 25% width)
+- Changed Windots README rewritten — emoji-free headings, structured tables for Configs/Apps/Customization
+- Changed main menu box width normalized to 59 characters
+- Changed `Write-Log` catch block now surfaces warning instead of silently swallowing errors
+- Fixed `Expand-StartFolders` path resolution — uses `$PSScriptRoot` directly instead of double parent traversal
+
 ### March 16 — Bundle overhaul, return-to-menu navigation, and documentation rewrite
 
 - Added `Invoke-ReturnToMenu` in `Common.ps1` — reads saved launch directory from temp file and re-launches `simplify11.ps1` in the same window

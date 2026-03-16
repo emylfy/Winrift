@@ -31,7 +31,10 @@ function Install-Steam {
     Clear-Host
     Write-Log -Message "Installing Steam Millennium..." -Level INFO
     try {
-        Invoke-Expression (Invoke-RestMethod -Uri 'https://steambrew.app/install.ps1')
+        $installerUrl = "https://github.com/SteamClientHomebrew/Installer/releases/latest/download/MillenniumInstaller-Windows.exe"
+        $installerPath = Join-Path $env:TEMP "MillenniumInstaller-Windows.exe"
+        Invoke-WebRequest -Uri $installerUrl -OutFile $installerPath -ErrorAction Stop
+        Start-Process -FilePath $installerPath -Wait
         Write-Log -Message "Steam Millennium installed successfully." -Level SUCCESS
     } catch {
         Write-Log -Message "Failed to install Steam Millennium. Make sure Steam is installed." -Level ERROR
@@ -77,10 +80,3 @@ function Set-Cursor {
     }
     Read-Host "Press Enter to continue"
 }
-
-Export-ModuleMember -Function `
-    Invoke-Rectify11, `
-    Install-SpotX, `
-    Install-Spicetify, `
-    Install-Steam, `
-    Set-Cursor

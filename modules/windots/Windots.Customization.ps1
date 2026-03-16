@@ -1,24 +1,20 @@
 function Set-ShortDateHours {
     Clear-Host
     Write-Log -Message "Setting short date and hours format..." -Level INFO
-    try {
-        Set-ItemProperty -Path "HKCU:\Control Panel\International" -Name sShortDate -Value "dd MMM yyyy"
-        Set-ItemProperty -Path "HKCU:\Control Panel\International" -Name sShortTime -Value "HH:mm"
-        Set-ItemProperty -Path "HKCU:\Control Panel\International" -Name sTimeFormat -Value "HH:mm:ss"
-        Write-Log -Message "Date and time format updated successfully. Changes will take effect after restart." -Level SUCCESS
-    } catch {
-        Write-Log -Message "Failed to update date/time format: $($_.Exception.Message)" -Level ERROR
-    }
+    Set-RegistryValue -Path "HKCU:\Control Panel\International" -Name "sShortDate" -Type String -Value "dd MMM yyyy" -Message "Short date format set to dd MMM yyyy"
+    Set-RegistryValue -Path "HKCU:\Control Panel\International" -Name "sShortTime" -Type String -Value "HH:mm" -Message "Short time format set to HH:mm"
+    Set-RegistryValue -Path "HKCU:\Control Panel\International" -Name "sTimeFormat" -Type String -Value "HH:mm:ss" -Message "Time format set to HH:mm:ss"
+    Write-Log -Message "Changes will take effect after restart." -Level INFO
     Read-Host "Press Enter to continue"
 }
 
 function Disable-QuickAccess {
     Clear-Host
     Write-Log -Message "Disabling automatic addition of folders to Quick Access..." -Level INFO
-    try {
-        Set-ItemProperty -Path 'HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer' -Name 'ShowFrequent' -Type DWord -Value 0
-        Set-ItemProperty -Path 'HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer' -Name 'ShowRecent' -Type DWord -Value 0
+    Set-RegistryValue -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer" -Name "ShowFrequent" -Type DWord -Value 0 -Message "Disabled frequent folders in Quick Access"
+    Set-RegistryValue -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer" -Name "ShowRecent" -Type DWord -Value 0 -Message "Disabled recent files in Quick Access"
 
+    try {
         $quickAccess = (New-Object -ComObject shell.application).Namespace('shell:::{679f85cb-0220-4080-b29b-5540cc05aab6}').Items()
         $quickAccess | ForEach-Object { $_.InvokeVerb('remove') }
 
@@ -33,8 +29,7 @@ function Disable-QuickAccess {
 
 function Expand-StartFolders {
     Clear-Host
-    $scriptDir = Split-Path -Parent $PSScriptRoot
-    $organizerPath = Join-Path -Path $scriptDir -ChildPath "windots\Organizer.ps1"
+    $organizerPath = Join-Path -Path $PSScriptRoot -ChildPath "Organizer.ps1"
     if (Test-Path $organizerPath) {
         Start-Process powershell -ArgumentList "-NoExit -File `"$organizerPath`""
     } else {
@@ -42,8 +37,3 @@ function Expand-StartFolders {
         Read-Host "Press Enter to continue"
     }
 }
-
-Export-ModuleMember -Function `
-    Set-ShortDateHours, `
-    Disable-QuickAccess, `
-    Expand-StartFolders
