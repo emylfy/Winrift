@@ -142,27 +142,44 @@ irm https://raw.githubusercontent.com/emylfy/simplify11/main/scripts/install.ps1
 
 <table>
 <tr>
-<td align="center" width="20%">
+<td align="center" width="25%">
 <img src="https://github.com/ChrisTitusTech/winutil/blob/main/docs/assets/favicon.png?raw=true" width="60px" alt="WinUtil Logo"><br/>
 <b><a href="https://github.com/ChrisTitusTech/winutil" title="Visit WinUtil on GitHub">WinUtil</a></b><br/>
 <sub>Install programs, tweaks, fixes and updates</sub>
 </td>
-<td align="center" width="20%">
+<td align="center" width="25%">
 <img src="https://raw.githubusercontent.com/flick9000/winscript/refs/heads/main/app/public/logo.svg" width="60px" alt="WinScript Logo"><br/>
 <b><a href="https://github.com/flick9000/winscript" title="Visit WinScript on GitHub">WinScript</a></b><br/>
 <sub>Build custom setup scripts</sub>
 </td>
-<td align="center" width="20%">
+<td align="center" width="25%">
 <img src="https://github.com/Greedeks/GTweak/blob/main/Assets/GTweak.png" width="60px" alt="GTweak Logo"><br/>
 <b><a href="https://github.com/Greedeks/GTweak" title="Visit GTweak on GitHub">GTweak</a></b><br/>
 <sub>Tweaking tool and debloater</sub>
 </td>
-<td align="center" width="20%">
+<td align="center" width="25%">
+<img src="https://github.com/Parcoil/Sparkle/blob/v2/resources/sparklelogo.png?raw=true" width="60px" alt="Sparkle Logo"><br/>
+<b><a href="https://github.com/Parcoil/Sparkle" title="Visit Sparkle on GitHub">Sparkle</a></b><br/>
+<sub>Windows package manager</sub>
+</td>
+</tr>
+<tr>
+<td align="center" width="25%">
+<img src="https://i.imgur.com/F9gWA92.png" width="60px" alt="DefendNot Logo"><br/>
+<b><a href="https://github.com/es3n1n/defendnot" title="Visit DefendNot on GitHub">DefendNot</a></b><br/>
+<sub>Disable Windows Defender</sub>
+</td>
+<td align="center" width="25%">
+<img src="https://github.com/zoicware/RemoveWindowsAI/assets/118035521/33efb033-c935-416c-977d-777bb69a3737" width="60px" alt="RemoveWindowsAI Logo"><br/>
+<b><a href="https://github.com/zoicware/RemoveWindowsAI" title="Visit RemoveWindowsAI on GitHub">RemoveWindowsAI</a></b><br/>
+<sub>Remove Copilot & Recall</sub>
+</td>
+<td align="center" width="25%">
 <img src="https://raw.githubusercontent.com/undergroundwires/privacy.sexy/refs/heads/master/img/logo.svg" width="60px" alt="Privacy.sexy Logo"><br/>
 <b><a href="https://github.com/undergroundwires/privacy.sexy" title="Visit Privacy.sexy on GitHub">Privacy.sexy</a></b><br/>
 <sub>Security enhancement</sub>
 </td>
-<td align="center" width="20%">
+<td align="center" width="25%">
 <img src="https://raw.githubusercontent.com/marticliment/UniGetUI/refs/heads/main/media/icon.svg" width="60px" alt="UniGetUI Logo"><br/>
 <b><a href="https://github.com/marticliment/UniGetUI" title="Visit UniGetUI on GitHub">UniGetUI</a></b><br/>
 <sub>Discover, install and update packages</sub>

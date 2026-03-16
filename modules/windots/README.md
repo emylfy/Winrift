@@ -1,4 +1,4 @@
-<h1 align="center">✨ Windots</h1>
+<h1 align="center">Windots</h1>
 
 <p align="center">
   <a href="https://github.com/emylfy/simplify11/stargazers"><img src="https://img.shields.io/github/stars/emylfy/simplify11?style=for-the-badge&logo=starship&color=C9CBFF&logoColor=C9CBFF&labelColor=302D41" alt="GitHub Stars"></a>&nbsp;&nbsp;
@@ -10,24 +10,13 @@
 
 ---
 
-## 📋 Table of Contents
-
-- [About](#-about)
-- [Prerequisites](#-prerequisites)
-- [Quick Launch](#-quick-launch)
-- [Features](#-features)
-- [Dotfiles Configurations](#-dotfiles-configurations)
-- [Apps without Dotfiles](#-apps-without-dotfiles)
-
----
-
-## 🌟 About
+## About
 
 Collection of configurations and tools to transform your Windows 11 into an elegant and productive environment. Install opinionated configs for your favorite editors, terminal, and shell — or pick only what you need.
 
 ---
 
-## 💻 Prerequisites
+## Prerequisites
 
 - Windows 11 (22H2 or newer)
 - PowerShell 5.1 (included with Windows 11)
@@ -35,7 +24,7 @@ Collection of configurations and tools to transform your Windows 11 into an eleg
 
 ---
 
-## 🚀 Quick Launch
+## Quick Launch
 
 Launch via Simplify11 (recommended):
 
@@ -48,54 +37,51 @@ Then select **[5] Windots** from the main menu.
 Or launch Windots standalone:
 
 ```powershell
-irm "https://dub.sh/windots" | iex
+irm https://raw.githubusercontent.com/emylfy/simplify11/main/modules/windots/windots.ps1 | iex
 ```
 
 ---
 
-## 🛠️ Features
+## Configs Installer
 
-After launching the script, you'll get an interactive menu:
+Copy opinionated dotfiles for your favorite tools. All config files are bundled in `config/` and copied to the standard user directories.
 
-1. **Configs Installer** — install configurations on your choice for:
-   - [VSCode](https://code.visualstudio.com/) and most popular forks
-   - [Windows Terminal](https://github.com/microsoft/terminal)
-   - [PowerShell](https://learn.microsoft.com/en-us/powershell/)
-   - [Oh My Posh](https://ohmyposh.dev/)
-   - [FastFetch](https://github.com/fastfetch-cli/fastfetch)
-
-2. **Additional Stuff**:
-   - Download [Rectify11](https://rectify11.net/)
-   - Install [SpotX](https://github.com/SpotX-Official/SpotX) + [Spicetify](https://spicetify.app/)
-   - Install [Steam Millennium](https://steambrew.app/) with [Space Theme](https://github.com/SpaceTheme/Steam)
-   - Apply [macOS cursor](https://github.com/ful1e5/apple_cursor)
-   - Return to Simplify11
+| Component | Supported Apps | Config Source |
+| --- | --- | --- |
+| **Code Editors** | [VSCode](https://code.visualstudio.com/), [AIDE](https://github.com/codestoryai/aide), [Cursor](https://cursor.sh/), [Windsurf](https://windsurf.io/), [VSCodium](https://vscodium.com/), [Trae](https://trae.ai/) | `config/vscode/` |
+| **Terminal** | [Windows Terminal](https://github.com/microsoft/terminal) (includes Fira Code font setup) | `config/cli/terminal/` |
+| **Shell** | [PowerShell](https://learn.microsoft.com/en-us/powershell/) + [Terminal-Icons](https://github.com/devblackops/Terminal-Icons) | `config/cli/WindowsPowershell/` |
+| **Prompt** | [Oh My Posh](https://ohmyposh.dev/) (Zen theme) | `config/cli/ohmyposh/` |
+| **System Info** | [FastFetch](https://github.com/fastfetch-cli/fastfetch) | `config/cli/fastfetch/` |
 
 ---
 
-## 💻 Dotfiles Configurations
+## Apps & Tools
 
-| Component | Support |
+Download and install additional customization tools — no dotfiles, just installers.
+
+| Tool | Description |
 | --- | --- |
-| **Code Editors** | 📝 [VSCode](https://code.visualstudio.com/), [AIDE](https://github.com/codestoryai/aide), [Cursor](https://cursor.sh/), [Windsurf](https://windsurf.io/), [VSCodium](https://vscodium.com/), [Trae](https://trae.ai/) |
-| **Terminal** | >_ [Windows Terminal](https://github.com/microsoft/terminal) + 🐚 [PowerShell](https://learn.microsoft.com/en-us/powershell/) / [Oh My Posh](https://ohmyposh.dev/) |
-| **System Utilities** | ⚡ [FastFetch](https://github.com/fastfetch-cli/fastfetch) |
-| **Gaming** | 🎮 [Steam Millennium](https://steambrew.app/) for [Space Theme](https://github.com/SpaceTheme/Steam) |
-| **Theming** | 🖱️ [macOS Cursor](https://github.com/ful1e5/apple_cursor) |
+| [Rectify11](https://rectify11.net/) | Windows 11 UI theme (opens download page) |
+| [SpotX](https://github.com/SpotX-Official/SpotX) | Spotify ad-blocker mod |
+| [Spicetify](https://spicetify.app/) | Spotify customization framework |
+| [Steam Millennium](https://steambrew.app/) | Steam theming framework + optional [Space Theme](https://github.com/SpaceTheme/Steam) |
+| [macOS Cursor](https://github.com/ful1e5/apple_cursor) | Apple cursor theme for Windows |
 
 ---
 
-## 🖥️ Apps without Dotfiles
+## Customization Tweaks
 
-| Category | Tools |
+Windows shell and UI adjustments applied via registry.
+
+| Tweak | Description |
 | --- | --- |
-| **Web** | 🌐 [Arc Browser](https://thebrowser.company/), 🧘 [Zen Browser](https://zen-browser.app) |
-| **System** | 🚀 [Flow Launcher](https://www.flowlauncher.com/), 🛠️ [PowerToys](https://learn.microsoft.com/windows/powertoys/), 🗜️ [NanaZip](https://github.com/M2Team/NanaZip) |
-| **Media** | 🎶 [SpotX](https://github.com/SpotX-Official/SpotX) + [Spicetify](https://spicetify.app/), 🖼️ [WinDynamicDesktop](https://www.windynamicdesktop.com/) |
-| **Theming** | 🪟 [Rectify11](https://rectify11.net/home) |
+| **Short Date & Time Format** | Sets taskbar format to `dd MMM yyyy` and `HH:mm` (e.g. Feb 17, 17:57) |
+| **Disable Quick Access Pinning** | Stops Windows from automatically pinning folders to Quick Access |
+| **Start Menu Organizer** | Selectively pulls app shortcuts out of folders to the Start menu root |
 
 ---
 
 <div align="center">
-  <a href="https://github.com/emylfy/simplify11">← Back to Simplify11</a>
+  <a href="https://github.com/emylfy/simplify11">Back to Simplify11</a>
 </div>

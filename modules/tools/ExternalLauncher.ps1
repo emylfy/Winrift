@@ -24,7 +24,7 @@ if (-not $tool) {
 
 $Host.UI.RawUI.WindowTitle = "$($tool.name) Launcher"
 
-Write-Header -Text "Launching $($tool.name)..."
+Write-Log -Message "Launching $($tool.name)..." -Level INFO
 
 try {
     switch ($tool.type) {

@@ -41,9 +41,23 @@ foreach ($item in $excludeList) {
     $null = $excludeHash.Add($item)
 }
 
+function Test-IsExcluded {
+    param(
+        [string]$BaseName,
+        [string]$Name
+    )
+    if ($excludeHash.Contains($Name) -or $excludeHash.Contains($BaseName) -or $BaseName -like "Uninstall*") {
+        return $true
+    }
+    foreach ($term in $excludeList) {
+        if ($BaseName -like "*$term*") { return $true }
+    }
+    return $false
+}
+
 if (-not ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator) -and
     (Test-Path -Path $targetPaths[1])) {
-    Write-Host "`nAdministrator rights required for system directory!`n" -ForegroundColor Red
+    Write-Log -Message "Administrator rights required for system directory!" -Level ERROR
     
     $adminLaunchPath = Join-Path -Path $PSScriptRoot -ChildPath "..\..\scripts\AdminLaunch.ps1"
     . $adminLaunchPath
@@ -55,44 +69,38 @@ if (-not ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdenti
 try {
     $dirsToBackup = $targetPaths | Where-Object { Test-Path $_ }
     if ($dirsToBackup) {
-        Write-Host "`nCreating backup to: $backupPath" -ForegroundColor Cyan
+        Write-Log -Message "Creating backup to: $backupPath" -Level INFO
         Compress-Archive -Path $dirsToBackup -DestinationPath $backupPath -CompressionLevel Fastest
 
         if (Test-Path $backupPath) {
-            Write-Host "Backup successful. Size: $('{0:N2} MB' -f ((Get-Item $backupPath).Length/1MB))" -ForegroundColor Green
-            Write-Host "Press Enter to continue" -ForegroundColor DarkCyan
+            Write-Log -Message "Backup successful. Size: $('{0:N2} MB' -f ((Get-Item $backupPath).Length/1MB))" -Level SUCCESS
+            Write-Log -Message "Press Enter to continue" -Level INFO
             $null = Read-Host
         }
         else {
-            Write-Host "Backup failed! Aborting operation." -ForegroundColor Red
+            Write-Log -Message "Backup failed! Aborting operation." -Level ERROR
             exit
         }
     }
 }
 catch {
-    Write-Host "Backup error: $_" -ForegroundColor Red
+    Write-Log -Message "Backup error: $_" -Level ERROR
     exit
 }
 
 foreach ($targetDir in $targetPaths) {
     if (-not (Test-Path -Path $targetDir)) {
-        Write-Host "`nSkipping missing directory: $targetDir" -ForegroundColor Yellow
+        Write-Log -Message "Skipping missing directory: $targetDir" -Level WARNING
         continue
     }
 
-    Write-Host "`nProcessing directory: $targetDir" -ForegroundColor Cyan
+    Write-Log -Message "Processing directory: $targetDir" -Level INFO
 
     $subFolders = Get-ChildItem -Path $targetDir -Directory | Where-Object {
         $_.Name -notmatch $excludeRegex -and
         -not $excludeHash.Contains($_.Name) -and
-        -not (Get-ChildItem -Path $_.FullName -Recurse -ErrorAction SilentlyContinue | 
-              Where-Object { 
-                  $file = $_
-                  $excludeHash.Contains($_.Name) -or 
-                  $excludeHash.Contains($_.BaseName) -or
-                  ($excludeList | Where-Object { $file.BaseName -like "*$_*" }) -or
-                  $_.BaseName -like "Uninstall*"
-              })
+        -not (Get-ChildItem -Path $_.FullName -Recurse -ErrorAction SilentlyContinue |
+              Where-Object { Test-IsExcluded -BaseName $_.BaseName -Name $_.Name })
     }
 
     foreach ($folder in $subFolders) {
@@ -100,36 +108,30 @@ foreach ($targetDir in $targetPaths) {
         $folderFullPath = $folder.FullName
 
         $files = Get-ChildItem -Path $folderFullPath -File -Recurse -ErrorAction SilentlyContinue |
-                 Where-Object { 
-                     $file = $_
-                     -not ($excludeList | Where-Object { $file.BaseName -like "*$_*" }) -and
-                     -not $excludeHash.Contains($_.Name) -and 
-                     -not $excludeHash.Contains($_.BaseName) -and
-                     -not ($_.BaseName -like "Uninstall*")
-                 }
+                 Where-Object { -not (Test-IsExcluded -BaseName $_.BaseName -Name $_.Name) }
 
         if (-not $files) {
-            Write-Host "`nNo movable files in: $folderName" -ForegroundColor DarkGray
+            Write-Log -Message "No movable files in: $folderName" -Level SKIP
             continue
         }
 
-        Write-Host "`nFolder: $folderName" -ForegroundColor Cyan
-        Write-Host "Contains these files:" -ForegroundColor White
+        Write-Log -Message "Folder: $folderName" -Level INFO
+        Write-Log -Message "Contains these files:" -Level INFO
         $files | ForEach-Object {
-            Write-Host "  - $($_.Name)" -ForegroundColor Gray
+            Write-Log -Message "  - $($_.Name)" -Level INFO
         }
 
         do {
             $response = Read-Host "`nMove $($files.Count) files from '$folderName'? (Y/N/Q)"
             $response = $response.Trim().ToUpper()
             if ($response -eq 'Q') { 
-                Write-Host "Operation cancelled by user." -ForegroundColor Yellow
+                Write-Log -Message "Operation cancelled by user." -Level WARNING
                 exit 
             }
         } until ($response -match '^[YN]$')
 
         if ($response -eq 'N') {
-            Write-Host "Skipping folder: $folderName" -ForegroundColor Yellow
+            Write-Log -Message "Skipping folder: $folderName" -Level SKIP
             continue
         }
 
@@ -140,7 +142,7 @@ foreach ($targetDir in $targetPaths) {
             try {
                 $destination = Join-Path -Path $targetDir -ChildPath $file.Name
                 if (Test-Path $destination) {
-                    Write-Host "Replacing existing: $($file.Name)" -ForegroundColor DarkYellow
+                    Write-Log -Message "Replacing existing: $($file.Name)" -Level WARNING
                 }
                 Move-Item -Path $file.FullName -Destination $targetDir -Force -ErrorAction Stop
                 $movedCount++
@@ -151,24 +153,24 @@ foreach ($targetDir in $targetPaths) {
         }
 
         if ($errors.Count -gt 0) {
-            Write-Host "`nCompleted with $($errors.Count) errors:" -ForegroundColor Red
-            $errors | ForEach-Object { Write-Host "  $_" -ForegroundColor Red }
+            Write-Log -Message "Completed with $($errors.Count) errors:" -Level ERROR
+            $errors | ForEach-Object { Write-Log -Message "  $_" -Level ERROR }
         }
         else {
-            Write-Host "`nSuccessfully moved $movedCount files" -ForegroundColor Green
+            Write-Log -Message "Successfully moved $movedCount files" -Level SUCCESS
         }
 
         try {
             $remainingItems = Get-ChildItem -Path $folderFullPath -Recurse -Force -ErrorAction SilentlyContinue
             if (-not $remainingItems) {
                 Remove-Item -Path $folderFullPath -Recurse -Force -ErrorAction Stop
-                Write-Host "Cleaned empty folder: $folderName" -ForegroundColor DarkGray
+                Write-Log -Message "Cleaned empty folder: $folderName" -Level INFO
             }
         }
         catch {
-            Write-Host "Error cleaning folder: $_" -ForegroundColor Red
+            Write-Log -Message "Error cleaning folder: $_" -Level ERROR
         }
     }
 }
 
-Write-Host "`nOperation completed! Backup saved to: $backupPath`n" -ForegroundColor Green
+Write-Log -Message "Operation completed! Backup saved to: $backupPath" -Level SUCCESS

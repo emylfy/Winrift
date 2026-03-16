@@ -27,7 +27,7 @@ function Write-Log {
         $plainLine = "[$timestamp] [$Level] $Message"
         try {
             Add-Content -Path $LogFile -Value $plainLine -ErrorAction SilentlyContinue
-        } catch { }
+        } catch { Write-Warning "Failed to write to log file: $($_.Exception.Message)" }
     }
 }
 
@@ -79,6 +79,48 @@ function New-SafeRestorePoint {
         Write-Log -Message "Proceeding without restore point. Consider creating one manually." -Level WARNING
     }
     Write-Host ""
+}
+
+function Assert-AdminOrElevate {
+    if (-not ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole(
+        [Security.Principal.WindowsBuiltInRole]::Administrator)) {
+        Write-Host "Not running as admin. Elevating..." -ForegroundColor Yellow
+        . "$PSScriptRoot\AdminLaunch.ps1"
+        Start-AdminProcess -ScriptPath $PSCommandPath
+        exit
+    }
+}
+
+function Initialize-Logging {
+    param([string]$ModuleName)
+    $logDir = Join-Path $env:USERPROFILE "Simplify11\logs"
+    if (-not (Test-Path $logDir)) { New-Item -Path $logDir -ItemType Directory -Force | Out-Null }
+    $script:LogFile = Join-Path $logDir "${ModuleName}_$(Get-Date -Format 'yyyy-MM-dd_HH-mm-ss').log"
+    Start-Transcript -Path $script:LogFile -Append | Out-Null
+    Write-Log -Message "Session log: $script:LogFile" -Level INFO
+}
+
+function Invoke-MenuLoop {
+    param(
+        [string]$Title,
+        [string[]]$Items,
+        [hashtable]$Actions,
+        [string]$Prompt = ">",
+        [string]$ExitKey = $null,
+        [scriptblock]$OnExit = $null
+    )
+    while ($true) {
+        Clear-Host
+        Show-MenuBox -Title $Title -Items $Items
+        $choice = Read-Host $Prompt
+        if ($ExitKey -and $choice -eq $ExitKey) {
+            if ($OnExit) { & $OnExit }
+            return
+        }
+        if ($Actions.ContainsKey($choice)) {
+            & $Actions[$choice]
+        }
+    }
 }
 
 function Set-RegistryValue {
