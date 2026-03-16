@@ -30,7 +30,7 @@ function Show-WinScriptMenu {
                 }
                 break
             }
-            "3" { return }
+            "3" { Invoke-ReturnToMenu; return }
             default { }
         }
     }

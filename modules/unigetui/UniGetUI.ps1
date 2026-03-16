@@ -1,24 +1,22 @@
 . "$PSScriptRoot\..\..\scripts\Common.ps1"
 
-function Show-MainMenu {
-    $Host.UI.RawUI.WindowTitle = "Simplify11 - UniGetUI"
+function Show-InstallPrompt {
+    Clear-Host
+    Show-MenuBox -Title "UniGetUI" -Items @(
+        "A package manager UI for Windows that lets you",
+        "discover, install, and update apps using winget,",
+        "Chocolatey, and other sources.",
+        "---",
+        "[1] Install UniGetUI",
+        "[2] Back to menu"
+    )
 
-    while ($true) {
-        Clear-Host
-        Show-MenuBox -Title "UniGetUI (formerly WingetUI)" -Items @(
-            "[1] Install and Launch",
-            "[2] Open List of Apps by Category",
-            "[3] Try Fixing Winget if something wrong"
-        )
+    $choice = Read-Host "Select an option"
 
-        $choice = Read-Host "Select an option"
-
-        switch ($choice) {
-            "1" { Install-UniGetUI; break }
-            "2" { Show-AppCategoryMenu; break }
-            "3" { Test-Winget; break }
-            default { }
-        }
+    switch ($choice) {
+        "1" { Install-UniGetUI }
+        "2" { Invoke-ReturnToMenu; return }
+        default { Invoke-ReturnToMenu; return }
     }
 }
 
@@ -67,24 +65,26 @@ function Show-AppCategoryMenu {
         Show-MenuBox -Title "App Categories" -Items @(
             "[1] Development",
             "[2] Web Browsers",
-            "[3] Utilities, Microsoft tools",
-            "[4] Productivity Suite",
-            "[5] Gaming Essentials",
-            "[6] Communications",
+            "[3] Utilities",
+            "[4] Productivity",
+            "[5] Creative & Media",
+            "[6] Gaming",
+            "[7] Communications",
             "---",
-            "[7] Back to Menu"
+            "[8] Back to Menu"
         )
 
         $choice = Read-Host "Select a category"
 
         $bundleName = switch ($choice) {
-            "1" { "development" }
-            "2" { "browsers" }
-            "3" { "utilities" }
-            "4" { "productivity" }
-            "5" { "games" }
-            "6" { "communications" }
-            "7" { return }
+            "1" { "Development" }
+            "2" { "Browsers" }
+            "3" { "Utilities" }
+            "4" { "Productivity" }
+            "5" { "CreativeMedia" }
+            "6" { "Games" }
+            "7" { "Communications" }
+            "8" { return }
             default { continue }
         }
 
@@ -96,7 +96,8 @@ function Show-AppCategoryMenu {
             $PWD.Path
         }
 
-        $bundlePath = Join-Path -Path (Split-Path -Parent $scriptPath) -ChildPath "unigetui\ubundle\$bundleName.ubundle"
+        $projectRoot = Split-Path -Parent (Split-Path -Parent $scriptPath)
+        $bundlePath = Join-Path -Path $projectRoot -ChildPath "config\bundles\$bundleName.ubundle"
 
         Write-Log -Message "Opening bundle: $bundlePath" -Level INFO
 
@@ -114,4 +115,14 @@ function Show-AppCategoryMenu {
     }
 }
 
-Show-MainMenu
+$Host.UI.RawUI.WindowTitle = "Simplify11 - UniGetUI"
+
+$isInstalled = & winget list --id MartiCliment.UniGetUI --accept-source-agreements 2>$null |
+    Select-String "MartiCliment.UniGetUI"
+
+if (-not $isInstalled) {
+    Show-InstallPrompt
+}
+
+Show-AppCategoryMenu
+Invoke-ReturnToMenu

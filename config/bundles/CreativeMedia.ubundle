@@ -2,44 +2,44 @@
   "export_version": 3,
   "packages": [
     {
-      "Id": "9PF25LF1FJ17",
-      "Name": "Mezon",
-      "Version": "Unknown",
-      "Source": "msstore",
-      "ManagerName": "Winget"
-    },
-    {
-      "Id": "Discord.Discord",
-      "Name": "Discord",
-      "Version": "1.0.9183",
+      "Id": "Audacity.Audacity",
+      "Name": "Audacity",
+      "Version": "3.7.7",
       "Source": "winget",
       "ManagerName": "Winget"
     },
     {
-      "Id": "RadolynLabs.AyuGramDesktop",
-      "Name": "AyuGram Desktop",
-      "Version": "5.6.3",
+      "Id": "ByteDance.CapCut",
+      "Name": "CapCut",
+      "Version": "5.8.0.2216",
       "Source": "winget",
       "ManagerName": "Winget"
     },
     {
-      "Id": "Telegram.TelegramDesktop",
-      "Name": "Telegram Desktop",
-      "Version": "6.6.2",
+      "Id": "Canva.Affinity",
+      "Name": "Affinity",
+      "Version": "3.0.3.4027",
       "Source": "winget",
       "ManagerName": "Winget"
     },
     {
-      "Id": "Vencord.Vesktop",
-      "Name": "Vesktop",
-      "Version": "1.5.5",
+      "Id": "OBSProject.OBSStudio",
+      "Name": "OBS Studio",
+      "Version": "31.0.1",
       "Source": "winget",
       "ManagerName": "Winget"
     },
     {
-      "Id": "kukuruzka165.materialgram",
-      "Name": "materialgram",
-      "Version": "5.7.0.1",
+      "Id": "Spotify.Spotify",
+      "Name": "Spotify",
+      "Version": "1.2.63.394.g126b0d89",
+      "Source": "winget",
+      "ManagerName": "Winget"
+    },
+    {
+      "Id": "th-ch.YouTubeMusic",
+      "Name": "YouTube Music",
+      "Version": "3.8.0",
       "Source": "winget",
       "ManagerName": "Winget"
     }

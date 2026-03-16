@@ -31,6 +31,19 @@ function Write-Log {
     }
 }
 
+function Invoke-ReturnToMenu {
+    $launchDirFile = "$env:TEMP\simplify11_launchdir.txt"
+    if (Test-Path $launchDirFile) {
+        $rootPath = (Get-Content $launchDirFile -Raw).Trim()
+        $mainScript = Join-Path $rootPath "simplify11.ps1"
+        if (Test-Path $mainScript) {
+            & $mainScript
+            return
+        }
+    }
+    exit
+}
+
 function Show-MenuBox {
     param(
         [string]$Title,

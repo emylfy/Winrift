@@ -25,7 +25,7 @@ function Show-RemoveWindowsAIMenu {
                 break
             }
             "2" { Start-Process "https://github.com/zoicware/RemoveWindowsAI"; break }
-            "3" { return }
+            "3" { Invoke-ReturnToMenu; return }
             default { }
         }
     }

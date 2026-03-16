@@ -1,3 +1,5 @@
+. "$PSScriptRoot\..\..\scripts\Common.ps1"
+
 function Show-MainMenu {
     while ($true) {
         Clear-Host
@@ -22,7 +24,7 @@ function Show-MainMenu {
             "4" { Install-Steam; break }
             "5" { Set-Cursor; break }
             "6" { Show-WindowsCustomizationMenu; break }
-            "7" { Simplify11; return }
+            "7" { Invoke-ReturnToMenu; return }
             default { }
         }
     }
@@ -131,14 +133,9 @@ function Show-WindowsCustomizationMenu {
     }
 }
 
-function Simplify11 {
-    return
-}
-
 Export-ModuleMember -Function `
     Show-MainMenu, `
     Show-SpotifyToolsMenu, `
     Show-ConfigsMenu, `
     Show-VSCodeMenu, `
-    Show-WindowsCustomizationMenu, `
-    Simplify11
+    Show-WindowsCustomizationMenu
