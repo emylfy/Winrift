@@ -24,9 +24,13 @@ function Install-UniGetUI {
     Clear-Host
     Write-Log -Message "Checking UniGetUI installation..." -Level INFO
 
-    & winget source update
+    try {
+        & winget source update 2>$null
+    } catch {
+        Write-Log -Message "Failed to update winget sources: $($_.Exception.Message)" -Level WARNING
+    }
 
-    $isInstalled = & winget list --id MartiCliment.UniGetUI --accept-source-agreements | Select-String "MartiCliment.UniGetUI"
+    $isInstalled = & winget list --id MartiCliment.UniGetUI --accept-source-agreements 2>$null | Select-String "MartiCliment.UniGetUI"
 
     if ($isInstalled) {
         Write-Log -Message "UniGetUI is already installed. Launching..." -Level SUCCESS
@@ -41,21 +45,7 @@ function Install-UniGetUI {
         } else {
             Write-Log -Message "Failed to install UniGetUI. Opening website for manual download..." -Level ERROR
             Start-Process "https://www.marticliment.com/unigetui/"
-            Test-Winget
         }
-    }
-}
-
-function Test-Winget {
-    $wingetExists = Get-Command winget -ErrorAction SilentlyContinue
-
-    if (-not $wingetExists) {
-        Write-Log -Message "Winget is not installed. Please install Windows App Installer from Microsoft Store." -Level ERROR
-        Start-Process "ms-windows-store://pdp/?ProductId=9nblggh4nns1"
-        Read-Host "Press Enter to continue"
-    } else {
-        Write-Log -Message "Winget is installed and available." -Level SUCCESS
-        Read-Host "Press Enter to continue"
     }
 }
 
@@ -71,7 +61,7 @@ function Show-AppCategoryMenu {
             "[6] Gaming",
             "[7] Communications",
             "---",
-            "[8] Back to Menu"
+            "[8] Back to menu"
         )
 
         $choice = Read-Host "Select a category"

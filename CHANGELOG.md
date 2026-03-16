@@ -7,6 +7,22 @@ and this project uses [Calendar Versioning](https://calver.org/) (YY.M format).
 
 ## [26.3] - 2026-03-16
 
+### March 16 — Secure tool dispatch, `Invoke-Tool` refactor, and expanded tests
+
+- Added `Get-ToolConfig`, `Invoke-SecureScript`, `Invoke-SecureDownload`, `Invoke-Tool`, and `Invoke-NativeCommand` to `Common.ps1` — unified, config-driven tool dispatch with optional SHA256 hash verification
+- Added 10 new tool entries to `config/tools.json`: `defendnot`, `privacysexy`, `removewindowsai`, `winscript`, `spotx`, `spicetify`, `steam-millennium`, `spacetheme`, `macos-cursor`, `chocolatey`
+- Added `tests/Common.Utilities.Tests.ps1` — Pester tests for `Get-ToolConfig`, `Invoke-NativeCommand`, and `Invoke-SecureDownload`
+- Changed `DefendNot.ps1`, `PrivacySexy.ps1`, `RemoveWindowsAI.ps1`, `WinScript.ps1`, `Windots.Apps.ps1`, `Windots.Configs.ps1` — inline `irm | iex` and download logic replaced with `Invoke-Tool`
+- Changed `ExternalLauncher.ps1` — simplified from ~40 lines to ~6 using `Get-ToolConfig` + `Invoke-Tool`
+- Changed `Drivers.ps1`, `SecurityMenu.ps1`, `Tweaks.ps1`, `Tweaks.GPU.ps1`, `Tweaks.Cleanup.ps1`, `Windots.Menu.ps1` — remaining inline `while` menu loops migrated to `Invoke-MenuLoop`
+- Changed `Tweaks.Cleanup.ps1` — removed "Remove Virtual Memory" option; DISM commands use `Invoke-NativeCommand`; winget exit code extracted to `$WINGET_ALREADY_INSTALLED` constant
+- Changed `Tweaks.Universal.ps1` — SSD tweaks wrapped in try/catch; inline comments added for accessibility registry flag values
+- Changed `Tweaks.GPU.ps1` — inline comments added for AMD display adapter registry path
+- Changed `UniGetUI.ps1` — winget stderr suppressed; removed redundant `Test-Winget` function
+- Changed `Windots.Customization.ps1` — added Explorer restart guard after `Stop-Process explorer`
+- Changed `tests/Config.Tests.ps1` — updated type whitelist to include `browser`; added `fallbackUrl` HTTPS test and `docs` property test; fixed `BeforeAll` scoping for bundle file list
+- Removed "Why Simplify11?" comparison table and FAQ section from README
+
 ### March 16 — Windots refactor, Pester tests, and CI pipeline
 
 - Added `Copy-ConfigFiles` helper in `Windots.Configs.ps1` — reusable config-copy-with-logging for all dotfile installers

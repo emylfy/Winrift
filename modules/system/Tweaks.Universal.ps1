@@ -127,11 +127,14 @@ function Invoke-InputDeviceTweaks {
     Set-RegistryValue -Path "HKLM:\SYSTEM\CurrentControlSet\Services\kbdclass\Parameters" -Name "KeyboardDataQueueSize" -Type "DWord" -Value "20" -Message "Optimized keyboard input buffer size"
 
     # Accessibility and keyboard response settings
+    # 506 = StickyKeys disabled (prevents popup when pressing Shift 5 times)
     Set-RegistryValue -Path "HKCU:\Control Panel\Accessibility" -Name "StickyKeys" -Type "String" -Value "506" -Message "Disabled StickyKeys for better gaming experience"
+    # 58 = ToggleKeys audio indicator disabled
     Set-RegistryValue -Path "HKCU:\Control Panel\Accessibility\ToggleKeys" -Name "Flags" -Type "String" -Value "58" -Message "Modified ToggleKeys behavior"
     Set-RegistryValue -Path "HKCU:\Control Panel\Accessibility\Keyboard Response" -Name "DelayBeforeAcceptance" -Type "String" -Value "0" -Message "Removed keyboard input delay"
     Set-RegistryValue -Path "HKCU:\Control Panel\Accessibility\Keyboard Response" -Name "AutoRepeatRate" -Type "String" -Value "0" -Message "Optimized key repeat rate"
     Set-RegistryValue -Path "HKCU:\Control Panel\Accessibility\Keyboard Response" -Name "AutoRepeatDelay" -Type "String" -Value "0" -Message "Removed key repeat delay"
+    # 122 = FilterKeys disabled with all keyboard response optimizations active
     Set-RegistryValue -Path "HKCU:\Control Panel\Accessibility\Keyboard Response" -Name "Flags" -Type "String" -Value "122" -Message "Modified keyboard response flags"
 }
 
@@ -140,19 +143,36 @@ function Invoke-SSDTweaks {
 
     $hasSSD = Get-PhysicalDisk | Where-Object { $_.MediaType -eq 'SSD' -or $_.BusType -eq 'NVMe' } | Measure-Object | Select-Object -ExpandProperty Count
     if ($hasSSD -gt 0) {
-        Write-Host "Enable and optimize TRIM for SSD"
-        fsutil behavior set DisableDeleteNotify 0
+        try {
+            Write-Host "Enable and optimize TRIM for SSD"
+            fsutil behavior set DisableDeleteNotify 0
+        } catch {
+            Write-Log -Message "Failed to configure TRIM: $($_.Exception.Message)" -Level ERROR
+        }
 
-        Write-Host "Disable defragmentation for SSDs"
-        Disable-ScheduledTask -TaskName "\Microsoft\Windows\Defrag\ScheduledDefrag"
+        try {
+            Write-Host "Disable defragmentation for SSDs"
+            Disable-ScheduledTask -TaskName "\Microsoft\Windows\Defrag\ScheduledDefrag"
+        } catch {
+            Write-Log -Message "Failed to disable defrag task: $($_.Exception.Message)" -Level ERROR
+        }
 
-        Write-Host "Disable NTFS last access time updates"
-        fsutil behavior set disablelastaccess 1
+        try {
+            Write-Host "Disable NTFS last access time updates"
+            fsutil behavior set disablelastaccess 1
+        } catch {
+            Write-Log -Message "Failed to configure last access time: $($_.Exception.Message)" -Level ERROR
+        }
 
         Set-RegistryValue -Path "HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem" -Name "NtfsDisable8dot3NameCreation" -Type "DWord" -Value "1" -Message "Disabled legacy 8.3 filename creation for better SSD performance"
 
         # Disable ApplicationPreLaunch & Prefetch - not needed on SSD
-        Disable-MMAgent -ApplicationPreLaunch
+        try {
+            Disable-MMAgent -ApplicationPreLaunch
+            Write-Log -Message "Disabled application pre-launch" -Level SUCCESS
+        } catch {
+            Write-Log -Message "Failed to disable ApplicationPreLaunch: $($_.Exception.Message)" -Level WARNING
+        }
 
         Set-RegistryValue -Path "HKLM:\System\CurrentControlSet\Control\Session Manager\Memory Management\PrefetchParameters" -Name "EnablePrefetcher" -Type "DWord" -Value "0" -Message "Disabled prefetcher for better SSD performance"
         Set-RegistryValue -Path "HKLM:\System\CurrentControlSet\Control\Session Manager\Memory Management\PrefetchParameters" -Name "SfTracingState" -Type "DWord" -Value "0" -Message "Disabled superfetch tracing"
@@ -174,6 +194,7 @@ function Invoke-NetworkTweaks {
 
     # Disable network throttling - especially helpful with gigabit networks
     # source - https://youtu.be/EmdosMT5TtA
+    # 4294967295 = 0xFFFFFFFF (max DWORD) — effectively disables network throttling
     Set-RegistryValue -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile" -Name "NetworkThrottlingIndex" -Type "DWord" -Value "4294967295" -Message "Disabled network throttling for maximum network performance"
     Set-RegistryValue -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile" -Name "NoLazyMode" -Type "DWord" -Value "1" -Message "Disabled lazy mode for network operations"
 }
@@ -182,6 +203,7 @@ function Invoke-CPUTweaks {
     Write-Host "`nApplying CPU Performance tweaks...`n"
 
     # source - https://youtu.be/FxpRL7wheGc
+    # 25000 = 25ms lazy mode timeout for multimedia class scheduler
     Set-RegistryValue -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile" -Name "LazyModeTimeout" -Type "DWord" -Value "25000" -Message "Set optimal lazy mode timeout for better CPU responsiveness"
     Set-RegistryValue -Path "HKLM:\SYSTEM\CurrentControlSet\Services\MMCSS" -Name "Start" -Type "DWord" -Value "2" -Message "Configured Multimedia Class Scheduler Service for better performance"
 }
@@ -214,9 +236,15 @@ function Invoke-PowerTweaks {
     Set-RegistryValue -Path "HKLM:\SYSTEM\CurrentControlSet\Services\pci\Parameters" -Name "ASPMOptOut" -Type "DWord" -Value "1" -Message "Disabled PCIe ASPM power saving"
 
     # Activate Hidden Ultimate Performance Power Plan
-    Write-Host "Activating Ultimate Performance Power Plan"
-    powercfg -duplicatescheme e9a42b02-d5df-448d-aa00-03f14749eb61 eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee
-    powercfg -setactive eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee
+    # e9a42b02-... = built-in Ultimate Performance scheme GUID (hidden by default)
+    # eeeeeeee-... = custom GUID for the duplicated plan to avoid conflicts
+    try {
+        powercfg -duplicatescheme e9a42b02-d5df-448d-aa00-03f14749eb61 eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee 2>$null
+        powercfg -setactive eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee
+        Write-Log -Message "Activated Ultimate Performance power plan" -Level SUCCESS
+    } catch {
+        Write-Log -Message "Failed to activate Ultimate Performance plan: $($_.Exception.Message)" -Level ERROR
+    }
 }
 
 function Invoke-SystemResponsivenessTweaks {
@@ -224,6 +252,7 @@ function Invoke-SystemResponsivenessTweaks {
 
     # Set Priority For Programs Instead Of Background Services
     # source - https://youtu.be/bqDMG1ZS-Yw
+    # 0x24 = Short interval, variable length, high foreground priority boost (2:1 ratio)
     Set-RegistryValue -Path "HKLM:\SYSTEM\CurrentControlSet\Control\PriorityControl" -Name "Win32PrioritySeparation" -Type "DWord" -Value "0x00000024" -Message "Optimized process priority for better responsiveness"
     Set-RegistryValue -Path "HKLM:\SYSTEM\ControlSet001\Control\PriorityControl" -Name "IRQ8Priority" -Type "DWord" -Value "1" -Message "Set IRQ8 priority for better system response"
     Set-RegistryValue -Path "HKLM:\SYSTEM\ControlSet001\Control\PriorityControl" -Name "IRQ16Priority" -Type "DWord" -Value "2" -Message "Set IRQ16 priority for better system response"

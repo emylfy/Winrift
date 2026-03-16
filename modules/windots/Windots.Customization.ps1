@@ -20,6 +20,11 @@ function Disable-QuickAccess {
 
         Write-Log -Message "Restarting Explorer to apply changes..." -Level WARNING
         Stop-Process -Name explorer -Force
+        Start-Sleep -Seconds 2
+        if (-not (Get-Process explorer -ErrorAction SilentlyContinue)) {
+            Start-Process explorer
+            Write-Log -Message "Explorer restarted manually." -Level INFO
+        }
         Write-Log -Message "Quick Access settings updated successfully." -Level SUCCESS
     } catch {
         Write-Log -Message "Failed to update Quick Access settings: $($_.Exception.Message)" -Level ERROR

@@ -59,13 +59,10 @@ function Set-WinTermConfig {
         "1" {
             if (-not (Get-Command choco.exe -ErrorAction SilentlyContinue)) {
                 Write-Log -Message "Chocolatey not found. Installing Chocolatey..." -Level INFO
-                try {
-                    Set-ExecutionPolicy Bypass -Scope Process -Force
-                    [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072
-                    Invoke-Expression ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
-                    Write-Log -Message "Chocolatey installed successfully." -Level SUCCESS
-                } catch {
-                    Write-Log -Message "Failed to install Chocolatey: $($_.Exception.Message)" -Level ERROR
+                Set-ExecutionPolicy Bypass -Scope Process -Force
+                [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072
+                $result = Invoke-Tool "chocolatey"
+                if (-not $result) {
                     Write-Log -Message "Opening Nerd Fonts releases page for manual installation..." -Level INFO
                     Start-Process "https://github.com/ryanoasis/nerd-fonts/releases/"
                 }

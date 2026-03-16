@@ -55,9 +55,9 @@ Describe 'tools.json' {
         }
     }
 
-    It 'each tool type is irm or download' {
+    It 'each tool type is irm, download, or browser' {
         foreach ($tool in $json.tools) {
-            $tool.type | Should -BeIn @('irm', 'download')
+            $tool.type | Should -BeIn @('irm', 'download', 'browser')
         }
     }
 
@@ -78,9 +78,28 @@ Describe 'tools.json' {
             $tool.url | Should -Match '^https://'
         }
     }
+
+    It 'fallbackUrl uses HTTPS when present' {
+        $toolsWithFallback = $json.tools | Where-Object { $_.fallbackUrl }
+        foreach ($tool in $toolsWithFallback) {
+            $tool.fallbackUrl | Should -Match '^https://'
+        }
+    }
+
+    It 'each tool has a docs property' {
+        foreach ($tool in $json.tools) {
+            $tool.docs | Should -Not -BeNullOrEmpty
+        }
+    }
 }
 
 Describe 'Bundle files' {
+    BeforeAll {
+        $repoRoot = Split-Path $PSScriptRoot -Parent
+        $bundleDir = Join-Path $repoRoot 'config' 'bundles'
+        $bundleFiles = Get-ChildItem -Path $bundleDir -Filter '*.ubundle'
+    }
+
     It 'at least one bundle file exists' {
         $bundleFiles.Count | Should -BeGreaterThan 0
     }
