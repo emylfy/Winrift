@@ -13,24 +13,21 @@ Initialize-Logging -ModuleName "tweaks"
 . "$PSScriptRoot\Tweaks.Power.ps1"
 . "$PSScriptRoot\Tweaks.GPU.ps1"
 . "$PSScriptRoot\Tweaks.Cleanup.ps1"
-
 function Show-MainMenu {
-    $Host.UI.RawUI.WindowTitle = "Simplify11 - System Tweaks"
+    $Host.UI.RawUI.WindowTitle = "Winrift - System Tweaks"
     Invoke-MenuLoop -Title "System Tweaks" -Items @(
         "[1] Universal Tweaks",
         "[2] Power Management",
         "[3] NVIDIA/AMD GPU Tweaks",
         "[4] Free Up Space",
         "---",
-        "[5] Open Documentation",
-        "[6] Back to menu"
-    ) -Prompt "Enter your choice (1-6)" -Actions @{
+        "[5] Back to menu"
+    ) -Prompt "Enter your choice (1-5)" -Actions @{
         "1" = { Invoke-UniversalTweaks }
         "2" = { Invoke-PowerMenu }
         "3" = { Show-GPUMenu }
         "4" = { Clear-SystemSpace }
-        "5" = { Start-Process "https://github.com/emylfy/simplify11/blob/main/docs/tweaks_guide.md" }
-    } -ExitKey "6" -OnExit { Invoke-ReturnToMenu }
+    } -ExitKey "5" -OnExit { Invoke-ReturnToMenu }
 }
 
 Show-MainMenu

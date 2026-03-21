@@ -1,5 +1,5 @@
 . "$PSScriptRoot\..\..\scripts\Common.ps1"
-$Host.UI.RawUI.WindowTitle = "Windots"
+$Host.UI.RawUI.WindowTitle = "Winrift - Desktop Ricing"
 
 Initialize-Logging -ModuleName "windots"
 

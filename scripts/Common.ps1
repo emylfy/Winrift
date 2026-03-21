@@ -52,7 +52,10 @@ function Show-MenuBox {
     )
 
     $border = "$Purple +" + ("-" * $Width) + "+$Reset"
-    $titlePadded = $Title.PadRight($Width - 2)
+    $totalPad = $Width - 2 - $Title.Length
+    $leftPad = [math]::Floor($totalPad / 2)
+    $rightPad = $totalPad - $leftPad
+    $titlePadded = (" " * $leftPad) + $Title + (" " * $rightPad)
     Write-Host ""
     Write-Host $border
     Write-Host "$Purple '$Purple $titlePadded $Purple'$Reset"
@@ -188,7 +191,7 @@ function Invoke-SecureScript {
         Write-Log -Message "Hash verified for $ToolName" -Level SUCCESS
     }
 
-    Invoke-Expression $scriptContent
+    & ([ScriptBlock]::Create($scriptContent))
 }
 
 function Invoke-SecureDownload {

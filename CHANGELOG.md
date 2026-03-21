@@ -5,6 +5,29 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project uses [Calendar Versioning](https://calver.org/) (YY.M format).
 
+## [26.3] - 2026-03-22
+
+### March 22 — Rebrand to Winrift, menu restructure, benchmark promotion, config flatten
+
+- Rebranded project from Simplify11 to Winrift across all window titles, menus, and benchmark reports
+- Restructured main menu: promoted Benchmark to #1 position as the primary feature
+- Consolidated 5 external tool launchers (WinUtil, WinScript, Sparkle, GTweak) into a single "Community Tools" submenu
+- Moved Answer File guide from main menu into new "Docs & Guides" submenu alongside Tweaks Guide and Benchmark Guide
+- Renamed "Windots" to "Desktop Ricing" and "UniGetUI" to "App Bundles" in main menu for clarity
+- Removed Benchmark and Documentation links from System Tweaks submenu (Benchmark is now top-level, docs have their own section)
+- Added standalone entry point to `Benchmark.ps1` so it can be launched directly from main menu
+- Refactored Windots menu: split flat menu into Terminal Setup, VSCode Configs, Third-party Apps, and Customization submenus
+- Added `TargetFileNames` parameter to `Copy-ConfigFiles` for renaming files during copy
+- Flattened `config/cli/` directory: removed nested subdirectories (terminal/, fastfetch/, ohmyposh/, WindowsPowershell/), all config files now live at `config/cli/` root
+- Updated `Windots.Configs.ps1` paths to match flattened directory structure with file rename support
+- Added Defender exclusion path for DefendNot installation directory before tool launch
+- Changed `Invoke-SecureScript` to use `[ScriptBlock]::Create` instead of `Invoke-Expression` for safer script execution
+- Centered menu box title in `Show-MenuBox` instead of left-aligned padding
+- Added Benchmarks section to README with usage example and link to testing guide
+- Added `docs/tests.md` with benchmark methodology, metrics, expected results, and Pester test instructions
+- Updated Windots README paths to match flattened config directory
+- Updated `ModuleExports.Tests.ps1` to match refactored Windots menu function names
+
 ## [26.3] - 2026-03-21
 
 ### March 21 — PowerShell 5.1 compatibility, test fixes, encoding cleanup

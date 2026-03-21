@@ -11,139 +11,122 @@ if (Test-Path $versionFile) {
 }
 
 function Show-MainMenu {
-    $Host.UI.RawUI.WindowTitle = "Simplify11 v$script:AppVersion"
+    $Host.UI.RawUI.WindowTitle = "Winrift v$script:AppVersion"
 
     . "$PSScriptRoot\scripts\AdminLaunch.ps1"
 
     $scriptPaths = @{
-        "2"  = "$PSScriptRoot\modules\system\Tweaks.ps1"
-        "3"  = "$PSScriptRoot\modules\security\SecurityMenu.ps1"
-        "4"  = "$PSScriptRoot\modules\drivers\Drivers.ps1"
-        "5"  = "$PSScriptRoot\modules\windots\windots.ps1"
-        "7"  = "$PSScriptRoot\modules\tools\WinScript.ps1"
-        "8"  = "$PSScriptRoot\modules\unigetui\UniGetUI.ps1"
+        "1" = "$PSScriptRoot\modules\system\Benchmark.ps1"
+        "2" = "$PSScriptRoot\modules\system\Tweaks.ps1"
+        "3" = "$PSScriptRoot\modules\security\SecurityMenu.ps1"
+        "4" = "$PSScriptRoot\modules\drivers\Drivers.ps1"
+        "5" = "$PSScriptRoot\modules\windots\Windots.ps1"
+        "6" = "$PSScriptRoot\modules\unigetui\UniGetUI.ps1"
     }
 
-    $externalTools = @{
-        "6"  = "winutil"
-        "9"  = "sparkle"
-        "10" = "gtweak"
+    $communityTools = @{
+        "1" = "winutil"
+        "2" = "sparkle"
+        "3" = "gtweak"
+    }
+
+    $communityScripts = @{
+        "4" = "$PSScriptRoot\modules\tools\WinScript.ps1"
     }
 
     $docsUrls = @{
-        "2"  = "https://github.com/emylfy/simplify11"
-        "3"  = "https://github.com/emylfy/simplify11"
-        "4"  = "https://github.com/emylfy/simplify11"
-        "5"  = "https://github.com/emylfy/windots"
-        "6"  = "https://github.com/ChrisTitusTech/winutil"
-        "7"  = "https://github.com/flick9000/winscript"
-        "8"  = "https://github.com/marticliment/UniGetUI"
-        "9"  = "https://github.com/Parcoil/Sparkle"
-        "10" = "https://github.com/Greedeks/GTweak"
+        "1" = "https://github.com/emylfy/simplify11/blob/main/docs/tweaks_guide.md"
+        "2" = "https://github.com/emylfy/simplify11/blob/main/docs/autounattend_guide.md"
+        "3" = "https://github.com/emylfy/simplify11/blob/main/docs/tests.md"
     }
-
-    $toolNames = @{
-        "2"  = "System Tweaks"
-        "3"  = "Security Menu"
-        "4"  = "Drivers"
-        "5"  = "Windots"
-        "6"  = "WinUtil"
-        "7"  = "WinScript"
-        "8"  = "UniGetUI"
-        "9"  = "Sparkle"
-        "10" = "GTweak"
-    }
-
-    # Auto-start choices: launch directly without sub-menu (have their own interactive menus)
-    $autoStartChoices = @("2", "3", "4", "5", "7", "8")
 
     :outerLoop while ($true) {
         Clear-Host
         Write-Host
-        Write-Host "$Purple +---------------------------------------------------------+$Reset"
-        Write-Host "$Purple '$Purple   Tired of System Setup After Reinstall? Simplify It!   $Purple'$Reset"
-        Write-Host "$Purple +---------------------------------------------------------+$Reset"
-        Write-Host "$Purple '$Reset [1]  Configure Your Windows Installation Answer File    $Purple'$Reset"
-        Write-Host "$Purple '$Reset [2]  System Tweaks - SSD, GPU, CPU, Storage and etc     $Purple'$Reset"
-        Write-Host "$Purple '$Reset [3]  Security Menu - Defender, AI Removal, Privacy      $Purple'$Reset"
-        Write-Host "$Purple '$Reset [4]  Install Drivers - Nvidia, AMD, Device Manufacturer $Purple'$Reset"
-        Write-Host "$Purple '$Reset [5]  Windots - Simpler way to rice & customize Windows  $Purple'$Reset"
-        $sepText = " Third-party tools run via web scripts "
-        $totalW = 57
-        $leftD = [math]::Floor(($totalW - $sepText.Length) / 2)
-        $rightD = $totalW - $sepText.Length - $leftD
-        Write-Host "$Purple +$("-" * $leftD)$sepText$("-" * $rightD)+$Reset"
-        Write-Host "$Purple '$Reset [6]  WinUtil - Install Programs, Tweaks, Fixes, Updates $Purple'$Reset"
-        Write-Host "$Purple '$Reset [7]  WinScript - Build your script from scratch         $Purple'$Reset"
-        Write-Host "$Purple '$Reset [8]  UniGetUI - Discover, Install, Update Packages      $Purple'$Reset"
-        Write-Host "$Purple '$Reset [9]  Sparkle - Windows Package Manager                  $Purple'$Reset"
-        Write-Host "$Purple '$Reset [10] GTweak - Tweaking tool and debloater               $Purple'$Reset"
-        Write-Host "$Purple +---------------------------------------------------------+$Reset"
+        Show-MenuBox -Title "Winrift - Break through default Windows" -Items @(
+            "[1]  Benchmark - Measure system performance",
+            "[2]  System Tweaks - Optimization & power management",
+            "[3]  Security & Privacy - Defender, Copilot, privacy",
+            "[4]  Drivers - NVIDIA, AMD, Intel, OEM",
+            "[5]  Desktop Ricing - Terminal, VSCode, themes, apps",
+            "[6]  App Bundles - Install app collections",
+            "---",
+            "[7]  Community Tools",
+            "[D]  Docs & Guides"
+        )
 
         $choice = Read-Host ">"
 
-        if ($choice -eq "1") {
-            Start-Process "https://github.com/emylfy/simplify11/blob/main/docs/autounattend_guide.md"
-            continue outerLoop
-        }
-
-        $isExternal = $externalTools.ContainsKey($choice)
-        if (-not ($scriptPaths.ContainsKey($choice) -or $isExternal)) {
-            continue outerLoop
-        }
-
-        if (-not $isExternal) { $targetScript = $scriptPaths[$choice] } else { $targetScript = $null }
-
-        if (-not $isExternal) {
+        # Direct launch items
+        if ($scriptPaths.ContainsKey($choice)) {
+            $targetScript = $scriptPaths[$choice]
             if (-not (Test-Path $targetScript)) {
                 Write-Log -Message "Module not found: $targetScript" -Level ERROR
                 Write-Host "$Yellow This module may not be included in your installation.$Reset"
                 Read-Host "Press Enter to continue"
                 continue outerLoop
             }
-            if ($autoStartChoices -contains $choice) {
-                Start-AdminProcess -ScriptPath $targetScript -NoExit
-                continue outerLoop
-            }
+            Start-AdminProcess -ScriptPath $targetScript -NoExit
+            continue outerLoop
         }
 
-        # Show tool sub-menu for tools with Run/Docs/Back options
-        $toolName = $toolNames[$choice]
-        if (-not $toolName) { $toolName = "selected tool" }
+        # Community Tools submenu
+        if ($choice -eq "7") {
+            :communityLoop while ($true) {
+                Clear-Host
+                Show-MenuBox -Title "Community Tools" -Items @(
+                    "[1]  WinUtil - Tweaks, Apps & Fixes",
+                    "[2]  Sparkle - Optimize & Debloat",
+                    "[3]  GTweak - Debloat & Tweak",
+                    "[4]  WinScript - Custom Script Builder",
+                    "--- Third-party tools fetched from the web ---",
+                    "[5]  Back to main menu"
+                )
 
-        :toolLoop while ($true) {
-            Clear-Host
-            Show-MenuBox -Title $toolName -Items @(
-                "[1] Run $toolName",
-                "[2] Open documentation / project source",
-                "---",
-                "[3] Back to main menu"
-            )
+                $communityChoice = Read-Host ">"
 
-            $toolAction = Read-Host "Select action"
-
-            switch ($toolAction) {
-                "1" {
-                    if ($isExternal) {
-                        $launcherPath = "$PSScriptRoot\modules\tools\ExternalLauncher.ps1"
-                        Start-AdminProcess -ScriptPath $launcherPath -Arguments "-ToolId $($externalTools[$choice])" -NoExit
-                    } else {
-                        Start-AdminProcess -ScriptPath $scriptPaths[$choice] -NoExit
-                    }
-                    break toolLoop
+                if ($communityChoice -eq "5" -or $communityChoice -eq "") {
+                    break communityLoop
                 }
-                "2" {
-                    if ($docsUrls.ContainsKey($choice)) {
-                        Start-Process $docsUrls[$choice]
-                    } else {
-                        Write-Host "$Yellow No documentation URL defined for this tool.$Reset"
-                        Start-Sleep -Seconds 1
-                    }
-                    break toolLoop
+
+                if ($communityTools.ContainsKey($communityChoice)) {
+                    $launcherPath = "$PSScriptRoot\modules\tools\ExternalLauncher.ps1"
+                    Start-AdminProcess -ScriptPath $launcherPath -Arguments "-ToolId $($communityTools[$communityChoice])" -NoExit
+                    break communityLoop
                 }
-                "3" { break toolLoop }
-                default { }
+
+                if ($communityScripts.ContainsKey($communityChoice)) {
+                    Start-AdminProcess -ScriptPath $communityScripts[$communityChoice] -NoExit
+                    break communityLoop
+                }
             }
+            continue outerLoop
+        }
+
+        # Docs & Guides submenu
+        if ($choice -eq "D" -or $choice -eq "d") {
+            :docsLoop while ($true) {
+                Clear-Host
+                Show-MenuBox -Title "Docs & Guides" -Items @(
+                    "[1]  Tweaks Guide - What each tweak does",
+                    "[2]  Answer File Guide - Windows installation",
+                    "[3]  Benchmark Guide - Methodology & results",
+                    "---",
+                    "[4]  Back to main menu"
+                )
+
+                $docsChoice = Read-Host ">"
+
+                if ($docsChoice -eq "4" -or $docsChoice -eq "") {
+                    break docsLoop
+                }
+
+                if ($docsUrls.ContainsKey($docsChoice)) {
+                    Start-Process $docsUrls[$docsChoice]
+                    break docsLoop
+                }
+            }
+            continue outerLoop
         }
     }
 }

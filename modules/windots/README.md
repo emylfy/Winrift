@@ -37,7 +37,7 @@ Then select **[5] Windots** from the main menu.
 Or launch Windots standalone:
 
 ```powershell
-irm https://raw.githubusercontent.com/emylfy/simplify11/main/modules/windots/windots.ps1 | iex
+irm https://raw.githubusercontent.com/emylfy/simplify11/main/modules/windots/Windots.ps1 | iex
 ```
 
 ---
@@ -49,10 +49,10 @@ Copy opinionated dotfiles for your favorite tools. All config files are bundled 
 | Component | Supported Apps | Config Source |
 | --- | --- | --- |
 | **Code Editors** | [VSCode](https://code.visualstudio.com/), [AIDE](https://github.com/codestoryai/aide), [Cursor](https://cursor.sh/), [Windsurf](https://windsurf.io/), [VSCodium](https://vscodium.com/), [Trae](https://trae.ai/) | `config/vscode/` |
-| **Terminal** | [Windows Terminal](https://github.com/microsoft/terminal) (includes Fira Code font setup) | `config/cli/terminal/` |
-| **Shell** | [PowerShell](https://learn.microsoft.com/en-us/powershell/) + [Terminal-Icons](https://github.com/devblackops/Terminal-Icons) | `config/cli/WindowsPowershell/` |
-| **Prompt** | [Oh My Posh](https://ohmyposh.dev/) (Zen theme) | `config/cli/ohmyposh/` |
-| **System Info** | [FastFetch](https://github.com/fastfetch-cli/fastfetch) | `config/cli/fastfetch/` |
+| **Terminal** | [Windows Terminal](https://github.com/microsoft/terminal) (includes Fira Code font setup) | `config/cli/terminal.json` |
+| **Shell** | [PowerShell](https://learn.microsoft.com/en-us/powershell/) + [Terminal-Icons](https://github.com/devblackops/Terminal-Icons) | `config/cli/Microsoft.PowerShell_profile.ps1` |
+| **Prompt** | [Oh My Posh](https://ohmyposh.dev/) (Zen theme) | `config/cli/zen.toml` |
+| **System Info** | [FastFetch](https://github.com/fastfetch-cli/fastfetch) | `config/cli/fastfetch.jsonc` |
 
 ---
 

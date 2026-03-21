@@ -1,22 +1,49 @@
 function Show-MainMenu {
     Invoke-MenuLoop -Title "Windots - Rice & Customize Windows" -Items @(
-        "[1] Configs Installer",
-        "--- Third-party tools below run via web scripts ---",
-        "[2] Download Rectify11",
-        "[3] Install Spotify Tools",
-        "[4] Install Steam Millennium + Theme",
-        "[5] Apply macOS Cursor",
-        "[6] Customization tweaks",
+        "[1] Terminal Setup",
+        "[2] VSCode Configs",
+        "[3] Third-party Apps",
+        "[4] Customization Tweaks",
         "---",
-        "[7] Back to Simplify11"
+        "[5] Back to Winrift"
     ) -Actions @{
-        "1" = { Show-ConfigsMenu }
-        "2" = { Invoke-Rectify11 }
-        "3" = { Show-SpotifyToolsMenu }
-        "4" = { Install-Steam }
-        "5" = { Set-Cursor }
-        "6" = { Show-WindowsCustomizationMenu }
-    } -ExitKey "7" -OnExit { Invoke-ReturnToMenu }
+        "1" = { Show-TerminalMenu }
+        "2" = { Show-VSCodeMenu }
+        "3" = { Show-AppsMenu }
+        "4" = { Show-WindowsCustomizationMenu }
+    } -ExitKey "5" -OnExit { Invoke-ReturnToMenu }
+}
+
+function Show-TerminalMenu {
+    Invoke-MenuLoop -Title "Terminal Setup" -Items @(
+        "[1] Windows Terminal",
+        "[2] PowerShell Profile",
+        "[3] Oh My Posh",
+        "[4] FastFetch",
+        "---",
+        "[5] Back to menu"
+    ) -Actions @{
+        "1" = { Set-WinTermConfig }
+        "2" = { Set-PwshConfig }
+        "3" = { Set-OhMyPoshConfig }
+        "4" = { Set-FastFetchConfig }
+    } -ExitKey "5"
+}
+
+function Show-AppsMenu {
+    Invoke-MenuLoop -Title "Third-party Apps" -Items @(
+        "[1] Download Rectify11",
+        "[2] Spotify Tools",
+        "[3] Install Steam Millennium + Theme",
+        "[4] Apply macOS Cursor",
+        "--- Third-party tools below run via web scripts ---",
+        "[5] Back to menu"
+    ) -Actions @{
+        "1" = { Invoke-Rectify11 }
+        "2" = { Show-SpotifyToolsMenu }
+        "3" = { Install-Steam }
+        "4" = { Set-Cursor }
+    } -ExitKey "5"
 }
 
 function Show-SpotifyToolsMenu {
@@ -29,25 +56,6 @@ function Show-SpotifyToolsMenu {
         "1" = { Install-SpotX }
         "2" = { Install-Spicetify }
     } -ExitKey "3"
-}
-
-function Show-ConfigsMenu {
-    Invoke-MenuLoop -Title "Configs Installer" -Items @(
-        "[1] VSCode Based",
-        "---",
-        "[2] Windows Terminal",
-        "[3] PowerShell",
-        "[4] Oh My Posh",
-        "[5] FastFetch",
-        "---",
-        "[6] Back to menu"
-    ) -Actions @{
-        "1" = { Show-VSCodeMenu }
-        "2" = { Set-WinTermConfig }
-        "3" = { Set-PwshConfig }
-        "4" = { Set-OhMyPoshConfig }
-        "5" = { Set-FastFetchConfig }
-    } -ExitKey "6"
 }
 
 function Show-VSCodeMenu {

@@ -11,8 +11,24 @@ function Show-DefendNotMenu {
     ) -Actions @{
         "1" = {
             Write-Host ""
-            Write-Log -Message "Warning: Windows Defender may flag this tool." -Level WARNING
-            Write-Log -Message "You may need to temporarily disable real-time and tamper protection." -Level WARNING
+            $defendnotPath = "$env:ProgramFiles\defendnot"
+
+            try {
+                Add-MpPreference -ExclusionPath $defendnotPath -ErrorAction Stop
+                Write-Log -Message "Added Defender exclusion for $defendnotPath" -Level SUCCESS
+            } catch {
+                Write-Log -Message "Could not add exclusion: $($_.Exception.Message)" -Level WARNING
+            }
+
+            try {
+                Set-MpPreference -DisableRealtimeMonitoring $true -ErrorAction Stop
+                Write-Log -Message "Real-time protection disabled temporarily." -Level SUCCESS
+            } catch {
+                Write-Log -Message "Could not disable real-time protection." -Level WARNING
+                Write-Log -Message "If Tamper Protection is on, disable it manually:" -Level WARNING
+                Write-Log -Message "Windows Security > Virus & threat protection > Manage settings > Tamper Protection: Off" -Level WARNING
+            }
+
             Invoke-Tool "defendnot"
             Read-Host "Press Enter to continue"
         }
