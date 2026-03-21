@@ -68,7 +68,11 @@ function Show-MainMenu {
         Write-Host "$Purple '$Reset [3]  Security Menu - Defender, AI Removal, Privacy      $Purple'$Reset"
         Write-Host "$Purple '$Reset [4]  Install Drivers - Nvidia, AMD, Device Manufacturer $Purple'$Reset"
         Write-Host "$Purple '$Reset [5]  Windots - Simpler way to rice & customize Windows  $Purple'$Reset"
-        Write-Host "$Purple +---------------------------------------------------------+$Reset"
+        $sepText = " Third-party tools run via web scripts "
+        $totalW = 57
+        $leftD = [math]::Floor(($totalW - $sepText.Length) / 2)
+        $rightD = $totalW - $sepText.Length - $leftD
+        Write-Host "$Purple +$("-" * $leftD)$sepText$("-" * $rightD)+$Reset"
         Write-Host "$Purple '$Reset [6]  WinUtil - Install Programs, Tweaks, Fixes, Updates $Purple'$Reset"
         Write-Host "$Purple '$Reset [7]  WinScript - Build your script from scratch         $Purple'$Reset"
         Write-Host "$Purple '$Reset [8]  UniGetUI - Discover, Install, Update Packages      $Purple'$Reset"

@@ -42,6 +42,11 @@ function Set-OtherVSCConfig {
     Write-Host ""
     Write-Host "Please specify the path to your VSCode-based editor's user directory:"
     $editorPath = Read-Host "Enter path"
+    if (-not $editorPath -or -not (Test-Path $editorPath)) {
+        Write-Log -Message "Path does not exist: $editorPath" -Level ERROR
+        Read-Host "Press Enter to continue"
+        return
+    }
     Set-VSCodeConfig $editorPath
 }
 

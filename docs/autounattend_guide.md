@@ -1,15 +1,14 @@
-# 🪟 Windows Unattended Installation Configuration
+# 🪟 Windows Unattended Installation
 
 <div align="center">
-  <p><em>Automate your Windows installation with precision and style</em></p>
-  <p>An answer file that tells Windows how to install itself — so you get a clean, debloated system without clicking through setup screens</p>
+  <p><em>Install Windows 11 clean and debloated — without clicking through setup screens</em></p>
 </div>
 
-## ❓ What is an Autounattend.xml?
+## ❓ What is this?
 
-When you install Windows from a USB drive or ISO, the installer looks for a file called `autounattend.xml` at the root of your installation media. If it finds one, it uses the instructions inside to answer setup questions automatically — things like accepting the EULA, skipping hardware checks, and configuring settings.
+An `autounattend.xml` is a special file that automates the Windows installer. Place it on your USB drive or into your ISO, and Windows will configure itself automatically — no extra clicks, no bloatware, no telemetry prompts.
 
-This particular file goes further: it also embeds PowerShell scripts that remove bloatware, disable telemetry, and clean up the UI during installation. No coding knowledge required — you just place the file on your USB drive or into your ISO and install Windows as usual.
+This file does more than skip setup screens. It also runs scripts during installation that remove pre-installed apps, disable tracking, and clean up the interface. You don't need any technical knowledge — just follow one of the installation methods below.
 
 > 🛠️ **Want to customize?** This file was generated with [Unattend-Generator](https://schneegans.de/windows/unattend-generator/) — you can use it to create your own version
 
@@ -26,87 +25,58 @@ After installing Windows with this file, your system will have:
 - **File Explorer opens to "This PC"** — with file extensions and hidden files visible
 - **No system sounds** — startup sound and all event sounds disabled
 - **Works on unsupported hardware** — TPM 2.0, Secure Boot, and RAM checks bypassed
-- **SmartScreen disabled** — see [Warnings](#-warnings) for details
+- **SmartScreen disabled** — see [Warnings](#%EF%B8%8F-warnings) for details
 - **Simplify11 desktop shortcut** — one-click access to further customization
 
-## 🔄 What Happens During Installation
+## 📥 Installation Guide
 
-Here's what the file does at each stage of Windows Setup:
+> **Download:** [autounattend.xml](https://github.com/emylfy/simplify11/blob/main/docs/autounattend.xml)
 
-### Stage 1 — Windows PE (Pre-Installation)
+### Method 1 — USB Flash Drive (Simplest)
 
-The very first stage, before Windows is even installed on disk:
+1. Create a bootable Windows USB using [Rufus](https://rufus.ie/), the [Media Creation Tool](https://www.microsoft.com/software-download/windows11), or [Ventoy](https://www.ventoy.net/)
+2. Download [autounattend.xml](https://github.com/emylfy/simplify11/blob/main/docs/autounattend.xml)
+3. Copy `autounattend.xml` to the **root** of the USB drive (same level as `setup.exe`)
+4. Boot from the USB drive and install Windows as usual — the file is detected automatically
 
-- Bypasses TPM 2.0 check
-- Bypasses Secure Boot check
-- Bypasses RAM check (minimum 4GB requirement)
-- Auto-accepts the EULA
+### Method 2 — Modify an Existing ISO (AnyBurn)
 
-> Language, disk partitioning, and edition selection remain interactive — you still choose these yourself.
+1. Download [AnyBurn](https://anyburn.com/) and the [autounattend.xml](https://github.com/emylfy/simplify11/blob/main/docs/autounattend.xml) file
+2. Open AnyBurn and select **"Edit Image File"**
+3. Browse to your Windows ISO file
+4. Click **"Add"** and select `autounattend.xml`
+5. Make sure it's placed at the **root level** (not inside a folder)
+6. Click **"Save"** to produce the modified ISO
+7. Burn the ISO to a USB drive or mount it for a virtual machine
 
-### Stage 2 — Specialize (System Configuration)
+### Method 3 — Automated ISO Build
 
-After Windows copies files to disk, these scripts run to configure the system:
+Use [tiny11maker-reforged](https://github.com/chrisGrando/tiny11maker-reforged) — a PowerShell script that builds a trimmed-down Windows 11 image (supports 24H2 and 25H2). This strips components at the image level rather than using an answer file, so it produces a smaller ISO.
 
-- **Removes 25 pre-installed apps** ([full list below](#-removed-apps))
-- **Removes capabilities**: OneSync, Quick Assist, Steps Recorder
-- **Disables feature**: Remote Desktop Connection client
-- **Removes OneDrive** — deletes setup files and Start Menu shortcut
-- **Blocks auto-install** — prevents Outlook and Teams from installing after setup
-- **Allows upgrades on unsupported hardware** — sets AllowUpgradesWithUnsupportedTPMOrCPU
-- **Sets password to never expire**
-- **Disables SmartScreen** — turns off SmartScreen system-wide and hides Defender tray icon
-- **Sets PowerShell execution policy** to RemoteSigned
-- **Prevents auto-reboot** for Windows Update when users are logged in
-- **Schedules active hours** — keeps Windows Update reboot window away from your current usage time
-- **Disables widgets and news**
-- **Disables startup sound**
-- **Disables consumer features** — blocks ads, app suggestions, and cloud-optimized content
-- **Hides Edge first-run experience**
-- **Clears Start menu pins**
+## ⚠️ Warnings
 
-### Stage 3 — Default User Profile
+> **SmartScreen is disabled system-wide.** It normally blocks unrecognized apps and downloads. Re-enable it anytime via **Windows Security > App & browser control**.
 
-These settings are baked into the default user profile, so every new user account gets them:
+> **Windows Defender is NOT disabled** — only the tray icon is hidden. Defender still runs in the background. You can show the icon again in Windows Security settings.
 
-- **Disables Windows Copilot**
-- **Removes OneDrive from startup**
-- **Applies empty taskbar layout** — replaces default taskbar pins with an empty layout, locks it then unlocks after first login
-- **Shows file extensions** (HideFileExt = 0)
-- **Shows hidden files** (Hidden = 1)
-- **Hides Task View button**
-- **Disables Edge SmartScreen** — both main SmartScreen and PUA (Potentially Unwanted App) detection
-- **Turns off all system sounds**
-- **Disables all content delivery** — 15+ registry values covering app suggestions, pre-installed apps, subscribed content, and soft-landing tips
-- **Disables Bing search suggestions** in the search box
+> **Edge SmartScreen and PUA detection are disabled** for the default user profile. Re-enable in **Edge Settings > Privacy** if you want download warnings back.
 
-### Stage 4 — First Login (OOBE + User Setup)
+> **TPM and Secure Boot checks are bypassed.** This allows installation on unsupported hardware, but BitLocker may not work without TPM.
 
-During the Out-of-Box Experience and first user login:
+> **All telemetry is disabled** with the most restrictive privacy setting Windows offers.
 
-- **All telemetry/express settings disabled** (ProtectYourPC = 3, the most restrictive setting)
-- **EULA page hidden**
-- **Wi-Fi and account screens remain interactive** — you still choose your network and create your account
+> **PowerShell execution policy is set to RemoteSigned.** Local scripts run freely; downloaded scripts need a digital signature.
 
-Then, two scripts run at first login:
+## 🎛️ Customization
 
-**Per-user setup** (runs via RunOnce for every new user account):
-
-- Removes Copilot app package
-- Unlocks Start menu layout (so you can rearrange it)
-- Sets sound scheme to "No Sounds"
-- Opens File Explorer to "This PC" instead of Quick Access
-- Hides search box on taskbar
-- Hides all desktop icons
-- Restarts Explorer to apply changes
-
-**First logon only** (runs once during OOBE):
-
-- **Creates "Simplify11" desktop shortcut** — launches the Simplify11 tool for post-install customization
+- **Generate your own:** Use the [Schneegans Unattend-Generator](https://schneegans.de/windows/unattend-generator/) to create a customized version with different app removals, settings, or configurations
+- **Edit directly:** Advanced users can modify the XML file manually, or import it back into the [Unattend-Generator](https://schneegans.de/windows/unattend-generator/) to tweak settings through the UI and re-export
+- **Post-install tweaks:** Use [Simplify11](https://github.com/emylfy/simplify11) after installation for additional optimization — a desktop shortcut is created automatically
 
 ## 📦 Removed Apps
 
-All 25 provisioned apps are removed during installation (26 package selectors — Teams has two entries):
+<details>
+<summary>25 pre-installed apps removed during installation (click to expand)</summary>
 
 | App | Package ID |
 |-----|-----------|
@@ -141,50 +111,89 @@ All 25 provisioned apps are removed during installation (26 package selectors �
 - **Capabilities**: OneSync, Quick Assist (system capability), Steps Recorder
 - **Features**: Remote Desktop Connection client
 
-## ⚠️ Warnings
+</details>
 
-> **SmartScreen is disabled system-wide.** SmartScreen normally blocks unrecognized apps and downloads. This config turns it off to avoid prompts when running legitimate tools. If you download software from unknown sources, consider re-enabling it via **Windows Security > App & browser control**.
+## 🔄 What Happens During Installation
 
-> **Windows Defender tray icon is hidden** — but Defender itself is NOT disabled. It still runs in the background. You can re-enable the tray icon through Windows Security settings.
+<details>
+<summary>Stage 1 — Before installation (Windows PE)</summary>
 
-> **Edge SmartScreen and PUA detection are disabled** for the default user profile. This means Edge won't warn about potentially unwanted apps or suspicious downloads. You can re-enable these in **Edge Settings > Privacy**.
+The very first stage, before Windows is installed on disk:
 
-> **TPM and Secure Boot checks are bypassed.** This allows installation on unsupported hardware, but means you lose some hardware-backed security features. BitLocker may not function without TPM.
+- Bypasses TPM 2.0, Secure Boot, and RAM checks
+- Auto-accepts the EULA
 
-> **All telemetry and express settings are disabled** (ProtectYourPC = 3). This is the most restrictive privacy setting Windows offers during setup.
+> You still choose language, disk, and Windows edition yourself.
 
-> **PowerShell execution policy is set to RemoteSigned.** This means locally created scripts run freely, but scripts downloaded from the internet need a digital signature. This is less restrictive than the default (Restricted) but safer than Unrestricted.
+</details>
 
-## 📥 Installation Guide
+<details>
+<summary>Stage 2 — System configuration (Specialize)</summary>
 
-> **Download:** [autounattend.xml](https://github.com/emylfy/simplify11/blob/main/docs/autounattend.xml)
+After Windows copies files to disk, scripts run to configure the system:
 
-### Method 1 — USB Flash Drive (Simplest)
+- **Removes 25 pre-installed apps** ([full list above](#-removed-apps))
+- **Removes capabilities**: OneSync, Quick Assist, Steps Recorder
+- **Disables feature**: Remote Desktop Connection client
+- **Removes OneDrive** — deletes setup files and Start Menu shortcut
+- **Blocks auto-install** — prevents Outlook and Teams from installing after setup
+- **Allows upgrades on unsupported hardware** — sets AllowUpgradesWithUnsupportedTPMOrCPU
+- **Sets password to never expire**
+- **Disables SmartScreen** — turns off SmartScreen system-wide and hides Defender tray icon
+- **Sets PowerShell execution policy** to RemoteSigned
+- **Prevents auto-reboot** for Windows Update when users are logged in
+- **Schedules active hours** — keeps Windows Update reboot window away from your usage time
+- **Disables widgets and news**
+- **Disables startup sound**
+- **Disables consumer features** — blocks ads, app suggestions, and cloud-optimized content
+- **Hides Edge first-run experience**
+- **Clears Start menu pins**
 
-1. Create a bootable Windows USB using [Rufus](https://rufus.ie/), the [Media Creation Tool](https://www.microsoft.com/software-download/windows11), or [Ventoy](https://www.ventoy.net/)
-2. Download [autounattend.xml](https://github.com/emylfy/simplify11/blob/main/docs/autounattend.xml)
-3. Copy `autounattend.xml` to the **root** of the USB drive (same level as `setup.exe`)
-4. Boot from the USB drive and install Windows as usual — the file is detected automatically
+</details>
 
-### Method 2 — Modify an Existing ISO (AnyBurn)
+<details>
+<summary>Stage 3 — Default user profile settings</summary>
 
-1. Download [AnyBurn](https://anyburn.com/) and the [autounattend.xml](https://github.com/emylfy/simplify11/blob/main/docs/autounattend.xml) file
-2. Open AnyBurn and select **"Edit Image File"**
-3. Browse to your Windows ISO file
-4. Click **"Add"** and select `autounattend.xml`
-5. Make sure it's placed at the **root level** (not inside a folder)
-6. Click **"Save"** to produce the modified ISO
-7. Burn the ISO to a USB drive or mount it for a virtual machine
+These settings apply to every new user account created on the system:
 
-### Method 3 — Automated ISO Build
+- **Disables Windows Copilot**
+- **Removes OneDrive from startup**
+- **Applies empty taskbar layout** — replaces default pins, locks then unlocks after first login
+- **Shows file extensions** and **hidden files**
+- **Hides Task View button**
+- **Disables Edge SmartScreen** — both SmartScreen and PUA (Potentially Unwanted App) detection
+- **Turns off all system sounds**
+- **Disables all content delivery** — 15+ registry values covering app suggestions, pre-installed apps, subscribed content, and tips
+- **Disables Bing search suggestions** in the search box
 
-Use [tiny11builder-24H2](https://github.com/chrisGrando/tiny11builder-24H2) — a PowerShell script that builds a trimmed-down Windows 11 24H2 image. This strips components at the image level rather than using an answer file, so it produces a smaller ISO.
+</details>
 
-## 🎛️ Customization
+<details>
+<summary>Stage 4 — First login (OOBE)</summary>
 
-- **Generate your own:** Use the [Schneegans Unattend-Generator](https://schneegans.de/windows/unattend-generator/) to create a customized version with different app removals, settings, or configurations
-- **Edit directly:** Advanced users can modify the XML file — the embedded PowerShell scripts in the `<Extensions>` section are where app removal and registry tweaks live
-- **Post-install tweaks:** Use [Simplify11](https://github.com/emylfy/simplify11) after installation for additional optimization — a desktop shortcut is created automatically
+During the Out-of-Box Experience and first user login:
+
+- **All telemetry/express settings disabled** (most restrictive)
+- **EULA page hidden**
+- **Wi-Fi and account screens remain interactive** — you still choose your network and create your account
+
+Then two scripts run at first login:
+
+**Per-user setup** (runs for every new user account):
+
+- Removes Copilot app package
+- Unlocks Start menu layout (so you can rearrange it)
+- Sets sound scheme to "No Sounds"
+- Opens File Explorer to "This PC" instead of Quick Access
+- Hides search box on taskbar
+- Hides all desktop icons
+- Restarts Explorer to apply changes
+
+**First logon only:**
+
+- **Creates "Simplify11" desktop shortcut** for post-install customization
+
+</details>
 
 ## 🔧 Technical Details
 

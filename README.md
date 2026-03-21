@@ -39,13 +39,12 @@
 ### 🛠️ System Configuration
 
 - Windows installation [answer file](https://github.com/emylfy/simplify11/blob/main/docs/autounattend_guide.md) creation guide
-- System performance tweaks for SSD, GPU, CPU, Network, Memory optimization
 - Driver installation support for NVIDIA, AMD, HP, Lenovo, ASUS, MSI and more
 - Security tools: Disable Defender, remove Copilot/Recall, privacy hardening
 
-### ⚡ Optimization
+### 🚀 Optimization
 
-- 13 selectable tweak categories with progress feedback
+- 13 selectable [tweak categories](https://github.com/emylfy/simplify11/blob/main/docs/tweaks_guide.md) with progress feedback
 - GPU-specific tweaks for NVIDIA and AMD
 - Enhanced input responsiveness (mouse & keyboard)
 - DirectX enhancements and power management
@@ -175,6 +174,7 @@ irm https://raw.githubusercontent.com/emylfy/simplify11/main/scripts/install.ps1
 
 | Windows Version | Status |
 | :---: | :---: |
+| Windows 11 25H2 | Supported ✅ |
 | Windows 11 24H2 | Fully tested ✅ |
 | Windows 11 23H2 | Supported ✅ |
 | Windows 11 22H2 | Should work (not actively tested) ⚠️ |

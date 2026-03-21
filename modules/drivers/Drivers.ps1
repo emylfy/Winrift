@@ -1,46 +1,54 @@
 . "$PSScriptRoot\..\..\scripts\Common.ps1"
 
+Initialize-Logging -ModuleName "drivers"
+
+# Winget exit code for "package already installed"
+$WINGET_ALREADY_INSTALLED = -1978335189
+
 function Show-DeviceMenu {
-    $Host.UI.RawUI.WindowTitle = "Simplify11 - Drivers"
+    $Host.UI.RawUI.WindowTitle = "Simplify11 - Driver Downloads"
 
     $urls = @{
         "1"  = "https://www.nvidia.com/en-us/software/nvidia-app/"
         "2"  = "https://www.amd.com/en/support/download/drivers.html"
-        "3"  = "https://support.hp.com/us-en/drivers"
-        "4"  = "https://support.lenovo.com"
-        "5"  = "https://www.asus.com/support/download-center/"
-        "6"  = "https://www.acer.com/ac/en/US/content/drivers"
-        "7"  = "https://www.msi.com/support/download"
-        "8"  = "https://www.huawei.com/en/support"
-        "9"  = "https://www.xiaomi.com/global/support"
-        "10" = "https://www.dell.com/support/home/products/computers?app=drivers"
-        "11" = "https://www.gigabyte.com/Support/Consumer/Download"
+        "4"  = "https://support.hp.com/us-en/drivers"
+        "5"  = "https://support.lenovo.com"
+        "6"  = "https://www.asus.com/support/download-center/"
+        "7"  = "https://www.acer.com/ac/en/US/content/drivers"
+        "8"  = "https://www.msi.com/support/download"
+        "9"  = "https://www.huawei.com/en/support"
+        "10" = "https://www.xiaomi.com/global/support"
+        "11" = "https://www.dell.com/support/home/products/computers?app=drivers"
+        "12" = "https://www.gigabyte.com/Support/Consumer/Download"
     }
 
     while ($true) {
         Clear-Host
-        Show-MenuBox -Title "Select your device manufacturer to install drivers" -Items @(
+        Show-MenuBox -Title "Select your manufacturer" -Items @(
             "[1]  Nvidia App",
             "[2]  AMD Drivers",
+            "[3]  Intel Driver & Support Assistant (auto-install)",
             "---",
-            "[3]  HP",
-            "[4]  Lenovo",
-            "[5]  Asus",
-            "[6]  Acer",
-            "[7]  MSI",
-            "[8]  Huawei",
-            "[9]  Xiaomi",
-            "[10] DELL/Alienware",
-            "[11] Gigabyte",
+            "[4]  HP",
+            "[5]  Lenovo",
+            "[6]  Asus",
+            "[7]  Acer",
+            "[8]  MSI",
+            "[9]  Huawei",
+            "[10] Xiaomi",
+            "[11] DELL/Alienware",
+            "[12] Gigabyte",
             "---",
             "[Enter] Back to Menu"
         )
 
-        $choice = Read-Host "Select your device manufacturer"
+        $choice = Read-Host ">"
 
         if ($choice -eq "") {
             Invoke-ReturnToMenu; return
-        } elseif ($choice -eq "4") {
+        } elseif ($choice -eq "3") {
+            Install-IntelDSA
+        } elseif ($choice -eq "5") {
             Show-LenovoMenu
         } elseif ($urls.ContainsKey($choice)) {
             Start-Process $urls[$choice]
@@ -51,6 +59,27 @@ function Show-DeviceMenu {
     }
 }
 
+function Install-IntelDSA {
+    if (-not (Assert-WingetAvailable)) { return }
+    Write-Log -Message "Installing Intel Driver & Support Assistant..." -Level INFO
+    try {
+        & winget install Intel.IntelDriverAndSupportAssistant --accept-package-agreements --accept-source-agreements
+
+        if ($LASTEXITCODE -eq 0) {
+            Write-Log -Message "Successfully installed Intel DSA. It will scan for Intel drivers automatically." -Level SUCCESS
+        } elseif ($LASTEXITCODE -eq $WINGET_ALREADY_INSTALLED) {
+            Write-Log -Message "Intel DSA is already installed." -Level INFO
+        } else {
+            Write-Log -Message "Failed to install Intel DSA. Opening download page..." -Level ERROR
+            Start-Process "https://www.intel.com/content/www/us/en/support/detect.html"
+        }
+    } catch {
+        Write-Log -Message "Error installing Intel DSA: $($_.Exception.Message)" -Level ERROR
+        Start-Process "https://www.intel.com/content/www/us/en/support/detect.html"
+    }
+    Start-Sleep -Seconds 2
+}
+
 function Show-LenovoMenu {
     Invoke-MenuLoop -Title "Lenovo Driver Options" -Items @(
         "[1] Install Lenovo Vantage",
@@ -59,6 +88,7 @@ function Show-LenovoMenu {
         "[3] Back to Manufacturer Selection"
     ) -Actions @{
         "1" = {
+            if (-not (Assert-WingetAvailable)) { return }
             Write-Log -Message "Installing Lenovo Vantage..." -Level INFO
             try {
                 winget install "9WZDNCRFJ4MV" --accept-package-agreements --accept-source-agreements

@@ -47,9 +47,8 @@ Describe 'ExternalLauncher.ps1' {
         $content | Should -Match 'tools\.json'
     }
 
-    It 'handles irm and download tool types' {
+    It 'delegates tool dispatch to Invoke-Tool' {
         $content = Get-Content $scriptPath -Raw
-        $content | Should -Match '"irm"'
-        $content | Should -Match '"download"'
+        $content | Should -Match 'Invoke-Tool'
     }
 }

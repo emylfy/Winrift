@@ -54,6 +54,18 @@ Describe 'Show-MenuBox' {
     It 'handles separator items' {
         { Show-MenuBox -Title 'Test' -Items @('Item 1', '---', 'Item 2') 6>&1 | Out-Null } | Should -Not -Throw
     }
+
+    It 'handles separator with centered text' {
+        { Show-MenuBox -Title 'Test' -Items @('Item 1', '--- Info text ---', 'Item 2') 6>&1 | Out-Null } | Should -Not -Throw
+    }
+}
+
+Describe 'Confirm-ExternalTool' {
+    It 'is defined with Tool parameter' {
+        $cmd = Get-Command Confirm-ExternalTool -ErrorAction SilentlyContinue
+        $cmd | Should -Not -BeNullOrEmpty
+        $cmd.Parameters.Keys | Should -Contain 'Tool'
+    }
 }
 
 Describe 'Set-RegistryValue' {

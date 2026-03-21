@@ -1,7 +1,7 @@
 function Show-MainMenu {
     Invoke-MenuLoop -Title "Windots - Rice & Customize Windows" -Items @(
         "[1] Configs Installer",
-        "---",
+        "--- Third-party tools below run via web scripts ---",
         "[2] Download Rectify11",
         "[3] Install Spotify Tools",
         "[4] Install Steam Millennium + Theme",
@@ -23,7 +23,7 @@ function Show-SpotifyToolsMenu {
     Invoke-MenuLoop -Title "Spotify Tools" -Items @(
         "[1] Install SpotX",
         "[2] Install Spicetify",
-        "---",
+        "--- Third-party scripts fetched from the web ---",
         "[3] Back to menu"
     ) -Actions @{
         "1" = { Install-SpotX }

@@ -58,7 +58,13 @@ function Show-MenuBox {
     Write-Host "$Purple '$Purple $titlePadded $Purple'$Reset"
     Write-Host $border
     foreach ($item in $Items) {
-        if ($item -eq "---") {
+        if ($item -match '^---\s+(.+?)\s*-*$') {
+            $text = " $($Matches[1].TrimEnd('- ')) "
+            $totalDashes = $Width - $text.Length
+            $leftDashes = [math]::Floor($totalDashes / 2)
+            $rightDashes = $totalDashes - $leftDashes
+            Write-Host "$Purple +$("-" * $leftDashes)$text$("-" * $rightDashes)+$Reset"
+        } elseif ($item -eq "---") {
             Write-Host $border
         } else {
             $itemPadded = $item.PadRight($Width - 2)
@@ -137,7 +143,13 @@ function Set-RegistryValue {
             New-Item -Path $Path -Force | Out-Null
         }
         Set-ItemProperty -Path $Path -Name $Name -Type $Type -Value $Value -Force
-        Write-Log -Message $Message -Level SUCCESS
+
+        $written = (Get-ItemProperty -Path $Path -Name $Name -ErrorAction SilentlyContinue).$Name
+        if ($null -eq $written) {
+            Write-Log -Message "Failed to verify $Name at $Path — value not found after write" -Level ERROR
+        } else {
+            Write-Log -Message $Message -Level SUCCESS
+        }
     }
     catch {
         Write-Log -Message "Failed to set $Name at $Path. Error: $_" -Level ERROR
@@ -170,9 +182,10 @@ function Invoke-SecureScript {
         $actualHash = (Get-FileHash -InputStream $stream -Algorithm SHA256).Hash
         $stream.Dispose()
         if ($actualHash -ne $ExpectedHash) {
-            Write-Log -Message "Hash mismatch for $ToolName! Expected: $ExpectedHash, Got: $actualHash" -Level WARNING
-            Write-Log -Message "The script content may have been tampered with or updated." -Level WARNING
+            Write-Log -Message "Hash mismatch for $ToolName! Expected: $ExpectedHash, Got: $actualHash" -Level ERROR
+            throw "Hash verification failed for $ToolName. The script may have been tampered with or updated."
         }
+        Write-Log -Message "Hash verified for $ToolName" -Level SUCCESS
     }
 
     Invoke-Expression $scriptContent
@@ -205,6 +218,58 @@ function Invoke-SecureDownload {
     }
 }
 
+function Confirm-ExternalTool {
+    param(
+        [Parameter(Mandatory)][psobject]$Tool
+    )
+
+    $boxWidth = 57
+    $urlLine = "URL:    $($Tool.url)"
+    if ($urlLine.Length -gt ($boxWidth - 4)) {
+        $boxWidth = $urlLine.Length + 4
+    }
+    $border = "$Yellow +" + ("-" * $boxWidth) + "+$Reset"
+
+    Write-Host ""
+    Write-Host $border
+    Write-Host "$Yellow '$Yellow  WARNING: External script execution                     $Yellow'$Reset"
+    Write-Host $border
+    $line1 = "This tool will fetch and run a script from the web.".PadRight($boxWidth - 2)
+    Write-Host "$Yellow '$Reset $line1$Yellow'$Reset"
+    $toolLine = "Tool:   $($Tool.name)".PadRight($boxWidth - 2)
+    Write-Host "$Yellow '$Reset $toolLine$Yellow'$Reset"
+    $urlPadded = $urlLine.PadRight($boxWidth - 2)
+    Write-Host "$Yellow '$Reset $urlPadded$Yellow'$Reset"
+    if ($Tool.docs) {
+        $docsLine = "Source: $($Tool.docs)".PadRight($boxWidth - 2)
+        Write-Host "$Yellow '$Reset $docsLine$Yellow'$Reset"
+    }
+    Write-Host $border
+    Write-Host ""
+    Write-Host "  [Y] Run   [N] Cancel   [R] Review project source"
+    Write-Host ""
+
+    while ($true) {
+        $response = Read-Host "Your choice"
+        switch ($response.ToUpper()) {
+            "Y" { return $true }
+            "N" { return $false }
+            "R" {
+                if ($Tool.docs) {
+                    Start-Process $Tool.docs
+                    Write-Host "$Green  Opened project source in browser.$Reset"
+                    Write-Host "  [Y] Run   [N] Cancel"
+                } else {
+                    Write-Host "$Yellow  No documentation URL available for this tool.$Reset"
+                }
+            }
+            default {
+                Write-Host "  Please enter Y, N, or R."
+            }
+        }
+    }
+}
+
 function Invoke-Tool {
     param(
         [Parameter(Mandatory)][string]$ToolId,
@@ -218,6 +283,14 @@ function Invoke-Tool {
     if (-not $tool) {
         Write-Log -Message "Tool '$ToolId' not found in tools.json" -Level ERROR
         return $false
+    }
+
+    if ($tool.type -in @("irm", "download")) {
+        $confirmed = Confirm-ExternalTool -Tool $tool
+        if (-not $confirmed) {
+            Write-Log -Message "User cancelled $($tool.name) launch." -Level INFO
+            return $false
+        }
     }
 
     try {
@@ -263,6 +336,25 @@ function Invoke-Tool {
     }
 }
 
+function Assert-WingetAvailable {
+    if (-not (Get-Command winget -ErrorAction SilentlyContinue)) {
+        Write-Log -Message "winget is not installed. Attempting to install..." -Level WARNING
+        try {
+            Add-AppxPackage -RegisterByFamilyName -MainPackage Microsoft.DesktopAppInstaller_8wekyb3d8bbwe -ErrorAction Stop
+            if (Get-Command winget -ErrorAction SilentlyContinue) {
+                Write-Log -Message "winget installed successfully." -Level SUCCESS
+                return $true
+            }
+        } catch {
+            Write-Log -Message "Auto-install failed: $($_.Exception.Message)" -Level WARNING
+        }
+        Write-Log -Message "Opening Microsoft Store to install App Installer manually..." -Level INFO
+        Start-Process "ms-windows-store://pdp?productid=9NBLGGH4NNS1"
+        return $false
+    }
+    return $true
+}
+
 function Invoke-NativeCommand {
     param(
         [string]$Command,
@@ -273,7 +365,7 @@ function Invoke-NativeCommand {
 
     try {
         $output = & $Command @Arguments 2>&1
-        if ($LASTEXITCODE -ne 0) {
+        if ($null -ne $LASTEXITCODE -and $LASTEXITCODE -ne 0) {
             $msg = if ($ErrorMessage) { $ErrorMessage } else { "Command failed: $Command $($Arguments -join ' ')" }
             Write-Log -Message "$msg (exit code: $LASTEXITCODE)" -Level ERROR
             return $false

@@ -1,5 +1,7 @@
 . "$PSScriptRoot\..\..\scripts\Common.ps1"
 
+Initialize-Logging -ModuleName "unigetui"
+
 function Show-InstallPrompt {
     Clear-Host
     Show-MenuBox -Title "UniGetUI" -Items @(
@@ -106,6 +108,11 @@ function Show-AppCategoryMenu {
 }
 
 $Host.UI.RawUI.WindowTitle = "Simplify11 - UniGetUI"
+
+if (-not (Assert-WingetAvailable)) {
+    Invoke-ReturnToMenu
+    return
+}
 
 $isInstalled = & winget list --id MartiCliment.UniGetUI --accept-source-agreements 2>$null |
     Select-String "MartiCliment.UniGetUI"
