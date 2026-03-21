@@ -16,9 +16,18 @@ function Show-GPUMenu {
 
 function Invoke-HybridTweaks {
     Write-Log -Message "Applying tweaks for hybrid GPU configuration (NVIDIA + AMD)..." -Level INFO
-    Invoke-NvidiaTweaks -NoExit
-    Invoke-AMDTweaks -NoExit
-    Write-Log -Message "Successfully applied tweaks for both NVIDIA and AMD GPUs." -Level SUCCESS
+    $nvidiaOk = Invoke-NvidiaTweaks -NoExit
+    $amdOk = Invoke-AMDTweaks -NoExit
+
+    if ($nvidiaOk -and $amdOk) {
+        Write-Log -Message "Successfully applied tweaks for both NVIDIA and AMD GPUs." -Level SUCCESS
+    } elseif ($nvidiaOk) {
+        Write-Log -Message "Applied NVIDIA tweaks. AMD GPU was not detected." -Level WARNING
+    } elseif ($amdOk) {
+        Write-Log -Message "Applied AMD tweaks. NVIDIA GPU was not detected." -Level WARNING
+    } else {
+        Write-Log -Message "No supported GPUs detected." -Level ERROR
+    }
     Write-Host ""
     Write-Host "$Purple Press any key to return to the GPU menu...$Reset"
     $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
@@ -30,6 +39,28 @@ function Invoke-NvidiaTweaks {
     )
 
     # source - https://github.com/AlchemyTweaks/Verified-Tweaks/blob/main/Nvidia/RmGpsPsEnablePerCpuCoreDpc
+    # Detect NVIDIA GPU presence
+    $nvidiaFound = $false
+    $classPath = "HKLM:\SYSTEM\CurrentControlSet\Control\Class\{4d36e968-e325-11ce-bfc1-08002be10318}"
+    foreach ($idx in @("0000", "0001", "0002", "0003")) {
+        $devPath = "$classPath\$idx"
+        if (Test-Path $devPath) {
+            $provider = (Get-ItemProperty -Path $devPath -Name "ProviderName" -ErrorAction SilentlyContinue).ProviderName
+            if ($provider -match "NVIDIA") {
+                $nvidiaFound = $true
+                break
+            }
+        }
+    }
+    if (-not $nvidiaFound) {
+        Write-Log -Message "No NVIDIA GPU found in display adapter registry. Skipping NVIDIA tweaks." -Level WARNING
+        if (-not $NoExit) {
+            Write-Host "`n$Purple Press any key to return to the GPU menu...$Reset"
+            $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
+        }
+        return $false
+    }
+
     Set-RegistryValue -Path "HKLM:\SYSTEM\CurrentControlSet\Control\GraphicsDrivers" -Name "RmGpsPsEnablePerCpuCoreDpc" -Type "DWord" -Value "1" -Message "Enabled per-CPU core DPC for NVIDIA drivers"
     Set-RegistryValue -Path "HKLM:\SYSTEM\CurrentControlSet\Control\GraphicsDrivers\Power" -Name "RmGpsPsEnablePerCpuCoreDpc" -Type "DWord" -Value "1" -Message "Enabled power-aware per-CPU core DPC"
     Set-RegistryValue -Path "HKLM:\SYSTEM\CurrentControlSet\Services\nvlddmkm" -Name "RmGpsPsEnablePerCpuCoreDpc" -Type "DWord" -Value "1" -Message "Enabled NVIDIA driver per-CPU core DPC"
@@ -41,6 +72,7 @@ function Invoke-NvidiaTweaks {
         Write-Host "$Purple Press any key to return to the GPU menu...$Reset"
         $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
     }
+    return $true
 }
 
 function Invoke-AMDTweaks {
@@ -69,7 +101,7 @@ function Invoke-AMDTweaks {
             Write-Host "`n$Purple Press any key to return to the GPU menu...$Reset"
             $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
         }
-        return
+        return $false
     }
     Write-Log -Message "Found AMD GPU at $amdPath" -Level INFO
     Set-RegistryValue -Path $amdPath -Name "AllowSnapshot" -Type "DWord" -Value "0" -Message "Disabled AMD snapshot feature"
@@ -108,4 +140,5 @@ function Invoke-AMDTweaks {
         Write-Host "$Purple Press any key to return to the GPU menu...$Reset"
         $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
     }
+    return $true
 }

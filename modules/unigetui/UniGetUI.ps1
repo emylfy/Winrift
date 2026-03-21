@@ -80,12 +80,12 @@ function Show-AppCategoryMenu {
             default { continue }
         }
 
-        $scriptPath = if ($PSScriptRoot) {
-            $PSScriptRoot
+        if ($PSScriptRoot) {
+            $scriptPath = $PSScriptRoot
         } elseif ($MyInvocation.MyCommand.Path) {
-            Split-Path -Parent $MyInvocation.MyCommand.Path
+            $scriptPath = Split-Path -Parent $MyInvocation.MyCommand.Path
         } else {
-            $PWD.Path
+            $scriptPath = $PWD.Path
         }
 
         $projectRoot = Split-Path -Parent (Split-Path -Parent $scriptPath)
