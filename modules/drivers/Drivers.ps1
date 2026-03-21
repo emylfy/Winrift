@@ -6,7 +6,7 @@ Initialize-Logging -ModuleName "drivers"
 $WINGET_ALREADY_INSTALLED = -1978335189
 
 function Show-DeviceMenu {
-    $Host.UI.RawUI.WindowTitle = "Simplify11 - Driver Downloads"
+    $Host.UI.RawUI.WindowTitle = "Winrift - Drivers"
 
     $urls = @{
         "1"  = "https://www.nvidia.com/en-us/software/nvidia-app/"

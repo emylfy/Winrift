@@ -4,8 +4,9 @@ BeforeDiscovery {
         @{
             File = 'modules/windots/Windots.Menu.ps1'
             ExpectedFunctions = @(
-                'Show-MainMenu', 'Show-SpotifyToolsMenu', 'Show-ConfigsMenu',
-                'Show-VSCodeMenu', 'Show-WindowsCustomizationMenu'
+                'Show-MainMenu', 'Show-TerminalMenu', 'Show-AppsMenu',
+                'Show-SpotifyToolsMenu', 'Show-VSCodeMenu',
+                'Show-WindowsCustomizationMenu'
             )
         }
         @{

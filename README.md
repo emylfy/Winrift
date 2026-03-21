@@ -10,6 +10,7 @@
 	<a href="#-features">Features</a> •
 	<a href="#-installation">Installation</a> •
 	<a href="#-troubleshooting">Troubleshooting</a> •
+	<a href="#-benchmarks">Benchmarks</a> •
 	<a href="#-integrations">Integrations</a> •
 	<a href="#-compatibility">Compatibility</a> •
 	<a href="#-credits">Credits</a>
@@ -110,6 +111,21 @@ irm https://raw.githubusercontent.com/emylfy/simplify11/main/scripts/install.ps1
 | Registry errors in tweaks | Check `%USERPROFILE%\Simplify11\logs\` for the session log |
 | UniGetUI won't install | Run `winget source reset --force` in an admin PowerShell |
 | WinUtil / Sparkle won't launch | Check your internet connection and firewall settings |
+
+![](https://github.com/emylfy/simplify11/blob/main/media/separator.png)
+
+## 📊 Benchmarks
+
+Built-in performance benchmark measures real system metrics (CPU, RAM, processes, services, disk latency, DPC rate) before and after applying tweaks.
+
+```powershell
+. .\modules\system\Benchmark.ps1
+Invoke-Benchmark -Phase Before    # run before tweaks
+# ... apply tweaks, reboot ...
+Invoke-Benchmark -Phase After     # run after tweaks — generates comparison report
+```
+
+See the full [Testing & Benchmarks Guide](docs/tests.md) for methodology, metrics explained, and expected results.
 
 ![](https://github.com/emylfy/simplify11/blob/main/media/separator.png)
 

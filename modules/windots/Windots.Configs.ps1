@@ -3,6 +3,7 @@ function Copy-ConfigFiles {
         [string]$SourceDir,
         [string[]]$FileNames,
         [string]$TargetDir,
+        [string[]]$TargetFileNames,
         [string]$ConfigName
     )
 
@@ -10,8 +11,14 @@ function Copy-ConfigFiles {
         if (-not (Test-Path $TargetDir)) {
             New-Item -Path $TargetDir -ItemType Directory -Force | Out-Null
         }
-        foreach ($file in $FileNames) {
-            Copy-Item -Path (Join-Path $SourceDir $file) -Destination $TargetDir -Force
+        for ($i = 0; $i -lt $FileNames.Count; $i++) {
+            $src = Join-Path $SourceDir $FileNames[$i]
+            if ($TargetFileNames -and $i -lt $TargetFileNames.Count) {
+                $dst = Join-Path $TargetDir $TargetFileNames[$i]
+            } else {
+                $dst = $TargetDir
+            }
+            Copy-Item -Path $src -Destination $dst -Force
         }
         Write-Log -Message "$ConfigName configuration copied successfully." -Level SUCCESS
     } catch {
@@ -92,9 +99,10 @@ function Set-WinTermConfig {
         }
     }
 
-    Copy-ConfigFiles -SourceDir "$PSScriptRoot\config\cli\terminal" `
-                     -FileNames @("settings.json") `
+    Copy-ConfigFiles -SourceDir "$PSScriptRoot\config\cli" `
+                     -FileNames @("terminal.json") `
                      -TargetDir "$env:USERPROFILE\AppData\Local\Packages\Microsoft.WindowsTerminal_8wekyb3d8bbwe\LocalState" `
+                     -TargetFileNames @("settings.json") `
                      -ConfigName "Windows Terminal"
 }
 
@@ -106,7 +114,7 @@ function Set-PwshConfig {
         Write-Log -Message "Failed to install Terminal-Icons: $($_.Exception.Message)" -Level ERROR
     }
 
-    Copy-ConfigFiles -SourceDir "$PSScriptRoot\config\cli\WindowsPowershell" `
+    Copy-ConfigFiles -SourceDir "$PSScriptRoot\config\cli" `
                      -FileNames @("Microsoft.PowerShell_profile.ps1") `
                      -TargetDir "$env:USERPROFILE\Documents\WindowsPowerShell" `
                      -ConfigName "PowerShell"
@@ -145,7 +153,7 @@ function Set-OhMyPoshConfig {
         }
     }
 
-    Copy-ConfigFiles -SourceDir "$PSScriptRoot\config\cli\ohmyposh" `
+    Copy-ConfigFiles -SourceDir "$PSScriptRoot\config\cli" `
                      -FileNames @("zen.toml") `
                      -TargetDir "$env:USERPROFILE\.config\ohmyposh" `
                      -ConfigName "Oh My Posh"
@@ -184,8 +192,9 @@ function Set-FastFetchConfig {
         }
     }
 
-    Copy-ConfigFiles -SourceDir "$PSScriptRoot\config\cli\fastfetch" `
-                     -FileNames @("cat.txt", "config.jsonc") `
+    Copy-ConfigFiles -SourceDir "$PSScriptRoot\config\cli" `
+                     -FileNames @("cat.txt", "fastfetch.jsonc") `
                      -TargetDir "$env:USERPROFILE\.config\fastfetch" `
+                     -TargetFileNames @("cat.txt", "config.jsonc") `
                      -ConfigName "FastFetch"
 }

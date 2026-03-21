@@ -107,7 +107,7 @@ function Show-AppCategoryMenu {
     }
 }
 
-$Host.UI.RawUI.WindowTitle = "Simplify11 - UniGetUI"
+$Host.UI.RawUI.WindowTitle = "Winrift - App Bundles"
 
 if (-not (Assert-WingetAvailable)) {
     Invoke-ReturnToMenu
