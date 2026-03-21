@@ -1,5 +1,4 @@
 . "$PSScriptRoot\..\..\scripts\Common.ps1"
-# https://github.com/SysadminWorld/Win11Tweaks
 # https://github.com/AlchemyTweaks/Verified-Tweaks
 # https://github.com/SanGraphic/QuickBoost
 # https://github.com/UnLovedCookie/CoutX
@@ -211,40 +210,17 @@ function Invoke-CPUTweaks {
 function Invoke-PowerTweaks {
     Write-Host "`nApplying Power Management tweaks...`n"
 
-    # Disable Power Throttling - unnecessary, especially for desktops
+    # Disable Power Throttling - removes background throttling overhead
     Set-RegistryValue -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Power\PowerThrottling" -Name "PowerThrottlingOff" -Type "DWord" -Value "1" -Message "Disabled power throttling for maximum performance"
 
-    # source - https://github.com/ancel1x/Ancels-Performance-Batch
-    Set-RegistryValue -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Power" -Name "PlatformAoAcOverride" -Type "DWord" -Value "0" -Message "Disabled AC/DC platform power behavior override"
+    # Disable energy estimation overhead
     Set-RegistryValue -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Power" -Name "EnergyEstimationEnabled" -Type "DWord" -Value "0" -Message "Disabled energy estimation for better performance"
     Set-RegistryValue -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Power" -Name "EventProcessorEnabled" -Type "DWord" -Value "0" -Message "Disabled power event processor"
-    Set-RegistryValue -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Power" -Name "CsEnabled" -Type "DWord" -Value "0" -Message "Disabled connected standby for better performance"
 
     # Tagged Energy Logging - source https://www.youtube.com/watch?v=5omPOfsJNSo
     Set-RegistryValue -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Power\EnergyEstimation\TaggedEnergy" -Name "DisableTaggedEnergyLogging" -Type "DWord" -Value "1" -Message "Disabled tagged energy logging"
     Set-RegistryValue -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Power\EnergyEstimation\TaggedEnergy" -Name "TelemetryMaxApplication" -Type "DWord" -Value "0" -Message "Disabled energy telemetry per application"
     Set-RegistryValue -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Power\EnergyEstimation\TaggedEnergy" -Name "TelemetryMaxTagPerApplication" -Type "DWord" -Value "0" -Message "Disabled energy tagging per application"
-
-    # CPU Throttling - prevents idle C-states
-    Set-RegistryValue -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Throttle" -Name "PerfEnablePackageIdle" -Type "DWord" -Value "0" -Message "Disabled CPU package idle states"
-
-    # Processor Power Management
-    Set-RegistryValue -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Processor" -Name "CPPCEnable" -Type "DWord" -Value "0" -Message "Disabled Collaborative Processor Performance Control"
-    Set-RegistryValue -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Processor" -Name "AllowPepPerfStates" -Type "DWord" -Value "0" -Message "Disabled Platform Energy Provider performance states"
-
-    # PCIe Power Saving (ASPM)
-    Set-RegistryValue -Path "HKLM:\SYSTEM\CurrentControlSet\Services\pci\Parameters" -Name "ASPMOptOut" -Type "DWord" -Value "1" -Message "Disabled PCIe ASPM power saving"
-
-    # Activate Hidden Ultimate Performance Power Plan
-    # e9a42b02-... = built-in Ultimate Performance scheme GUID (hidden by default)
-    # eeeeeeee-... = custom GUID for the duplicated plan to avoid conflicts
-    try {
-        powercfg -duplicatescheme e9a42b02-d5df-448d-aa00-03f14749eb61 eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee 2>$null
-        powercfg -setactive eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee
-        Write-Log -Message "Activated Ultimate Performance power plan" -Level SUCCESS
-    } catch {
-        Write-Log -Message "Failed to activate Ultimate Performance plan: $($_.Exception.Message)" -Level ERROR
-    }
 }
 
 function Invoke-SystemResponsivenessTweaks {

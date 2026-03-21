@@ -2,11 +2,31 @@
 
 All tweaks have been tested and compared across multiple sources. Only the most effective values and best practices are included.
 
-> A System Restore Point is automatically created before applying any tweaks.
+## Table of Contents
+
+- [Before You Start](#before-you-start)
+- [Universal Tweaks](#universal-tweaks)
+- [Power Management](#power-management)
+- [GPU-Specific Tweaks](#gpu-specific-tweaks)
+- [Free Up Disk Space](#free-up-disk-space)
+- [How to Revert](#how-to-revert)
+- [Reference Sources](#reference-sources)
+
+## Before You Start
+
+**Compatibility:** Windows 11 22H2 / 23H2 / 24H2 / 25H2
+
+**Safety:** A System Restore Point is automatically created before applying any tweaks.
+
+**Recommended:** Apply tweaks through the [Simplify11](https://github.com/emylfy/simplify11) interface — it lets you pick individual categories and handles everything automatically.
+
+**Risk levels used in this guide:**
+- 🟢 **Safe** — no side effects, can be reverted easily
+- 🟡 **Moderate** — disables features some users may need
 
 ## Universal Tweaks
 
-### 1. System Latency
+### 1. System Latency 🟡
 
 Reduces system-level latency by changing how Windows handles interrupts and timers.
 
@@ -21,7 +41,7 @@ Sources: [Interrupt Steering](https://youtu.be/Gazv0q3njYU), [Timer Serializatio
 
 ---
 
-### 2. Input Device Optimization
+### 2. Input Device Optimization 🟢
 
 Reduces input lag for mouse and keyboard.
 
@@ -30,18 +50,24 @@ Reduces input lag for mouse and keyboard.
 | `MouseDataQueueSize` | 20 | Smaller buffer = faster mouse input processing |
 | `KeyboardDataQueueSize` | 20 | Smaller buffer = faster keyboard input processing |
 | `StickyKeys` | 506 | Disables StickyKeys popup |
+| `ToggleKeys Flags` | 58 | Disables ToggleKeys audio indicator |
 | `DelayBeforeAcceptance` | 0 | No delay before key press is accepted |
 | `AutoRepeatRate` | 0 | Maximum key repeat speed |
 | `AutoRepeatDelay` | 0 | No delay before key repeat starts |
+| `Keyboard Response Flags` | 122 | Disables FilterKeys with all optimizations active |
 
 **Paths:**
 - `HKLM:\SYSTEM\CurrentControlSet\Services\mouclass\Parameters`
 - `HKLM:\SYSTEM\CurrentControlSet\Services\kbdclass\Parameters`
 - `HKCU:\Control Panel\Accessibility`
+- `HKCU:\Control Panel\Accessibility\ToggleKeys`
+- `HKCU:\Control Panel\Accessibility\Keyboard Response`
+
+Sources: [Verified-Tweaks](https://github.com/AlchemyTweaks/Verified-Tweaks), [Latency Optimization](https://github.com/denis-g/windows10-latency-optimization)
 
 ---
 
-### 3. SSD/NVMe Performance
+### 3. SSD/NVMe Performance 🟢
 
 Optimizes storage for solid-state drives. Automatically detects SSD/NVMe presence before applying.
 
@@ -59,9 +85,11 @@ Optimizes storage for solid-state drives. Automatically detects SSD/NVMe presenc
 - `HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem`
 - `HKLM:\System\CurrentControlSet\Control\Session Manager\Memory Management\PrefetchParameters`
 
+Source: [Latency Optimization](https://github.com/denis-g/windows10-latency-optimization)
+
 ---
 
-### 4. GPU Hardware Scheduling
+### 4. GPU Hardware Scheduling 🟡
 
 Enables hardware-accelerated GPU scheduling for lower render latency.
 
@@ -74,9 +102,11 @@ Enables hardware-accelerated GPU scheduling for lower render latency.
 - `HKLM:\SYSTEM\CurrentControlSet\Control\GraphicsDrivers`
 - `HKLM:\SYSTEM\ControlSet001\Control\GraphicsDrivers\Scheduler`
 
+Source: [Latency Optimization](https://github.com/denis-g/windows10-latency-optimization)
+
 ---
 
-### 5. Network Optimization
+### 5. Network Optimization 🟢
 
 Removes bandwidth throttling for maximum throughput.
 
@@ -91,7 +121,7 @@ Source: [Network Tweaks](https://youtu.be/EmdosMT5TtA)
 
 ---
 
-### 6. CPU Performance
+### 6. CPU Performance 🟢
 
 Optimizes CPU scheduling for foreground application performance.
 
@@ -108,34 +138,28 @@ Source: [CPU Tweaks](https://youtu.be/FxpRL7wheGc)
 
 ---
 
-### 7. Power Management
+### 7. Power Management 🟢
 
-Disables power-saving features that reduce performance. Best suited for desktops and plugged-in laptops.
+Disables background power monitoring overhead. Safe for all devices including laptops on battery.
 
-| Action | Effect |
-|---|---|
-| `PowerThrottlingOff = 1` | Disables CPU power throttling |
-| `CsEnabled = 0` | Disables connected standby |
-| `PlatformAoAcOverride = 0` | Disables AC/DC platform override |
-| Energy estimation disabled | Stops background energy tracking |
-| Tagged energy logging disabled | Stops per-app energy telemetry |
-| `PerfEnablePackageIdle = 0` | Disables CPU package idle states |
-| `CPPCEnable = 0` | Disables Collaborative Processor Performance Control |
-| `AllowPepPerfStates = 0` | Disables Platform Energy Provider states |
-| `ASPMOptOut = 1` | Disables PCIe Active State Power Management |
-| Ultimate Performance power plan | Activates hidden high-performance plan |
+| Registry Key | Value | Effect |
+|---|---|---|
+| `PowerThrottlingOff` | 1 | Disables CPU power throttling |
+| `EnergyEstimationEnabled` | 0 | Stops background energy tracking |
+| `EventProcessorEnabled` | 0 | Disables power event processor |
+| `DisableTaggedEnergyLogging` | 1 | Stops per-app energy logging |
+| `TelemetryMaxApplication` | 0 | Disables energy telemetry per application |
+| `TelemetryMaxTagPerApplication` | 0 | Disables energy tagging per application |
 
 **Paths:**
 - `HKLM:\SYSTEM\CurrentControlSet\Control\Power`
-- `HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Throttle`
-- `HKLM:\SYSTEM\CurrentControlSet\Control\Processor`
-- `HKLM:\SYSTEM\CurrentControlSet\Services\pci\Parameters`
+- `HKLM:\SYSTEM\CurrentControlSet\Control\Power\EnergyEstimation\TaggedEnergy`
 
 Sources: [Ancels Performance Batch](https://github.com/ancel1x/Ancels-Performance-Batch), [Power Tweaks](https://youtu.be/5omPOfsJNSo)
 
 ---
 
-### 8. System Responsiveness
+### 8. System Responsiveness 🟡
 
 Prioritizes foreground applications over background services.
 
@@ -153,7 +177,7 @@ Source: [Priority Separation](https://youtu.be/bqDMG1ZS-Yw)
 
 ---
 
-### 9. Boot Optimization
+### 9. Boot Optimization 🟢
 
 Removes artificial delays during Windows startup.
 
@@ -168,7 +192,7 @@ Removes artificial delays during Windows startup.
 
 ---
 
-### 10. System Maintenance
+### 10. System Maintenance 🟡
 
 Disables background maintenance tasks that consume resources.
 
@@ -179,11 +203,17 @@ Disables background maintenance tasks that consume resources.
 | `EncryptProtocol` | 0 | Disables FSS provider encryption overhead |
 | `DisableRpcOver` | 1 | Disables RPC over Task Scheduler |
 
+**Paths:**
+- `HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Schedule\Maintenance`
+- `HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\I/O System`
+- `HKLM:\SOFTWARE\Policies\Microsoft\Windows\fssProv`
+- `HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Schedule`
+
 Source: [System Maintenance](https://youtu.be/5omPOfsJNSo)
 
 ---
 
-### 11. UI Responsiveness
+### 11. UI Responsiveness 🟢
 
 Reduces timeouts and delays in the Windows shell for a snappier feel.
 
@@ -202,7 +232,7 @@ Reduces timeouts and delays in the Windows shell for a snappier feel.
 
 ---
 
-### 12. Memory Optimization
+### 12. Memory Optimization 🟡
 
 Improves memory management for systems with sufficient RAM.
 
@@ -218,7 +248,7 @@ Source: [QuickBoost Memory Tweaks](https://github.com/SanGraphic/QuickBoost)
 
 ---
 
-### 13. DirectX Enhancements
+### 13. DirectX Enhancements 🟢
 
 Enables advanced DirectX 11 and DirectX 12 features for better gaming performance.
 
@@ -241,9 +271,33 @@ Source: [DirectX Tweaks](https://youtu.be/itTcqcJxtbo)
 
 ---
 
+## Power Management 🟡
+
+> **For desktops and plugged-in laptops.** These tweaks disable power-saving features like Connected Standby, CPU idle states, and PCIe ASPM. Skip if running on battery — they will significantly reduce battery life.
+
+| Action | Effect |
+|---|---|
+| `CsEnabled = 0` | Disables Connected Standby |
+| `PlatformAoAcOverride = 0` | Disables AC/DC platform override |
+| `PerfEnablePackageIdle = 0` | Disables CPU package idle states (C-states) |
+| `CPPCEnable = 0` | Disables Collaborative Processor Performance Control |
+| `AllowPepPerfStates = 0` | Disables Platform Energy Provider states |
+| `ASPMOptOut = 1` | Disables PCIe Active State Power Management |
+| Ultimate Performance power plan | Activates hidden high-performance plan |
+
+**Paths:**
+- `HKLM:\SYSTEM\CurrentControlSet\Control\Power`
+- `HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Throttle`
+- `HKLM:\SYSTEM\CurrentControlSet\Control\Processor`
+- `HKLM:\SYSTEM\CurrentControlSet\Services\pci\Parameters`
+
+Sources: [Ancels Performance Batch](https://github.com/ancel1x/Ancels-Performance-Batch), [Power Tweaks](https://youtu.be/5omPOfsJNSo)
+
+---
+
 ## GPU-Specific Tweaks
 
-### NVIDIA
+### NVIDIA 🟢
 
 Enables per-CPU core DPC (Deferred Procedure Call) processing across all NVIDIA driver paths to reduce GPU-related latency.
 
@@ -258,7 +312,7 @@ Applied to:
 
 Source: [AlchemyTweaks NVIDIA](https://github.com/AlchemyTweaks/Verified-Tweaks)
 
-### AMD
+### AMD 🟡
 
 Optimizes AMD Radeon drivers by disabling power-saving features and minimizing latencies.
 
@@ -299,19 +353,27 @@ Removes old component versions from the Windows component store.
 dism /Online /Cleanup-Image /StartComponentCleanup /ResetBase /RestoreHealth
 ```
 
-### 3. Remove Virtual Memory
-Deletes the page file. Only recommended for systems with 16GB+ RAM.
-
-Sets `PagingFiles` to empty in `HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Memory Management`
-
-### 4. PC Manager
+### 3. PC Manager
 Installs and launches Microsoft PC Manager — official utility for system cleanup and optimization.
+
+---
+
+## How to Revert
+
+1. **System Restore** — a restore point is created automatically before any tweaks are applied. Open `rstrui.exe` and select the restore point to undo all changes at once.
+
+2. **Manual** — delete the modified registry keys or set them back to their default values, then reboot. Default values for each key can be found in the linked sources above.
+
+3. **System repair** — if something breaks beyond registry changes:
+   ```
+   DISM /Online /Cleanup-Image /RestoreHealth
+   sfc /scannow
+   ```
 
 ---
 
 ## Reference Sources
 
-- [SysadminWorld/Win11Tweaks](https://github.com/SysadminWorld/Win11Tweaks)
 - [AlchemyTweaks/Verified-Tweaks](https://github.com/AlchemyTweaks/Verified-Tweaks)
 - [SanGraphic/QuickBoost](https://github.com/SanGraphic/QuickBoost)
 - [UnLovedCookie/CoutX](https://github.com/UnLovedCookie/CoutX)

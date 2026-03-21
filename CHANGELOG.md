@@ -5,7 +5,25 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project uses [Calendar Versioning](https://calver.org/) (YY.M format).
 
-## [26.3] - 2026-03-16
+## [26.3] - 2026-03-21
+
+### March 21 — Power Management split, driver improvements, security hardening, docs overhaul
+
+- Added `Tweaks.Power.ps1` — aggressive power tweaks extracted into separate module with AC power warning
+- Added `Assert-WingetAvailable` in `Common.ps1` — auto-installs winget via `Add-AppxPackage`, falls back to Microsoft Store
+- Added `Install-IntelDSA` in `Drivers.ps1` — Intel Driver & Support Assistant auto-install via winget
+- Added registry write verification in `Set-RegistryValue` — reads back value after write to confirm success
+- Added winget availability checks to Drivers, Tweaks.Cleanup, and UniGetUI modules
+- Added `Initialize-Logging` to Drivers and UniGetUI modules
+- Added input path validation in `Set-OtherVSCConfig`
+- Added 25H2 to README compatibility table
+- Changed `Invoke-SecureScript` hash mismatch from WARNING to hard ERROR with throw
+- Changed `Invoke-AMDTweaks` — dynamically detects AMD GPU device index instead of assuming `\0000`
+- Changed `Invoke-PowerTweaks` — split into lightweight (Universal) and aggressive (separate Power Management menu)
+- Changed Drivers menu — split into GPU drivers (NVIDIA/AMD/Intel) and OEM manufacturer sections
+- Changed `tweaks_guide.md` — added Table of Contents, Before You Start, risk levels, Power Management section, How to Revert, missing source attributions
+- Changed `autounattend_guide.md` — updated Method 3 to tiny11maker-reforged with 25H2 support; added Unattend-Generator re-import tip
+- Changed README — removed duplicate tweak description, fixed emoji duplication, added tweaks guide link
 
 ### March 16 — Secure tool dispatch, `Invoke-Tool` refactor, and expanded tests
 

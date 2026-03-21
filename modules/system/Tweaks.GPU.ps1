@@ -50,8 +50,28 @@ function Invoke-AMDTweaks {
 
     # source - https://youtu.be/nuUV2RoPOWc , https://github.com/AlchemyTweaks/Verified-Tweaks/blob/main/AMD%20Radeon/AMD%20Tweak%20Melody
     # {4d36e968-e325-11ce-bfc1-08002be10318} = Display Adapters device class GUID
-    # \0000 = first/primary display adapter instance
-    $amdPath = "HKLM:\SYSTEM\CurrentControlSet\Control\Class\{4d36e968-e325-11ce-bfc1-08002be10318}\0000"
+    # Detect AMD GPU device index dynamically instead of assuming \0000
+    $classPath = "HKLM:\SYSTEM\CurrentControlSet\Control\Class\{4d36e968-e325-11ce-bfc1-08002be10318}"
+    $amdPath = $null
+    foreach ($idx in @("0000", "0001", "0002", "0003")) {
+        $devPath = "$classPath\$idx"
+        if (Test-Path $devPath) {
+            $provider = (Get-ItemProperty -Path $devPath -Name "ProviderName" -ErrorAction SilentlyContinue).ProviderName
+            if ($provider -match "AMD|ATI|Advanced Micro Devices") {
+                $amdPath = $devPath
+                break
+            }
+        }
+    }
+    if (-not $amdPath) {
+        Write-Log -Message "No AMD GPU found in display adapter registry. Skipping AMD tweaks." -Level WARNING
+        if (-not $NoExit) {
+            Write-Host "`n$Purple Press any key to return to the GPU menu...$Reset"
+            $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
+        }
+        return
+    }
+    Write-Log -Message "Found AMD GPU at $amdPath" -Level INFO
     Set-RegistryValue -Path $amdPath -Name "AllowSnapshot" -Type "DWord" -Value "0" -Message "Disabled AMD snapshot feature"
     Set-RegistryValue -Path $amdPath -Name "AllowSubscription" -Type "DWord" -Value "0" -Message "Disabled AMD subscription feature"
     Set-RegistryValue -Path $amdPath -Name "AllowRSOverlay" -Type "String" -Value "false" -Message "Disabled AMD RS overlay"

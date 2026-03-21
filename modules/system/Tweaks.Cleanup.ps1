@@ -30,6 +30,7 @@ function Clear-SystemSpace {
             Read-Host "Press Enter to continue"
         }
         "3" = {
+            if (-not (Assert-WingetAvailable)) { Read-Host "Press Enter to continue"; return }
             Write-Log -Message "Installing PC Manager..." -Level INFO
             & winget install Microsoft.PCManager --accept-package-agreements --accept-source-agreements
 
