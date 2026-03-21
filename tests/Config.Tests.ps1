@@ -1,13 +1,13 @@
 BeforeDiscovery {
     $repoRoot = Split-Path $PSScriptRoot -Parent
-    $bundleDir = Join-Path $repoRoot 'config' 'bundles'
+    $bundleDir = Join-Path (Join-Path $repoRoot 'config') 'bundles'
     $bundleFiles = Get-ChildItem -Path $bundleDir -Filter '*.ubundle'
 }
 
 Describe 'version.json' {
     BeforeAll {
         $repoRoot = Split-Path $PSScriptRoot -Parent
-        $versionFile = Join-Path $repoRoot 'config' 'version.json'
+        $versionFile = Join-Path (Join-Path $repoRoot 'config') 'version.json'
         $content = Get-Content $versionFile -Raw
         $json = $content | ConvertFrom-Json
     }
@@ -32,7 +32,7 @@ Describe 'version.json' {
 Describe 'tools.json' {
     BeforeAll {
         $repoRoot = Split-Path $PSScriptRoot -Parent
-        $toolsFile = Join-Path $repoRoot 'config' 'tools.json'
+        $toolsFile = Join-Path (Join-Path $repoRoot 'config') 'tools.json'
         $content = Get-Content $toolsFile -Raw
         $json = $content | ConvertFrom-Json
     }
@@ -96,7 +96,7 @@ Describe 'tools.json' {
 Describe 'Bundle files' {
     BeforeAll {
         $repoRoot = Split-Path $PSScriptRoot -Parent
-        $bundleDir = Join-Path $repoRoot 'config' 'bundles'
+        $bundleDir = Join-Path (Join-Path $repoRoot 'config') 'bundles'
         $bundleFiles = Get-ChildItem -Path $bundleDir -Filter '*.ubundle'
     }
 

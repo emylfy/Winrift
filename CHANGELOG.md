@@ -7,6 +7,19 @@ and this project uses [Calendar Versioning](https://calver.org/) (YY.M format).
 
 ## [26.3] - 2026-03-21
 
+### March 21 — PowerShell 5.1 compatibility, test fixes, encoding cleanup
+
+- Fixed all PS 7+ `$var = if () {} else {}` assignment syntax across `Common.ps1` (4 instances), `simplify11.ps1`, `UniGetUI.ps1` for PS 5.1 compatibility
+- Fixed `simplify11.ps1` version.json path from root to `config/version.json` (was always showing "unknown")
+- Fixed em-dash (U+2014) characters in `Common.ps1`, `Tweaks.Universal.ps1`, `ExternalLauncher.ps1` replaced with ASCII hyphen to resolve `PSUseBOMForUnicodeEncodedFile` warnings and PS 5.1 parse failures on files without BOM
+- Fixed trailing whitespace in `Organizer.ps1`
+- Fixed `Join-Path` calls with 3+ arguments in `Common.Tests.ps1`, `Common.Utilities.Tests.ps1`, `Config.Tests.ps1`, `ExternalLauncher.Tests.ps1` for PS 5.1 (only supports 2-argument `Join-Path`)
+- Fixed `Invoke-SecureScript` test to match actual `throw` behavior on hash mismatch
+- Fixed `Invoke-Tool` tests with missing `Mock Confirm-ExternalTool` to prevent null reference from unmocked `Read-Host`
+- Fixed `Invoke-HybridTweaks` in `Tweaks.GPU.ps1` — no longer reports success when a GPU is not detected; now checks return values from both `Invoke-NvidiaTweaks` and `Invoke-AMDTweaks`
+- Added NVIDIA GPU detection to `Invoke-NvidiaTweaks` — scans display adapter registry before applying tweaks, skips with WARNING if not found
+- Changed `Invoke-NvidiaTweaks` and `Invoke-AMDTweaks` to return `$true`/`$false` indicating whether tweaks were applied
+
 ### March 21 — Power Management split, driver improvements, security hardening, docs overhaul
 
 - Added `Tweaks.Power.ps1` — aggressive power tweaks extracted into separate module with AC power warning

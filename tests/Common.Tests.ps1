@@ -1,5 +1,5 @@
 BeforeAll {
-    . (Join-Path (Split-Path $PSScriptRoot -Parent) 'scripts' 'Common.ps1')
+    . (Join-Path (Join-Path (Split-Path $PSScriptRoot -Parent) 'scripts') 'Common.ps1')
 }
 
 Describe 'Color variables' {

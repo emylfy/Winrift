@@ -1,7 +1,7 @@
 Describe 'ExternalLauncher.ps1' {
     BeforeAll {
         $repoRoot = Split-Path $PSScriptRoot -Parent
-        $scriptPath = Join-Path $repoRoot 'modules' 'tools' 'ExternalLauncher.ps1'
+        $scriptPath = Join-Path (Join-Path (Join-Path $repoRoot 'modules') 'tools') 'ExternalLauncher.ps1'
     }
 
     It 'parses without errors' {

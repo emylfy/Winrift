@@ -193,7 +193,7 @@ function Invoke-NetworkTweaks {
 
     # Disable network throttling - especially helpful with gigabit networks
     # source - https://youtu.be/EmdosMT5TtA
-    # 4294967295 = 0xFFFFFFFF (max DWORD) — effectively disables network throttling
+    # 4294967295 = 0xFFFFFFFF (max DWORD) - effectively disables network throttling
     Set-RegistryValue -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile" -Name "NetworkThrottlingIndex" -Type "DWord" -Value "4294967295" -Message "Disabled network throttling for maximum network performance"
     Set-RegistryValue -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile" -Name "NoLazyMode" -Type "DWord" -Value "1" -Message "Disabled lazy mode for network operations"
 }

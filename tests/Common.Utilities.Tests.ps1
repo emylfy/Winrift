@@ -1,5 +1,5 @@
 BeforeAll {
-    . (Join-Path (Split-Path $PSScriptRoot -Parent) 'scripts' 'Common.ps1')
+    . (Join-Path (Join-Path (Split-Path $PSScriptRoot -Parent) 'scripts') 'Common.ps1')
 }
 
 Describe 'Get-ToolConfig' {
@@ -120,12 +120,12 @@ Describe 'Invoke-SecureDownload hash verification' {
 }
 
 Describe 'Invoke-SecureScript hash verification' {
-    It 'warns on hash mismatch but does not throw' {
+    It 'throws on hash mismatch' {
         Mock Invoke-RestMethod { return 'Write-Host "mock script"' }
         Mock Invoke-Expression {}
 
         { Invoke-SecureScript -Url 'https://example.com/script.ps1' -ToolName 'TestScript' `
-            -ExpectedHash 'AAAA1111BBBB2222CCCC3333DDDD4444EEEE5555FFFF6666AAAA7777BBBB8888' 6>&1 | Out-Null } | Should -Not -Throw
+            -ExpectedHash 'AAAA1111BBBB2222CCCC3333DDDD4444EEEE5555FFFF6666AAAA7777BBBB8888' 6>&1 | Out-Null } | Should -Throw '*Hash verification failed*'
     }
 
     It 'skips verification when ExpectedHash is empty' {
@@ -155,6 +155,7 @@ Describe 'Invoke-Tool' {
 
     It 'calls Invoke-SecureScript for irm tools' {
         Mock Invoke-SecureScript {}
+        Mock Confirm-ExternalTool { return $true }
         Mock Get-ToolConfig {
             return [PSCustomObject]@{
                 id = 'test-irm'; name = 'Test'; type = 'irm'
@@ -183,6 +184,7 @@ Describe 'Invoke-Tool' {
 
     It 'opens fallbackUrl on failure' {
         Mock Invoke-SecureScript { throw "Download failed" }
+        Mock Confirm-ExternalTool { return $true }
         Mock Start-Process {}
         Mock Get-ToolConfig {
             return [PSCustomObject]@{

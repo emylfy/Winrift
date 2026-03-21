@@ -146,7 +146,7 @@ function Set-RegistryValue {
 
         $written = (Get-ItemProperty -Path $Path -Name $Name -ErrorAction SilentlyContinue).$Name
         if ($null -eq $written) {
-            Write-Log -Message "Failed to verify $Name at $Path — value not found after write" -Level ERROR
+            Write-Log -Message "Failed to verify $Name at $Path - value not found after write" -Level ERROR
         } else {
             Write-Log -Message $Message -Level SUCCESS
         }
@@ -294,7 +294,7 @@ function Invoke-Tool {
     }
 
     try {
-        $hash = if ($tool.sha256) { $tool.sha256 } else { "" }
+        if ($tool.sha256) { $hash = $tool.sha256 } else { $hash = "" }
         switch ($tool.type) {
             "irm" {
                 Invoke-SecureScript -Url $tool.url -ToolName $tool.name -ExpectedHash $hash
@@ -319,14 +319,14 @@ function Invoke-Tool {
             }
         }
 
-        $msg = if ($SuccessMessage) { $SuccessMessage } else { "$($tool.name) completed successfully." }
+        if ($SuccessMessage) { $msg = $SuccessMessage } else { $msg = "$($tool.name) completed successfully." }
         Write-Log -Message $msg -Level SUCCESS
         if ($OnSuccess -and $tool.type -ne "download") {
             & $OnSuccess
         }
         return $true
     } catch {
-        $msg = if ($ErrorMessage) { $ErrorMessage } else { "Failed to run $($tool.name)" }
+        if ($ErrorMessage) { $msg = $ErrorMessage } else { $msg = "Failed to run $($tool.name)" }
         Write-Log -Message "${msg}: $($_.Exception.Message)" -Level ERROR
         if ($tool.fallbackUrl) {
             Write-Log -Message "Opening fallback page..." -Level INFO
@@ -366,7 +366,7 @@ function Invoke-NativeCommand {
     try {
         $output = & $Command @Arguments 2>&1
         if ($null -ne $LASTEXITCODE -and $LASTEXITCODE -ne 0) {
-            $msg = if ($ErrorMessage) { $ErrorMessage } else { "Command failed: $Command $($Arguments -join ' ')" }
+            if ($ErrorMessage) { $msg = $ErrorMessage } else { $msg = "Command failed: $Command $($Arguments -join ' ')" }
             Write-Log -Message "$msg (exit code: $LASTEXITCODE)" -Level ERROR
             return $false
         }
@@ -375,7 +375,7 @@ function Invoke-NativeCommand {
         }
         return $true
     } catch {
-        $msg = if ($ErrorMessage) { $ErrorMessage } else { "Command failed: $Command" }
+        if ($ErrorMessage) { $msg = $ErrorMessage } else { $msg = "Command failed: $Command" }
         Write-Log -Message "$msg - $($_.Exception.Message)" -Level ERROR
         return $false
     }

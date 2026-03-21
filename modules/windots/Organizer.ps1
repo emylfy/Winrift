@@ -58,10 +58,10 @@ function Test-IsExcluded {
 if (-not ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator) -and
     (Test-Path -Path $targetPaths[1])) {
     Write-Log -Message "Administrator rights required for system directory!" -Level ERROR
-    
+
     $adminLaunchPath = Join-Path -Path $PSScriptRoot -ChildPath "..\..\scripts\AdminLaunch.ps1"
     . $adminLaunchPath
-    
+
     Start-AdminProcess -ScriptPath $PSCommandPath
     exit
 }
@@ -124,9 +124,9 @@ foreach ($targetDir in $targetPaths) {
         do {
             $response = Read-Host "`nMove $($files.Count) files from '$folderName'? (Y/N/Q)"
             $response = $response.Trim().ToUpper()
-            if ($response -eq 'Q') { 
+            if ($response -eq 'Q') {
                 Write-Log -Message "Operation cancelled by user." -Level WARNING
-                exit 
+                exit
             }
         } until ($response -match '^[YN]$')
 
@@ -137,7 +137,7 @@ foreach ($targetDir in $targetPaths) {
 
         $movedCount = 0
         $errors = @()
-        
+
         foreach ($file in $files) {
             try {
                 $destination = Join-Path -Path $targetDir -ChildPath $file.Name

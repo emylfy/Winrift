@@ -2,7 +2,7 @@
 $PSScriptRoot | Set-Content "$env:TEMP\simplify11_launchdir.txt" -Force
 
 # Load version from version.json
-$versionFile = Join-Path $PSScriptRoot "version.json"
+$versionFile = Join-Path $PSScriptRoot "config\version.json"
 if (Test-Path $versionFile) {
     $versionInfo = Get-Content $versionFile -Raw | ConvertFrom-Json
     $script:AppVersion = $versionInfo.version
@@ -92,7 +92,7 @@ function Show-MainMenu {
             continue outerLoop
         }
 
-        $targetScript = if (-not $isExternal) { $scriptPaths[$choice] } else { $null }
+        if (-not $isExternal) { $targetScript = $scriptPaths[$choice] } else { $targetScript = $null }
 
         if (-not $isExternal) {
             if (-not (Test-Path $targetScript)) {
