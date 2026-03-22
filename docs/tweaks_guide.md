@@ -18,7 +18,7 @@ All tweaks have been tested and compared across multiple sources. Only the most 
 
 **Safety:** A System Restore Point is automatically created before applying any tweaks.
 
-**Recommended:** Apply tweaks through the [Simplify11](https://github.com/emylfy/simplify11) interface — it lets you pick individual categories and handles everything automatically.
+**Recommended:** Apply tweaks through the [Winrift](https://github.com/emylfy/winrift) interface — it lets you pick individual categories and handles everything automatically.
 
 **Risk levels used in this guide:**
 - 🟢 **Safe** — no side effects, can be reverted easily

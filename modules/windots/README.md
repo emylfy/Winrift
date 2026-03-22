@@ -1,12 +1,12 @@
 <h1 align="center">Windots</h1>
 
 <p align="center">
-  <a href="https://github.com/emylfy/simplify11/stargazers"><img src="https://img.shields.io/github/stars/emylfy/simplify11?style=for-the-badge&logo=starship&color=C9CBFF&logoColor=C9CBFF&labelColor=302D41" alt="GitHub Stars"></a>&nbsp;&nbsp;
-  <a href="https://github.com/emylfy/simplify11/blob/main/LICENSE"><img src="https://img.shields.io/github/license/emylfy/simplify11?style=for-the-badge&logo=apache&color=CBA6F7&logoColor=CBA6F7&labelColor=302D41&label=License" alt="License"></a>&nbsp;&nbsp;
-  <a href="https://github.com/emylfy/simplify11/commits/main/"><img src="https://img.shields.io/github/last-commit/emylfy/simplify11?style=for-the-badge&logo=github&logoColor=eba0ac&label=Last%20Commit&labelColor=302D41&color=eba0ac" alt="Last Commit"></a>
+  <a href="https://github.com/emylfy/winrift/stargazers"><img src="https://img.shields.io/github/stars/emylfy/winrift?style=for-the-badge&logo=starship&color=C9CBFF&logoColor=C9CBFF&labelColor=302D41" alt="GitHub Stars"></a>&nbsp;&nbsp;
+  <a href="https://github.com/emylfy/winrift/blob/main/LICENSE"><img src="https://img.shields.io/github/license/emylfy/winrift?style=for-the-badge&logo=apache&color=CBA6F7&logoColor=CBA6F7&labelColor=302D41&label=License" alt="License"></a>&nbsp;&nbsp;
+  <a href="https://github.com/emylfy/winrift/commits/main/"><img src="https://img.shields.io/github/last-commit/emylfy/winrift?style=for-the-badge&logo=github&logoColor=eba0ac&label=Last%20Commit&labelColor=302D41&color=eba0ac" alt="Last Commit"></a>
 </p>
 
-> Part of the [Simplify11](https://github.com/emylfy/simplify11) toolkit — the complete Windows 11 post-install pipeline.
+> Part of the [Winrift](https://github.com/emylfy/winrift) toolkit — the complete Windows 11 post-install pipeline.
 
 ---
 
@@ -26,18 +26,10 @@ Collection of configurations and tools to transform your Windows 11 into an eleg
 
 ## Quick Launch
 
-Launch via Simplify11 (recommended):
+Launch via Winrift (recommended):
 
 ```powershell
-irm https://raw.githubusercontent.com/emylfy/simplify11/main/scripts/launch.ps1 | iex
-```
-
-Then select **[5] Windots** from the main menu.
-
-Or launch Windots standalone:
-
-```powershell
-irm https://raw.githubusercontent.com/emylfy/simplify11/main/modules/windots/Windots.ps1 | iex
+irm https://raw.githubusercontent.com/emylfy/winrift/main/scripts/launch.ps1 | iex
 ```
 
 ---
@@ -83,5 +75,5 @@ Windows shell and UI adjustments applied via registry.
 ---
 
 <div align="center">
-  <a href="https://github.com/emylfy/simplify11">Back to Simplify11</a>
+  <a href="https://github.com/emylfy/winrift">Back to Winrift</a>
 </div>

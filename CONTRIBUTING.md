@@ -1,13 +1,13 @@
-# Contributing to Simplify11
+# Contributing to Winrift
 
-Thanks for your interest in contributing to Simplify11! This guide will help you get started.
+Thanks for your interest in contributing to Winrift! This guide will help you get started.
 
 ## Getting Started
 
 1. **Fork** the repository on GitHub
 2. **Clone** your fork locally:
    ```
-   git clone https://github.com/YOUR-USERNAME/simplify11.git
+   git clone https://github.com/YOUR-USERNAME/winrift.git
    ```
 3. **Create a branch** for your changes:
    ```
@@ -16,7 +16,7 @@ Thanks for your interest in contributing to Simplify11! This guide will help you
 
 ## Development Setup
 
-Simplify11 is a PowerShell-based project. You'll need:
+Winrift is a PowerShell-based project. You'll need:
 
 - Windows 11 (for testing) — [Download Windows 11 ISO](https://www.microsoft.com/software-download/windows11)
 - PowerShell 5.1+ (included with Windows)
@@ -56,8 +56,8 @@ Testing tweaks on a live system can cause irreversible changes. Use a Windows 11
 ### Project Structure
 
 ```
-simplify11/
-├── simplify11.ps1          # Main entry point
+winrift/
+├── winrift.ps1          # Main entry point
 ├── version.json            # Version metadata
 ├── scripts/                # Core scripts (admin launch, common utilities)
 ├── modules/

@@ -1,6 +1,6 @@
 # Testing & Benchmarks
 
-Simplify11 includes a built-in performance benchmark that measures real system metrics before and after applying tweaks.
+Winrift includes a built-in performance benchmark that measures real system metrics before and after applying tweaks.
 
 ## Quick Start
 
@@ -11,7 +11,7 @@ Simplify11 includes a built-in performance benchmark that measures real system m
 Invoke-Benchmark -Phase Before
 ```
 
-**Step 2.** Apply your tweaks through the Simplify11 menu.
+**Step 2.** Apply your tweaks through the Winrift menu.
 
 **Step 3.** Run the benchmark **after** tweaks (reboot recommended first):
 
@@ -20,7 +20,7 @@ Invoke-Benchmark -Phase Before
 Invoke-Benchmark -Phase After
 ```
 
-The comparison report is displayed automatically and saved to `%USERPROFILE%\Simplify11\benchmarks\`.
+The comparison report is displayed automatically and saved to `%USERPROFILE%\Winrift\benchmarks\`.
 
 To re-view the last report without collecting new data:
 
@@ -54,7 +54,7 @@ The report shows a comparison table:
 
 ```
  +------------------------------------------------------------------+
- ' Simplify11 Performance Report                                    '
+ ' Winrift Performance Report                                    '
  +------------------------------------------------------------------+
  '   Metric                    Before       After       Change      '
  +------------------------------------------------------------------+
@@ -86,7 +86,7 @@ Actual results depend on hardware, installed software, and which tweak categorie
 
 ## Output Files
 
-All benchmark data is stored in `%USERPROFILE%\Simplify11\benchmarks\`:
+All benchmark data is stored in `%USERPROFILE%\Winrift\benchmarks\`:
 
 | File | Description |
 | :--- | :--- |

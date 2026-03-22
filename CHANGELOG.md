@@ -9,7 +9,14 @@ and this project uses [Calendar Versioning](https://calver.org/) (YY.M format).
 
 ### March 22 — Rebrand to Winrift, menu restructure, benchmark promotion, config flatten
 
-- Rebranded project from Simplify11 to Winrift across all window titles, menus, and benchmark reports
+- Rebranded project from Simplify11 to Winrift across all files, URLs, window titles, menus, reports, docs, and issue templates
+- Renamed `simplify11.ps1` to `winrift.ps1`; updated all references in `Common.ps1`, `launch.ps1`, `install.ps1`
+- Changed temp file from `simplify11_launchdir.txt` to `winrift_launchdir.txt`
+- Changed user data directories from `~/Simplify11/` to `~/Winrift/` (logs, benchmarks)
+- Changed `version.json` repo field from `emylfy/simplify11` to `emylfy/winrift`
+- Updated all GitHub URLs, badge links, shortcut names, and ASCII art across README, CONTRIBUTING, Windots README, docs, and autounattend.xml
+- Updated README tagline to "Break through default Windows" with benchmark-first positioning
+- Rewrote README: features as compact table, Community Tools in collapsible `<details>` block, Answer File merged into features table, navigation links, placeholder images commented out until real files exist, honest benchmark disclaimer ("your numbers will vary")
 - Restructured main menu: promoted Benchmark to #1 position as the primary feature
 - Consolidated 5 external tool launchers (WinUtil, WinScript, Sparkle, GTweak) into a single "Community Tools" submenu
 - Moved Answer File guide from main menu into new "Docs & Guides" submenu alongside Tweaks Guide and Benchmark Guide
