@@ -57,7 +57,7 @@ Testing tweaks on a live system can cause irreversible changes. Use a Windows 11
 
 ```
 winrift/
-├── winrift.ps1          # Main entry point
+├── Winrift.ps1          # Main entry point
 ├── version.json            # Version metadata
 ├── scripts/                # Core scripts (admin launch, common utilities)
 ├── modules/

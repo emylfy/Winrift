@@ -35,7 +35,7 @@ function Invoke-ReturnToMenu {
     $launchDirFile = "$env:TEMP\winrift_launchdir.txt"
     if (Test-Path $launchDirFile) {
         $rootPath = (Get-Content $launchDirFile -Raw).Trim()
-        $mainScript = Join-Path $rootPath "winrift.ps1"
+        $mainScript = Join-Path $rootPath "Winrift.ps1"
         if (Test-Path $mainScript) {
             & $mainScript
             return
@@ -279,7 +279,8 @@ function Invoke-Tool {
         [string]$SuccessMessage,
         [string]$ErrorMessage,
         [scriptblock]$OnSuccess,
-        [switch]$Wait
+        [switch]$Wait,
+        [switch]$SkipConfirm
     )
 
     $tool = Get-ToolConfig $ToolId
@@ -288,7 +289,7 @@ function Invoke-Tool {
         return $false
     }
 
-    if ($tool.type -in @("irm", "download")) {
+    if ($tool.type -in @("irm", "download") -and -not $SkipConfirm) {
         $confirmed = Confirm-ExternalTool -Tool $tool
         if (-not $confirmed) {
             Write-Log -Message "User cancelled $($tool.name) launch." -Level INFO

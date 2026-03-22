@@ -95,14 +95,6 @@
 	"editor.suggestSelection": "first", // Always pre-select the first suggestion in the list
 	"editor.tabSize": 2, // Tab width equals 2 spaces
 	"editor.unicodeHighlight.ambiguousCharacters": false, // Don't warn about visually ambiguous unicode characters
-	"editor.unicodeHighlight.allowedCharacters": { // Whitelist specific Cyrillic characters to avoid false warnings
-		"а": true,
-		"с": true,
-		"Т": true,
-		"б": true,
-		"е": true,
-		" ": true
-	},
 	"editor.wordWrapColumn": 80, // Wrap lines at column 80 (when word wrap is enabled)
 	"editor.wrappingIndent": "same", // Wrapped lines keep the same indentation level
 
@@ -242,7 +234,7 @@
 		"tsx": true,
 		"vue": true
 	},
-	"cSpell.language": "en,ru", // Check spelling in both English and Russian
+	"cSpell.language": "en", // Check spelling in English
 
 	// ─── Misc ─────────────────────────────────────────────────────────────────
 	// Security, AI features, debug, and extension settings

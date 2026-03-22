@@ -5,6 +5,26 @@
 # https://github.com/Snowfliger/SyncOS
 # https://github.com/denis-g/windows10-latency-optimization
 
+# Named Constants
+# Accessibility flag values (Windows accessibility registry format)
+$STICKY_KEYS_DISABLED      = "506"  # StickyKeys off — prevents popup on 5x Shift
+$TOGGLE_KEYS_DISABLED      = "58"   # ToggleKeys audio indicator off
+$FILTER_KEYS_DISABLED      = "122"  # FilterKeys off with all response optimizations active
+# Input buffer sizes (smaller = faster processing, default is 100)
+$INPUT_QUEUE_SIZE           = "20"
+# Network
+$NETWORK_THROTTLING_OFF     = "4294967295"  # 0xFFFFFFFF — disables network throttling
+# CPU multimedia scheduler
+$LAZY_MODE_TIMEOUT_MS       = "25000"  # 25ms lazy mode timeout for MMCSS
+# Process priority — short interval, variable length, high foreground boost (2:1)
+$PRIORITY_SEPARATION        = "0x00000024"
+# UI timeouts (milliseconds)
+$HUNG_APP_TIMEOUT_MS        = "1000"
+$WAIT_KILL_APP_TIMEOUT_MS   = "2000"
+$LOW_LEVEL_HOOKS_TIMEOUT_MS = "1000"
+$MENU_SHOW_DELAY_MS         = "0"
+$WAIT_KILL_SVC_TIMEOUT_MS   = "2000"
+
 function Invoke-UniversalTweaks {
     while ($true) {
         Clear-Host
@@ -122,19 +142,16 @@ function Invoke-InputDeviceTweaks {
     Write-Host "`nApplying Input Device tweaks...`n"
 
     # MouseDataQueueSize and KeyboardDataQueueSize - smaller buffer = faster processing
-    Set-RegistryValue -Path "HKLM:\SYSTEM\CurrentControlSet\Services\mouclass\Parameters" -Name "MouseDataQueueSize" -Type "DWord" -Value "20" -Message "Optimized mouse input buffer size"
-    Set-RegistryValue -Path "HKLM:\SYSTEM\CurrentControlSet\Services\kbdclass\Parameters" -Name "KeyboardDataQueueSize" -Type "DWord" -Value "20" -Message "Optimized keyboard input buffer size"
+    Set-RegistryValue -Path "HKLM:\SYSTEM\CurrentControlSet\Services\mouclass\Parameters" -Name "MouseDataQueueSize" -Type "DWord" -Value $INPUT_QUEUE_SIZE -Message "Optimized mouse input buffer size"
+    Set-RegistryValue -Path "HKLM:\SYSTEM\CurrentControlSet\Services\kbdclass\Parameters" -Name "KeyboardDataQueueSize" -Type "DWord" -Value $INPUT_QUEUE_SIZE -Message "Optimized keyboard input buffer size"
 
     # Accessibility and keyboard response settings
-    # 506 = StickyKeys disabled (prevents popup when pressing Shift 5 times)
-    Set-RegistryValue -Path "HKCU:\Control Panel\Accessibility" -Name "StickyKeys" -Type "String" -Value "506" -Message "Disabled StickyKeys for better gaming experience"
-    # 58 = ToggleKeys audio indicator disabled
-    Set-RegistryValue -Path "HKCU:\Control Panel\Accessibility\ToggleKeys" -Name "Flags" -Type "String" -Value "58" -Message "Modified ToggleKeys behavior"
+    Set-RegistryValue -Path "HKCU:\Control Panel\Accessibility" -Name "StickyKeys" -Type "String" -Value $STICKY_KEYS_DISABLED -Message "Disabled StickyKeys for better gaming experience"
+    Set-RegistryValue -Path "HKCU:\Control Panel\Accessibility\ToggleKeys" -Name "Flags" -Type "String" -Value $TOGGLE_KEYS_DISABLED -Message "Modified ToggleKeys behavior"
     Set-RegistryValue -Path "HKCU:\Control Panel\Accessibility\Keyboard Response" -Name "DelayBeforeAcceptance" -Type "String" -Value "0" -Message "Removed keyboard input delay"
     Set-RegistryValue -Path "HKCU:\Control Panel\Accessibility\Keyboard Response" -Name "AutoRepeatRate" -Type "String" -Value "0" -Message "Optimized key repeat rate"
     Set-RegistryValue -Path "HKCU:\Control Panel\Accessibility\Keyboard Response" -Name "AutoRepeatDelay" -Type "String" -Value "0" -Message "Removed key repeat delay"
-    # 122 = FilterKeys disabled with all keyboard response optimizations active
-    Set-RegistryValue -Path "HKCU:\Control Panel\Accessibility\Keyboard Response" -Name "Flags" -Type "String" -Value "122" -Message "Modified keyboard response flags"
+    Set-RegistryValue -Path "HKCU:\Control Panel\Accessibility\Keyboard Response" -Name "Flags" -Type "String" -Value $FILTER_KEYS_DISABLED -Message "Modified keyboard response flags"
 }
 
 function Invoke-SSDTweaks {
@@ -193,8 +210,7 @@ function Invoke-NetworkTweaks {
 
     # Disable network throttling - especially helpful with gigabit networks
     # source - https://youtu.be/EmdosMT5TtA
-    # 4294967295 = 0xFFFFFFFF (max DWORD) - effectively disables network throttling
-    Set-RegistryValue -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile" -Name "NetworkThrottlingIndex" -Type "DWord" -Value "4294967295" -Message "Disabled network throttling for maximum network performance"
+    Set-RegistryValue -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile" -Name "NetworkThrottlingIndex" -Type "DWord" -Value $NETWORK_THROTTLING_OFF -Message "Disabled network throttling for maximum network performance"
     Set-RegistryValue -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile" -Name "NoLazyMode" -Type "DWord" -Value "1" -Message "Disabled lazy mode for network operations"
 }
 
@@ -202,8 +218,7 @@ function Invoke-CPUTweaks {
     Write-Host "`nApplying CPU Performance tweaks...`n"
 
     # source - https://youtu.be/FxpRL7wheGc
-    # 25000 = 25ms lazy mode timeout for multimedia class scheduler
-    Set-RegistryValue -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile" -Name "LazyModeTimeout" -Type "DWord" -Value "25000" -Message "Set optimal lazy mode timeout for better CPU responsiveness"
+    Set-RegistryValue -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile" -Name "LazyModeTimeout" -Type "DWord" -Value $LAZY_MODE_TIMEOUT_MS -Message "Set optimal lazy mode timeout for better CPU responsiveness"
     Set-RegistryValue -Path "HKLM:\SYSTEM\CurrentControlSet\Services\MMCSS" -Name "Start" -Type "DWord" -Value "2" -Message "Configured Multimedia Class Scheduler Service for better performance"
 }
 
@@ -228,8 +243,7 @@ function Invoke-SystemResponsivenessTweaks {
 
     # Set Priority For Programs Instead Of Background Services
     # source - https://youtu.be/bqDMG1ZS-Yw
-    # 0x24 = Short interval, variable length, high foreground priority boost (2:1 ratio)
-    Set-RegistryValue -Path "HKLM:\SYSTEM\CurrentControlSet\Control\PriorityControl" -Name "Win32PrioritySeparation" -Type "DWord" -Value "0x00000024" -Message "Optimized process priority for better responsiveness"
+    Set-RegistryValue -Path "HKLM:\SYSTEM\CurrentControlSet\Control\PriorityControl" -Name "Win32PrioritySeparation" -Type "DWord" -Value $PRIORITY_SEPARATION -Message "Optimized process priority for better responsiveness"
     Set-RegistryValue -Path "HKLM:\SYSTEM\ControlSet001\Control\PriorityControl" -Name "IRQ8Priority" -Type "DWord" -Value "1" -Message "Set IRQ8 priority for better system response"
     Set-RegistryValue -Path "HKLM:\SYSTEM\ControlSet001\Control\PriorityControl" -Name "IRQ16Priority" -Type "DWord" -Value "2" -Message "Set IRQ16 priority for better system response"
 }
@@ -256,11 +270,11 @@ function Invoke-UIResponsivenessTweaks {
     Write-Host "`nApplying UI Responsiveness tweaks...`n"
 
     Set-RegistryValue -Path "HKCU:\Control Panel\Desktop" -Name "AutoEndTasks" -Type "String" -Value "1" -Message "Enabled automatic ending of tasks"
-    Set-RegistryValue -Path "HKCU:\Control Panel\Desktop" -Name "HungAppTimeout" -Type "String" -Value "1000" -Message "Reduced hung application timeout"
-    Set-RegistryValue -Path "HKCU:\Control Panel\Desktop" -Name "WaitToKillAppTimeout" -Type "String" -Value "2000" -Message "Reduced wait time for killing applications"
-    Set-RegistryValue -Path "HKCU:\Control Panel\Desktop" -Name "LowLevelHooksTimeout" -Type "String" -Value "1000" -Message "Reduced low level hooks timeout"
-    Set-RegistryValue -Path "HKCU:\Control Panel\Desktop" -Name "MenuShowDelay" -Type "String" -Value "0" -Message "Removed menu show delay"
-    Set-RegistryValue -Path "HKLM:\SYSTEM\CurrentControlSet\Control" -Name "WaitToKillServiceTimeout" -Type "String" -Value "2000" -Message "Reduced wait time for killing services"
+    Set-RegistryValue -Path "HKCU:\Control Panel\Desktop" -Name "HungAppTimeout" -Type "String" -Value $HUNG_APP_TIMEOUT_MS -Message "Reduced hung application timeout"
+    Set-RegistryValue -Path "HKCU:\Control Panel\Desktop" -Name "WaitToKillAppTimeout" -Type "String" -Value $WAIT_KILL_APP_TIMEOUT_MS -Message "Reduced wait time for killing applications"
+    Set-RegistryValue -Path "HKCU:\Control Panel\Desktop" -Name "LowLevelHooksTimeout" -Type "String" -Value $LOW_LEVEL_HOOKS_TIMEOUT_MS -Message "Reduced low level hooks timeout"
+    Set-RegistryValue -Path "HKCU:\Control Panel\Desktop" -Name "MenuShowDelay" -Type "String" -Value $MENU_SHOW_DELAY_MS -Message "Removed menu show delay"
+    Set-RegistryValue -Path "HKLM:\SYSTEM\CurrentControlSet\Control" -Name "WaitToKillServiceTimeout" -Type "String" -Value $WAIT_KILL_SVC_TIMEOUT_MS -Message "Reduced wait time for killing services"
 }
 
 function Invoke-MemoryTweaks {

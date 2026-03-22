@@ -35,6 +35,20 @@ and this project uses [Calendar Versioning](https://calver.org/) (YY.M format).
 - Updated Windots README paths to match flattened config directory
 - Updated `ModuleExports.Tests.ps1` to match refactored Windots menu function names
 
+### March 22 — Tech debt cleanup, security flow simplification, WT tab support
+
+- Extracted magic numbers into named constants in `Tweaks.Universal.ps1` (accessibility flags, timeouts, network throttling, priority separation) and `Tweaks.Cleanup.ps1` (PC Manager AUMID, Store link)
+- Replaced hardcoded GPU indices 0000-0003 with dynamic `Get-DisplayAdapterIndices` registry scan in `Tweaks.GPU.ps1`
+- Simplified DefendNot and RemoveWindowsAI: removed intermediate menus, replaced with single Y/N/R confirmation box with inline warnings and tool info
+- Added `-SkipConfirm` parameter to `Invoke-Tool` in `Common.ps1` to prevent double confirmation prompts
+- Added `[R] Review project source` option to PrivacySexy and WinScript menus
+- Updated `AdminLaunch.ps1`: detect `$env:WT_SESSION` to open new tab in current WT window when already admin (`wt -w 0 new-tab`), fall back to new window otherwise
+- Added `Common.ps1` load guard in `Benchmark.ps1` (`Get-Command Write-Log` check) to fix Pester test failure when dot-sourced
+- Renamed `winrift.ps1` to `Winrift.ps1` (PascalCase); updated references in `Common.ps1`, `launch.ps1`, `CONTRIBUTING.md`
+- Shortened Power Management warning text to fit within menu box width
+- Cleaned VSCode settings: removed Cyrillic `allowedCharacters`, changed `cSpell.language` from `en,ru` to `en`
+- Added `.mailmap` to unify 5 author name variants (Emylfy, Emalfai, emylfy, eai, ✦ Emylfy) into one
+
 ## [26.3] - 2026-03-21
 
 ### March 21 — PowerShell 5.1 compatibility, test fixes, encoding cleanup

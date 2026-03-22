@@ -1,16 +1,27 @@
 . "$PSScriptRoot\..\..\scripts\Common.ps1"
 $Host.UI.RawUI.WindowTitle = "DefendNot - Disable Windows Defender"
 
-function Show-DefendNotMenu {
-    $tool = Get-ToolConfig "defendnot"
-    Invoke-MenuLoop -Title "DefendNot - Disable Windows Defender via WSC API" -Items @(
-        "[1] Launch DefendNot",
-        "[2] Open documentation / project source",
-        "---",
-        "[3] Back to menu"
-    ) -Actions @{
-        "1" = {
-            Write-Host ""
+$tool = Get-ToolConfig "defendnot"
+
+Clear-Host
+Show-MenuBox -Title "DefendNot - Disable Windows Defender" -Items @(
+    "This will fetch and run a script from the web",
+    "to disable Defender via the WSC API.",
+    "",
+    "Before running, real-time protection and",
+    "Defender exclusion will be set automatically.",
+    "You may need to disable Tamper Protection first.",
+    "",
+    "URL:    $($tool.url)",
+    "Source: $($tool.docs)",
+    "---",
+    "[Y] Run  [N] Cancel  [R] Review source"
+)
+
+while ($true) {
+    $choice = Read-Host ">"
+    switch ($choice.ToUpper()) {
+        "Y" {
             $defendnotPath = "$env:ProgramFiles\defendnot"
 
             try {
@@ -29,11 +40,21 @@ function Show-DefendNotMenu {
                 Write-Log -Message "Windows Security > Virus & threat protection > Manage settings > Tamper Protection: Off" -Level WARNING
             }
 
-            Invoke-Tool "defendnot"
+            Invoke-Tool "defendnot" -SkipConfirm
             Read-Host "Press Enter to continue"
+            & "$PSScriptRoot\SecurityMenu.ps1"
+            return
         }
-        "2" = { Start-Process $tool.docs }
-    } -ExitKey "3" -OnExit { & "$PSScriptRoot\SecurityMenu.ps1" }
+        "N" {
+            & "$PSScriptRoot\SecurityMenu.ps1"
+            return
+        }
+        "R" {
+            if ($tool.docs) {
+                Start-Process $tool.docs
+                Write-Host "$Green  Opened project source in browser.$Reset"
+            }
+        }
+        default { Write-Host "  Please enter Y, N, or R." }
+    }
 }
-
-Show-DefendNotMenu

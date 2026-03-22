@@ -4,10 +4,9 @@
 function Invoke-PowerMenu {
     Clear-Host
     Show-MenuBox -Title "Power Management" -Items @(
-        "Designed for desktops and laptops plugged into AC power.",
-        "These tweaks disable power-saving features like Connected",
-        "Standby, CPU idle states, and PCIe ASPM.",
-        "Skip if running on battery.",
+        "For desktops and laptops on AC power.",
+        "Disables Connected Standby, CPU idle states,",
+        "and PCIe ASPM. Skip if on battery.",
         "---",
         "[1] Apply Power Management Tweaks",
         "[2] Back to menu"

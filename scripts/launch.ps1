@@ -35,9 +35,9 @@ try {
 "@ -ForegroundColor Cyan
 
     if (Get-Command wt -ErrorAction SilentlyContinue) {
-        wt powershell.exe -NoExit -File "$env:TEMP\winrift\winrift-main\winrift.ps1"
+        wt powershell.exe -NoExit -File "$env:TEMP\winrift\winrift-main\Winrift.ps1"
     } else {
-        Start-Process powershell.exe -ArgumentList "-NoExit", "-File", "$env:TEMP\winrift\winrift-main\winrift.ps1"
+        Start-Process powershell.exe -ArgumentList "-NoExit", "-File", "$env:TEMP\winrift\winrift-main\Winrift.ps1"
     }
 }
 catch {
