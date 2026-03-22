@@ -6,6 +6,7 @@ function Show-PrivacySexyMenu {
     Invoke-MenuLoop -Title "Privacy.sexy - Privacy & Security Hardening" -Items @(
         "[1] Build your own batch from privacy.sexy website",
         "[2] Execute latest standard preset (for most users)",
+        "[R] Review project source",
         "---",
         "[3] Back to menu"
     ) -Actions @{
@@ -14,6 +15,7 @@ function Show-PrivacySexyMenu {
             Invoke-Tool "privacysexy" -OnSuccess { param($path) Start-Process cmd -ArgumentList "/c `"$path`"" -Wait }
             Read-Host "Press Enter to continue"
         }
+        "R" = { Start-Process $tool.docs }
     } -ExitKey "3" -OnExit { & "$PSScriptRoot\SecurityMenu.ps1" }
 }
 

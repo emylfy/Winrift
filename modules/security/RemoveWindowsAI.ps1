@@ -1,21 +1,38 @@
 . "$PSScriptRoot\..\..\scripts\Common.ps1"
 $Host.UI.RawUI.WindowTitle = "RemoveWindowsAI - Remove Windows AI Features"
 
-function Show-RemoveWindowsAIMenu {
-    $tool = Get-ToolConfig "removewindowsai"
-    Invoke-MenuLoop -Title "RemoveWindowsAI - Remove Copilot, Recall & More" -Items @(
-        "[1] Launch RemoveWindowsAI",
-        "[2] Open documentation / project source",
-        "---",
-        "[3] Back to menu"
-    ) -Actions @{
-        "1" = {
-            Clear-Host
-            Invoke-Tool "removewindowsai"
-            Read-Host "Press Enter to continue"
-        }
-        "2" = { Start-Process $tool.docs }
-    } -ExitKey "3" -OnExit { & "$PSScriptRoot\SecurityMenu.ps1" }
-}
+$tool = Get-ToolConfig "removewindowsai"
 
-Show-RemoveWindowsAIMenu
+Clear-Host
+Show-MenuBox -Title "RemoveWindowsAI - Remove Copilot & Recall" -Items @(
+    "This will fetch and run a script from the web.",
+    "You can choose what to remove during the process.",
+    "",
+    "URL:    $($tool.url)",
+    "Source: $($tool.docs)",
+    "---",
+    "[Y] Run  [N] Cancel  [R] Review source"
+)
+
+while ($true) {
+    $choice = Read-Host ">"
+    switch ($choice.ToUpper()) {
+        "Y" {
+            Invoke-Tool "removewindowsai" -SkipConfirm
+            Read-Host "Press Enter to continue"
+            & "$PSScriptRoot\SecurityMenu.ps1"
+            return
+        }
+        "N" {
+            & "$PSScriptRoot\SecurityMenu.ps1"
+            return
+        }
+        "R" {
+            if ($tool.docs) {
+                Start-Process $tool.docs
+                Write-Host "$Green  Opened project source in browser.$Reset"
+            }
+        }
+        default { Write-Host "  Please enter Y, N, or R." }
+    }
+}

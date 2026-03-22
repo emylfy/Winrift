@@ -1,5 +1,16 @@
 . "$PSScriptRoot\..\..\scripts\Common.ps1"
 
+# {4d36e968-e325-11ce-bfc1-08002be10318} = Display Adapters device class GUID
+$DISPLAY_ADAPTER_CLASS = "HKLM:\SYSTEM\CurrentControlSet\Control\Class\{4d36e968-e325-11ce-bfc1-08002be10318}"
+
+function Get-DisplayAdapterIndices {
+    # Dynamically enumerate all display adapter registry indices instead of hardcoding 0000-0003
+    if (-not (Test-Path $DISPLAY_ADAPTER_CLASS)) { return @() }
+    Get-ChildItem -Path $DISPLAY_ADAPTER_CLASS -ErrorAction SilentlyContinue |
+        Where-Object { $_.PSChildName -match '^\d{4}$' } |
+        ForEach-Object { $_.PSChildName }
+}
+
 function Show-GPUMenu {
     Invoke-MenuLoop -Title "GPU-Specific Tweaks" -Items @(
         "[1] NVIDIA",
@@ -39,17 +50,13 @@ function Invoke-NvidiaTweaks {
     )
 
     # source - https://github.com/AlchemyTweaks/Verified-Tweaks/blob/main/Nvidia/RmGpsPsEnablePerCpuCoreDpc
-    # Detect NVIDIA GPU presence
     $nvidiaFound = $false
-    $classPath = "HKLM:\SYSTEM\CurrentControlSet\Control\Class\{4d36e968-e325-11ce-bfc1-08002be10318}"
-    foreach ($idx in @("0000", "0001", "0002", "0003")) {
-        $devPath = "$classPath\$idx"
-        if (Test-Path $devPath) {
-            $provider = (Get-ItemProperty -Path $devPath -Name "ProviderName" -ErrorAction SilentlyContinue).ProviderName
-            if ($provider -match "NVIDIA") {
-                $nvidiaFound = $true
-                break
-            }
+    foreach ($idx in (Get-DisplayAdapterIndices)) {
+        $devPath = "$DISPLAY_ADAPTER_CLASS\$idx"
+        $provider = (Get-ItemProperty -Path $devPath -Name "ProviderName" -ErrorAction SilentlyContinue).ProviderName
+        if ($provider -match "NVIDIA") {
+            $nvidiaFound = $true
+            break
         }
     }
     if (-not $nvidiaFound) {
@@ -81,18 +88,13 @@ function Invoke-AMDTweaks {
     )
 
     # source - https://youtu.be/nuUV2RoPOWc , https://github.com/AlchemyTweaks/Verified-Tweaks/blob/main/AMD%20Radeon/AMD%20Tweak%20Melody
-    # {4d36e968-e325-11ce-bfc1-08002be10318} = Display Adapters device class GUID
-    # Detect AMD GPU device index dynamically instead of assuming \0000
-    $classPath = "HKLM:\SYSTEM\CurrentControlSet\Control\Class\{4d36e968-e325-11ce-bfc1-08002be10318}"
     $amdPath = $null
-    foreach ($idx in @("0000", "0001", "0002", "0003")) {
-        $devPath = "$classPath\$idx"
-        if (Test-Path $devPath) {
-            $provider = (Get-ItemProperty -Path $devPath -Name "ProviderName" -ErrorAction SilentlyContinue).ProviderName
-            if ($provider -match "AMD|ATI|Advanced Micro Devices") {
-                $amdPath = $devPath
-                break
-            }
+    foreach ($idx in (Get-DisplayAdapterIndices)) {
+        $devPath = "$DISPLAY_ADAPTER_CLASS\$idx"
+        $provider = (Get-ItemProperty -Path $devPath -Name "ProviderName" -ErrorAction SilentlyContinue).ProviderName
+        if ($provider -match "AMD|ATI|Advanced Micro Devices") {
+            $amdPath = $devPath
+            break
         }
     }
     if (-not $amdPath) {

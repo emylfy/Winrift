@@ -1,4 +1,6 @@
-. "$PSScriptRoot\..\..\scripts\Common.ps1"
+if (-not (Get-Command Write-Log -ErrorAction SilentlyContinue)) {
+    . "$PSScriptRoot\..\..\scripts\Common.ps1"
+}
 
 $script:BenchmarkDir = Join-Path $env:USERPROFILE "Winrift\benchmarks"
 
