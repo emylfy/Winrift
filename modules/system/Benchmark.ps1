@@ -1,6 +1,6 @@
 . "$PSScriptRoot\..\..\scripts\Common.ps1"
 
-$script:BenchmarkDir = Join-Path $env:USERPROFILE "Simplify11\benchmarks"
+$script:BenchmarkDir = Join-Path $env:USERPROFILE "Winrift\benchmarks"
 
 function Get-PerformanceSnapshot {
     param(

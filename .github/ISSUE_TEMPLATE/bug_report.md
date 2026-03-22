@@ -10,7 +10,7 @@ assignees: ''
 A clear description of the bug.
 
 ## Steps to Reproduce
-1. Run Simplify11
+1. Run Winrift
 2. Select option '...'
 3. See error
 
@@ -23,11 +23,11 @@ What actually happened.
 ## Environment
 - **Windows Version**: (e.g., Windows 11 24H2)
 - **PowerShell Version**: (run `$PSVersionTable.PSVersion`)
-- **Simplify11 Version**: (shown in window title)
+- **Winrift Version**: (shown in window title)
 - **Running as Admin**: Yes / No
 
 ## Log Output
-If applicable, paste relevant lines from `~/Simplify11/logs/`.
+If applicable, paste relevant lines from `~/Winrift/logs/`.
 
 ## Screenshots
 If applicable, add screenshots.

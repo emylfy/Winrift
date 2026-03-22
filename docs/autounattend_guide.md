@@ -12,7 +12,7 @@ This file does more than skip setup screens. It also runs scripts during install
 
 > 🛠️ **Want to customize?** This file was generated with [Unattend-Generator](https://schneegans.de/windows/unattend-generator/) — you can use it to create your own version
 
-> 🔧 **Integrated with [Simplify11](https://github.com/emylfy/simplify11)** — a desktop shortcut is created automatically for further post-install tweaks
+> 🔧 **Integrated with [Winrift](https://github.com/emylfy/winrift)** — a desktop shortcut is created automatically for further post-install tweaks
 
 ## ✨ What You'll Get
 
@@ -26,22 +26,22 @@ After installing Windows with this file, your system will have:
 - **No system sounds** — startup sound and all event sounds disabled
 - **Works on unsupported hardware** — TPM 2.0, Secure Boot, and RAM checks bypassed
 - **SmartScreen disabled** — see [Warnings](#%EF%B8%8F-warnings) for details
-- **Simplify11 desktop shortcut** — one-click access to further customization
+- **Winrift desktop shortcut** — one-click access to further customization
 
 ## 📥 Installation Guide
 
-> **Download:** [autounattend.xml](https://github.com/emylfy/simplify11/blob/main/docs/autounattend.xml)
+> **Download:** [autounattend.xml](https://github.com/emylfy/winrift/blob/main/docs/autounattend.xml)
 
 ### Method 1 — USB Flash Drive (Simplest)
 
 1. Create a bootable Windows USB using [Rufus](https://rufus.ie/), the [Media Creation Tool](https://www.microsoft.com/software-download/windows11), or [Ventoy](https://www.ventoy.net/)
-2. Download [autounattend.xml](https://github.com/emylfy/simplify11/blob/main/docs/autounattend.xml)
+2. Download [autounattend.xml](https://github.com/emylfy/winrift/blob/main/docs/autounattend.xml)
 3. Copy `autounattend.xml` to the **root** of the USB drive (same level as `setup.exe`)
 4. Boot from the USB drive and install Windows as usual — the file is detected automatically
 
 ### Method 2 — Modify an Existing ISO (AnyBurn)
 
-1. Download [AnyBurn](https://anyburn.com/) and the [autounattend.xml](https://github.com/emylfy/simplify11/blob/main/docs/autounattend.xml) file
+1. Download [AnyBurn](https://anyburn.com/) and the [autounattend.xml](https://github.com/emylfy/winrift/blob/main/docs/autounattend.xml) file
 2. Open AnyBurn and select **"Edit Image File"**
 3. Browse to your Windows ISO file
 4. Click **"Add"** and select `autounattend.xml`
@@ -71,7 +71,7 @@ Use [tiny11maker-reforged](https://github.com/chrisGrando/tiny11maker-reforged) 
 
 - **Generate your own:** Use the [Schneegans Unattend-Generator](https://schneegans.de/windows/unattend-generator/) to create a customized version with different app removals, settings, or configurations
 - **Edit directly:** Advanced users can modify the XML file manually, or import it back into the [Unattend-Generator](https://schneegans.de/windows/unattend-generator/) to tweak settings through the UI and re-export
-- **Post-install tweaks:** Use [Simplify11](https://github.com/emylfy/simplify11) after installation for additional optimization — a desktop shortcut is created automatically
+- **Post-install tweaks:** Use [Winrift](https://github.com/emylfy/winrift) after installation for additional optimization — a desktop shortcut is created automatically
 
 ## 📦 Removed Apps
 
@@ -191,7 +191,7 @@ Then two scripts run at first login:
 
 **First logon only:**
 
-- **Creates "Simplify11" desktop shortcut** for post-install customization
+- **Creates "Winrift" desktop shortcut** for post-install customization
 
 </details>
 
@@ -217,7 +217,7 @@ Then two scripts run at first login:
 | RemoveFeatures.ps1 | C:\Windows\Setup\Scripts\ | Disables optional features |
 | DefaultUser.ps1 | C:\Windows\Setup\Scripts\ | Default user profile registry settings |
 | UserOnce.ps1 | C:\Windows\Setup\Scripts\ | Per-user first-run configuration |
-| FirstLogon.ps1 | C:\Windows\Setup\Scripts\ | Creates Simplify11 shortcut |
+| FirstLogon.ps1 | C:\Windows\Setup\Scripts\ | Creates Winrift shortcut |
 | SetStartPins.ps1 | C:\Windows\Setup\Scripts\ | Clears Start menu pins |
 | TurnOffSystemSounds.ps1 | C:\Windows\Setup\Scripts\ | Disables system event sounds |
 | UnlockStartLayout.vbs | C:\Windows\Setup\Scripts\ | Unlocks Start layout after login |
@@ -240,7 +240,7 @@ Logs are written during installation for debugging:
 
 </details>
 
-![](https://github.com/emylfy/simplify11/blob/main/media/separator.png)
+![](https://github.com/emylfy/winrift/blob/main/media/separator.png)
 
 <div align="center">
   <p>Made with ❤️ for the Windows community</p>

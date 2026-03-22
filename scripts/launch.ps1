@@ -1,52 +1,51 @@
 $Host.UI.RawUI.WindowTitle = "Launcher"
 
-$tempPath = "$env:TEMP\simplify11"
-$zipPath = "$tempPath\simplify11.zip"
+$tempPath = "$env:TEMP\winrift"
+$zipPath = "$tempPath\winrift.zip"
 
 if (!(Test-Path $tempPath)) {
     New-Item -ItemType Directory -Path $tempPath | Out-Null
 }
 
-Write-Host "Downloading Simplify11..." -ForegroundColor Cyan
-Write-Progress -Activity "Downloading Simplify11" -Status "Initializing..." -PercentComplete 0
+Write-Host "Downloading Winrift..." -ForegroundColor Cyan
+Write-Progress -Activity "Downloading Winrift" -Status "Initializing..." -PercentComplete 0
 
 try {
-    Start-BitsTransfer -Source "https://github.com/emylfy/simplify11/archive/refs/heads/main.zip" `
+    Start-BitsTransfer -Source "https://github.com/emylfy/winrift/archive/refs/heads/main.zip" `
                       -Destination $zipPath `
-                      -DisplayName "Downloading Simplify11" `
+                      -DisplayName "Downloading Winrift" `
                       -Description "Downloading required files..."
 
-    Write-Progress -Activity "Downloading Simplify11" -Status "Complete" -PercentComplete 100
+    Write-Progress -Activity "Downloading Winrift" -Status "Complete" -PercentComplete 100
     Write-Host "Download complete!" -ForegroundColor Green
 
     Write-Host "Extracting files..." -ForegroundColor Cyan
-    Write-Progress -Activity "Installing Simplify11" -Status "Extracting..." -PercentComplete 50
+    Write-Progress -Activity "Installing Winrift" -Status "Extracting..." -PercentComplete 50
 
     Expand-Archive -Path $zipPath -DestinationPath $tempPath -Force
 
-    Write-Progress -Activity "Installing Simplify11" -Status "Complete" -PercentComplete 100
+    Write-Progress -Activity "Installing Winrift" -Status "Complete" -PercentComplete 100
 
     Write-Host @"
- ____  _                 _  _   __        _ _
-/ ___|(_)_ __ ___  _ __ | |(_) / _|_   _/ / |
-\___ \| | '_ ` _ \| '_ \| || || |_| | | | | |
- ___) | | | | | | | |_) | || ||  _| |_| | | |
-|____/|_|_| |_| |_| .__/|_||_||_|  \__, |_|_|
-                   |_|              |___/
+ __        ___       ____  _  __ _
+ \ \      / (_)_ __ |  _ \(_)/ _| |_
+  \ \ /\ / /| | '_ \| |_) | | |_| __|
+   \ V  V / | | | | |  _ <| |  _| |_
+    \_/\_/  |_|_| |_|_| \_\_|_|  \__|
 "@ -ForegroundColor Cyan
 
     if (Get-Command wt -ErrorAction SilentlyContinue) {
-        wt powershell.exe -NoExit -File "$env:TEMP\simplify11\simplify11-main\simplify11.ps1"
+        wt powershell.exe -NoExit -File "$env:TEMP\winrift\winrift-main\winrift.ps1"
     } else {
-        Start-Process powershell.exe -ArgumentList "-NoExit", "-File", "$env:TEMP\simplify11\simplify11-main\simplify11.ps1"
+        Start-Process powershell.exe -ArgumentList "-NoExit", "-File", "$env:TEMP\winrift\winrift-main\winrift.ps1"
     }
 }
 catch {
-    Write-Progress -Activity "Installing Simplify11" -Status "Error" -PercentComplete 100
+    Write-Progress -Activity "Installing Winrift" -Status "Error" -PercentComplete 100
     Write-Host "Error: $_" -ForegroundColor Red
-    Write-Host "Please download manually from: https://github.com/emylfy/simplify11" -ForegroundColor Yellow
+    Write-Host "Please download manually from: https://github.com/emylfy/winrift" -ForegroundColor Yellow
     Start-Sleep -Seconds 5
 }
 finally {
-    Write-Progress -Activity "Installing Simplify11" -Completed
+    Write-Progress -Activity "Installing Winrift" -Completed
 }

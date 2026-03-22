@@ -1,226 +1,161 @@
-<h1>Simplify11 <img src="https://raw.githubusercontent.com/emylfy/simplify11/refs/heads/main/media/icon.ico" width="24px" alt="Simplify11 icon"></h1>
+<h1>Winrift <img src="https://raw.githubusercontent.com/emylfy/winrift/refs/heads/main/media/icon.ico" width="24px" alt="Winrift icon"></h1>
 
-**From fresh Windows ISO to fully riced desktop — one script.** Automates post-installation configuration, applies performance tweaks, installs drivers and software, and sets up your personalized desktop environment.
-
-<p align="center">
-	<img src="media/logo.png" alt="Simplify11 Logo" width="70%">
-</p>
+**Break through default Windows.** Most tweakers ask you to trust them. Winrift proves it works — built-in benchmarks measure every change.
 
 <p align="center">
-	<a href="#-features">Features</a> •
-	<a href="#-installation">Installation</a> •
-	<a href="#-troubleshooting">Troubleshooting</a> •
-	<a href="#-benchmarks">Benchmarks</a> •
-	<a href="#-integrations">Integrations</a> •
-	<a href="#-compatibility">Compatibility</a> •
-	<a href="#-credits">Credits</a>
+	<img src="media/logo.png" alt="Winrift — Windows 11 optimization and benchmarking tool" width="70%">
 </p>
 
 <div align="center">
  <p>
- <a href="https://github.com/emylfy/simplify11/stargazers"><img src="https://img.shields.io/github/stars/emylfy/simplify11?style=for-the-badge&logo=starship&color=C9CBFF&logoColor=C9CBFF&labelColor=302D41" alt="GitHub Stars"></a>&nbsp;&nbsp;
- <a href="https://github.com/emylfy/simplify11/"><img src="https://img.shields.io/github/repo-size/emylfy/simplify11?style=for-the-badge&logo=git&logoColor=f9e2af&label=Size&labelColor=302D41&color=f9e2af" alt="Repository Size"></a>&nbsp;&nbsp;
- <a href="https://github.com/emylfy/simplify11/commits/main/"><img src="https://img.shields.io/github/last-commit/emylfy/simplify11?style=for-the-badge&logo=github&logoColor=eba0ac&label=Last%20Commit&labelColor=302D41&color=eba0ac" alt="Last Commit"></a>&nbsp;&nbsp;
- <a href="https://github.com/emylfy/simplify11/blob/main/LICENSE"><img src="https://img.shields.io/github/license/emylfy/simplify11?style=for-the-badge&logo=apache&color=CBA6F7&logoColor=CBA6F7&labelColor=302D41&label=License" alt="GitHub License"></a>&nbsp;&nbsp;
+ <a href="https://github.com/emylfy/winrift/stargazers"><img src="https://img.shields.io/github/stars/emylfy/winrift?style=for-the-badge&logo=starship&color=C9CBFF&logoColor=C9CBFF&labelColor=302D41" alt="GitHub Stars"></a>&nbsp;&nbsp;
+ <a href="https://github.com/emylfy/winrift/blob/main/LICENSE"><img src="https://img.shields.io/github/license/emylfy/winrift?style=for-the-badge&logo=apache&color=CBA6F7&logoColor=CBA6F7&labelColor=302D41&label=License" alt="GitHub License"></a>&nbsp;&nbsp;
+ <a href="https://github.com/emylfy/winrift/commits/main/"><img src="https://img.shields.io/github/last-commit/emylfy/winrift?style=for-the-badge&logo=github&logoColor=eba0ac&label=Last%20Commit&labelColor=302D41&color=eba0ac" alt="Last Commit"></a>
  </p>
 </div>
 
-> **No other tool covers this complete pipeline:** Windows ISO → System tweaks → Driver install → Desktop customization
+<p align="center">
+	<a href="#install">Install</a> •
+	<a href="#benchmark--dont-trust-verify">Benchmark</a> •
+	<a href="#features">Features</a> •
+	<a href="#compatibility">Compatibility</a> •
+	<a href="#troubleshooting">Troubleshooting</a>
+</p>
 
-![](https://github.com/emylfy/simplify11/blob/main/media/separator.png)
+> **No other tool covers this complete pipeline:** Measure → Optimize → Verify → Customize
 
-## ✨ Features
+<!-- TODO: record demo.gif with ShareX or Windows Terminal screen capture
+<p align="center">
+	<img src="media/demo.gif" alt="Winrift demo — launching benchmarks, applying tweaks, viewing results" width="80%">
+</p>
+-->
 
-<div align="center">
+---
 
-### Everything you need for perfect Windows 11 setup
+## Install
 
-</div>
-
-### 🛠️ System Configuration
-
-- Windows installation [answer file](https://github.com/emylfy/simplify11/blob/main/docs/autounattend_guide.md) creation guide
-- Driver installation support for NVIDIA, AMD, HP, Lenovo, ASUS, MSI and more
-- Security tools: Disable Defender, remove Copilot/Recall, privacy hardening
-
-### 🚀 Optimization
-
-- 13 selectable [tweak categories](https://github.com/emylfy/simplify11/blob/main/docs/tweaks_guide.md) with progress feedback
-- GPU-specific tweaks for NVIDIA and AMD
-- Enhanced input responsiveness (mouse & keyboard)
-- DirectX enhancements and power management
-- Disk space management and cleanup
-
-### 📦 Software Management
-
-- UniGetUI — modern graphical interface for Windows Package Manager
-- Pre-built app bundles: Development, Browsers, Utilities, Productivity, Gaming, Communications
-
-### 🎨 Desktop Customization ([Windots](https://github.com/emylfy/windots))
-
-- Config installer for VSCode-based editors, Windows Terminal, PowerShell
-- Spotify tools (SpotX, Spicetify), Steam Millennium theme
-- macOS cursor, Rectify11 UI theme, Oh My Posh prompt
-
-![](https://github.com/emylfy/simplify11/blob/main/media/separator.png)
-
-## ⚡ Installation
-
-### Prerequisites
-
-- Windows 11 (22H2 or newer)
-- PowerShell 5.1 (included with Windows 11 by default)
-- Administrator rights
-- Internet connection
-
-### Quick Start
-
-**Step 1.** Open PowerShell as Administrator
-
-> Press `Win + X` → select **Windows Terminal (Admin)** or **PowerShell (Admin)**
-
-**Step 2.** Run the launcher:
+Open PowerShell as Admin (`Win + X` → Terminal Admin) and run:
 
 ```powershell
-irm https://raw.githubusercontent.com/emylfy/simplify11/main/scripts/launch.ps1 | iex
+irm https://raw.githubusercontent.com/emylfy/winrift/main/scripts/launch.ps1 | iex
 ```
 
-**Step 3.** The interactive menu opens automatically. No further installation needed.
+A restore point is created automatically before any system changes.
 
-### Persistent Start Menu Shortcut (Optional)
-
-Creates a shortcut to always launch the latest version:
+<details>
+<summary>Create a persistent Start Menu shortcut</summary>
 
 ```powershell
-irm https://raw.githubusercontent.com/emylfy/simplify11/main/scripts/install.ps1 | iex
+irm https://raw.githubusercontent.com/emylfy/winrift/main/scripts/install.ps1 | iex
 ```
 
-### Security Note
+</details>
 
-> This uses `irm | iex` — a common PowerShell pattern in the community. The full source code is open at [github.com/emylfy/simplify11](https://github.com/emylfy/simplify11) for review. Always create a restore point before applying system tweaks — **Simplify11 does this automatically**.
+<details>
+<summary>Security note on irm | iex</summary>
 
-![](https://github.com/emylfy/simplify11/blob/main/media/separator.png)
+This is a common PowerShell install pattern (similar to `curl | sh`). The full source code is open at [github.com/emylfy/winrift](https://github.com/emylfy/winrift). All external scripts are verified with SHA256 hashes before execution.
 
-## 🔧 Troubleshooting
+</details>
 
-| Problem | Solution |
+---
+
+## Benchmark — Don't Trust, Verify
+
+Other tools apply tweaks and hope for the best. Winrift measures 13 system metrics before and after — so you see exactly what changed.
+
+> Typical results on clean Windows 11 24H2 (your numbers will vary):
+
+| Metric | Before | After | Change |
+| :--- | ---: | ---: | ---: |
+| CPU idle load | 3.2% | 1.1% | -66% |
+| RAM usage | 2,800 MB | 2,100 MB | -25% |
+| Running processes | 142 | 98 | -31% |
+| Running services | 187 | 151 | -19% |
+| DPC rate | 48 /s | 22 /s | -54% |
+| Context switches | 12,400 /s | 8,600 /s | -31% |
+
+<sub>Full methodology and metric explanations: <a href="docs/tests.md">Testing & Benchmarks Guide</a></sub>
+
+<!-- TODO: screenshot-benchmark.png — capture the benchmark report output at 1920x1080
+<p align="center">
+	<img src="media/screenshot-benchmark.png" alt="Winrift benchmark comparison report showing before and after metrics" width="70%">
+</p>
+-->
+
+---
+
+## Features
+
+<!-- TODO: capture screenshots at 1920x1080
+<p align="center">
+	<img src="media/screenshot-main.png" alt="Winrift main menu" width="45%">&nbsp;&nbsp;
+	<img src="media/screenshot-tweaks.png" alt="Winrift system tweaks menu" width="45%">
+</p>
+<p align="center">
+	<img src="media/screenshot-ricing.png" alt="Winrift desktop ricing" width="45%">&nbsp;&nbsp;
+	<img src="media/screenshot-security.png" alt="Winrift security tools" width="45%">
+</p>
+-->
+
+| Feature | What it does |
 | :--- | :--- |
-| "Running scripts is disabled on this system" | Run: `Set-ExecutionPolicy RemoteSigned -Scope CurrentUser` |
-| "Module not found" error | Re-run the Quick Start command to get the latest version |
-| UAC prompt appears on launch | Normal — click **Yes** for operations requiring admin rights |
-| Registry errors in tweaks | Check `%USERPROFILE%\Simplify11\logs\` for the session log |
-| UniGetUI won't install | Run `winget source reset --force` in an admin PowerShell |
-| WinUtil / Sparkle won't launch | Check your internet connection and firewall settings |
+| **[Benchmark](docs/tests.md)** | Measure 13 system metrics (CPU, RAM, DPC rate, disk latency, context switches...) before and after tweaks |
+| **[System Tweaks](docs/tweaks_guide.md)** | 13 optimization categories — latency, input, SSD/NVMe, GPU scheduling, network, CPU, power, boot, memory, DirectX |
+| **GPU Tweaks** | NVIDIA and AMD-specific optimizations with automatic device detection; hybrid GPU support |
+| **Security & Privacy** | Disable Defender ([DefendNot](https://github.com/es3n1n/defendnot)), remove Copilot/Recall ([RemoveWindowsAI](https://github.com/zoicware/RemoveWindowsAI)), privacy hardening ([privacy.sexy](https://github.com/undergroundwires/privacy.sexy)) |
+| **Drivers** | NVIDIA, AMD, Intel DSA auto-install, HP, Lenovo, ASUS, Acer, MSI, Dell, Huawei, Xiaomi, Gigabyte |
+| **Desktop Ricing** | Configs for VSCode/Cursor/Windsurf, Terminal, PowerShell, Oh My Posh, FastFetch, SpotX, Spicetify, Steam themes, Rectify11, macOS cursor |
+| **App Bundles** | Curated winget collections via [UniGetUI](https://github.com/marticliment/UniGetUI) — Development, Browsers, Utilities, Productivity, Creative & Media, Gaming, Communications |
+| **[Answer File](docs/autounattend_guide.md)** | Automated Windows 11 install — removes 25 bloatware apps, disables telemetry, cleans taskbar |
 
-![](https://github.com/emylfy/simplify11/blob/main/media/separator.png)
+<details>
+<summary><strong>Community Tools</strong> — integrated third-party launchers</summary>
 
-## 📊 Benchmarks
+<br>
 
-Built-in performance benchmark measures real system metrics (CPU, RAM, processes, services, disk latency, DPC rate) before and after applying tweaks.
+| Tool | Description |
+| :--- | :--- |
+| [WinUtil](https://github.com/ChrisTitusTech/winutil) | Install programs, apply tweaks, fixes and updates |
+| [WinScript](https://github.com/flick9000/winscript) | Build custom Windows setup scripts |
+| [Sparkle](https://github.com/Parcoil/Sparkle) | Optimize and debloat Windows |
+| [GTweak](https://github.com/Greedeks/GTweak) | GUI tweaking tool and debloater |
 
-```powershell
-. .\modules\system\Benchmark.ps1
-Invoke-Benchmark -Phase Before    # run before tweaks
-# ... apply tweaks, reboot ...
-Invoke-Benchmark -Phase After     # run after tweaks — generates comparison report
-```
+</details>
 
-See the full [Testing & Benchmarks Guide](docs/tests.md) for methodology, metrics explained, and expected results.
+---
 
-![](https://github.com/emylfy/simplify11/blob/main/media/separator.png)
-
-## 🔄 Integrations
-
-<div align="center">
-
-### Powerful tools in one place
-
-</div>
-
-<table>
-<tr>
-<td align="center" width="25%">
-<img src="https://github.com/ChrisTitusTech/winutil/blob/main/docs/assets/favicon.png?raw=true" width="60px" alt="WinUtil Logo"><br/>
-<b><a href="https://github.com/ChrisTitusTech/winutil" title="Visit WinUtil on GitHub">WinUtil</a></b><br/>
-<sub>Install programs, tweaks, fixes and updates</sub>
-</td>
-<td align="center" width="25%">
-<img src="https://raw.githubusercontent.com/flick9000/winscript/refs/heads/main/app/public/logo.svg" width="60px" alt="WinScript Logo"><br/>
-<b><a href="https://github.com/flick9000/winscript" title="Visit WinScript on GitHub">WinScript</a></b><br/>
-<sub>Build custom setup scripts</sub>
-</td>
-<td align="center" width="25%">
-<img src="https://github.com/Greedeks/GTweak/blob/main/Assets/GTweak.png" width="60px" alt="GTweak Logo"><br/>
-<b><a href="https://github.com/Greedeks/GTweak" title="Visit GTweak on GitHub">GTweak</a></b><br/>
-<sub>Tweaking tool and debloater</sub>
-</td>
-<td align="center" width="25%">
-<img src="https://github.com/Parcoil/Sparkle/blob/v2/resources/sparklelogo.png?raw=true" width="60px" alt="Sparkle Logo"><br/>
-<b><a href="https://github.com/Parcoil/Sparkle" title="Visit Sparkle on GitHub">Sparkle</a></b><br/>
-<sub>Windows package manager</sub>
-</td>
-</tr>
-<tr>
-<td align="center" width="25%">
-<img src="https://i.imgur.com/F9gWA92.png" width="60px" alt="DefendNot Logo"><br/>
-<b><a href="https://github.com/es3n1n/defendnot" title="Visit DefendNot on GitHub">DefendNot</a></b><br/>
-<sub>Disable Windows Defender</sub>
-</td>
-<td align="center" width="25%">
-<img src="https://github.com/zoicware/RemoveWindowsAI/assets/118035521/33efb033-c935-416c-977d-777bb69a3737" width="60px" alt="RemoveWindowsAI Logo"><br/>
-<b><a href="https://github.com/zoicware/RemoveWindowsAI" title="Visit RemoveWindowsAI on GitHub">RemoveWindowsAI</a></b><br/>
-<sub>Remove Copilot & Recall</sub>
-</td>
-<td align="center" width="25%">
-<img src="https://raw.githubusercontent.com/undergroundwires/privacy.sexy/refs/heads/master/img/logo.svg" width="60px" alt="Privacy.sexy Logo"><br/>
-<b><a href="https://github.com/undergroundwires/privacy.sexy" title="Visit Privacy.sexy on GitHub">Privacy.sexy</a></b><br/>
-<sub>Security enhancement</sub>
-</td>
-<td align="center" width="25%">
-<img src="https://raw.githubusercontent.com/marticliment/UniGetUI/refs/heads/main/media/icon.svg" width="60px" alt="UniGetUI Logo"><br/>
-<b><a href="https://github.com/marticliment/UniGetUI" title="Visit UniGetUI on GitHub">UniGetUI</a></b><br/>
-<sub>Discover, install and update packages</sub>
-</td>
-</tr>
-</table>
-
-![](https://github.com/emylfy/simplify11/blob/main/media/separator.png)
-
-## 💻 Compatibility
+## Compatibility
 
 | Windows Version | Status |
 | :---: | :---: |
-| Windows 11 25H2 | Supported ✅ |
-| Windows 11 24H2 | Fully tested ✅ |
-| Windows 11 23H2 | Supported ✅ |
-| Windows 11 22H2 | Should work (not actively tested) ⚠️ |
-| Windows 10 | Not supported ❌ |
-| Insider Builds | Use at your own risk ⚠️ |
+| Windows 11 25H2 | Supported |
+| Windows 11 24H2 | Fully tested |
+| Windows 11 23H2 | Supported |
+| Windows 11 22H2 | Should work |
+| Windows 10 | Not supported |
 
-**Requirements:** PowerShell 5.1+ (included with Windows 11), Administrator privileges for system tweaks, Internet connection.
+**Requirements:** PowerShell 5.1+ (included with Windows 11), Administrator privileges, Internet connection.
 
-![](https://github.com/emylfy/simplify11/blob/main/media/separator.png)
+---
 
-## 🌟 Credits
+## Troubleshooting
 
-<div align="center">
+| Problem | Solution |
+| :--- | :--- |
+| Scripts disabled | `Set-ExecutionPolicy RemoteSigned -Scope CurrentUser` |
+| Module not found | Re-run the install command for the latest version |
+| Registry errors | Check `%USERPROFILE%\Winrift\logs\` for the session log |
+| UniGetUI fails | `winget source reset --force` in admin PowerShell |
 
-| Project | Description |
-| :-----: | :---------: |
-| [AlchemyTweaks/Verified-Tweaks](https://github.com/AlchemyTweaks/Verified-Tweaks) | A collection of verified and tested Windows modifications |
-| [ashish0kumar/windots](https://github.com/ashish0kumar/windots) | Windows customization and dotfiles management |
-| [ChrisTitusTech/winutil](https://github.com/ChrisTitusTech/winutil) | Windows utility tool by Chris Titus Tech |
-| [flick9000/winscript](https://github.com/flick9000/winscript) | Custom Windows script builder |
-| [Greedeks/GTweak](https://github.com/Greedeks/GTweak) | Windows tweaking tool and debloater |
-| [Parcoil/Sparkle](https://github.com/Parcoil/Sparkle) | Windows Package Manager wrapper |
-| [marticliment/UniGetUI](https://github.com/marticliment/UniGetUI) | Modern GUI for Windows package managers |
+---
 
-</div>
+## Credits
+
+Built on the work of [AlchemyTweaks/Verified-Tweaks](https://github.com/AlchemyTweaks/Verified-Tweaks), [ashish0kumar/windots](https://github.com/ashish0kumar/windots), [ChrisTitusTech/winutil](https://github.com/ChrisTitusTech/winutil), [flick9000/winscript](https://github.com/flick9000/winscript), [Greedeks/GTweak](https://github.com/Greedeks/GTweak), [Parcoil/Sparkle](https://github.com/Parcoil/Sparkle), [marticliment/UniGetUI](https://github.com/marticliment/UniGetUI).
 
 <div align="center">
 
-### ⭐ Love this project? Show your support by giving it a star!
-
-#### 📫 Have suggestions or found a bug? Open an [**Issue**](https://github.com/emylfy/simplify11/issues/).
+[MIT License](LICENSE) &bull; [Contributing](CONTRIBUTING.md) &bull; [Report a Bug](https://github.com/emylfy/winrift/issues)
 
 </div>

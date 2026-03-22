@@ -32,10 +32,10 @@ function Write-Log {
 }
 
 function Invoke-ReturnToMenu {
-    $launchDirFile = "$env:TEMP\simplify11_launchdir.txt"
+    $launchDirFile = "$env:TEMP\winrift_launchdir.txt"
     if (Test-Path $launchDirFile) {
         $rootPath = (Get-Content $launchDirFile -Raw).Trim()
-        $mainScript = Join-Path $rootPath "simplify11.ps1"
+        $mainScript = Join-Path $rootPath "winrift.ps1"
         if (Test-Path $mainScript) {
             & $mainScript
             return
@@ -81,7 +81,7 @@ function New-SafeRestorePoint {
     Write-Host "`n$Purple Creating System Restore Point before applying tweaks...$Reset"
     try {
         Enable-ComputerRestore -Drive "$env:SystemDrive\" -ErrorAction SilentlyContinue
-        Checkpoint-Computer -Description "Simplify11 - Before System Tweaks $(Get-Date -Format 'yyyy-MM-dd HH:mm')" -RestorePointType MODIFY_SETTINGS -ErrorAction Stop
+        Checkpoint-Computer -Description "Winrift - Before System Tweaks $(Get-Date -Format 'yyyy-MM-dd HH:mm')" -RestorePointType MODIFY_SETTINGS -ErrorAction Stop
         Write-Log -Message "System Restore Point created successfully." -Level SUCCESS
     } catch {
         Write-Log -Message "Could not create restore point: $($_.Exception.Message)" -Level WARNING
@@ -102,7 +102,7 @@ function Assert-AdminOrElevate {
 
 function Initialize-Logging {
     param([string]$ModuleName)
-    $logDir = Join-Path $env:USERPROFILE "Simplify11\logs"
+    $logDir = Join-Path $env:USERPROFILE "Winrift\logs"
     if (-not (Test-Path $logDir)) { New-Item -Path $logDir -ItemType Directory -Force | Out-Null }
     $script:LogFile = Join-Path $logDir "${ModuleName}_$(Get-Date -Format 'yyyy-MM-dd_HH-mm-ss').log"
     Start-Transcript -Path $script:LogFile -Append | Out-Null

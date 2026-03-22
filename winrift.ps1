@@ -1,5 +1,5 @@
 . "$PSScriptRoot\scripts\Common.ps1"
-$PSScriptRoot | Set-Content "$env:TEMP\simplify11_launchdir.txt" -Force
+$PSScriptRoot | Set-Content "$env:TEMP\winrift_launchdir.txt" -Force
 
 # Load version from version.json
 $versionFile = Join-Path $PSScriptRoot "config\version.json"
@@ -35,9 +35,9 @@ function Show-MainMenu {
     }
 
     $docsUrls = @{
-        "1" = "https://github.com/emylfy/simplify11/blob/main/docs/tweaks_guide.md"
-        "2" = "https://github.com/emylfy/simplify11/blob/main/docs/autounattend_guide.md"
-        "3" = "https://github.com/emylfy/simplify11/blob/main/docs/tests.md"
+        "1" = "https://github.com/emylfy/winrift/blob/main/docs/tweaks_guide.md"
+        "2" = "https://github.com/emylfy/winrift/blob/main/docs/autounattend_guide.md"
+        "3" = "https://github.com/emylfy/winrift/blob/main/docs/tests.md"
     }
 
     :outerLoop while ($true) {
