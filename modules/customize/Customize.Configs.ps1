@@ -44,7 +44,7 @@ function Set-VSCodeConfig {
     if (-not (Test-Path $targetPath)) {
         Write-Log -Message "Target directory not found: $targetPath" -Level ERROR
         Write-Log -Message "Make sure the editor is installed before applying configs." -Level WARNING
-        Pause-ForUser
+        Wait-ForUser
         return
     }
 
@@ -57,7 +57,7 @@ function Set-VSCodeConfig {
                      -FileNames $files `
                      -TargetDir $targetPath `
                      -ConfigName "VSCode"
-    Pause-ForUser
+    Wait-ForUser
 }
 
 function Set-OtherVSCodeConfig {
@@ -66,7 +66,7 @@ function Set-OtherVSCodeConfig {
     $editorPath = Read-Host "Enter path"
     if (-not $editorPath -or -not (Test-Path $editorPath)) {
         Write-Log -Message "Path does not exist: $editorPath" -Level ERROR
-        Pause-ForUser
+        Wait-ForUser
         return
     }
     Set-VSCodeConfig $editorPath
@@ -117,7 +117,7 @@ function Set-WinTermConfig {
                     Write-Log -Message "Scoop is required but not installed." -Level WARNING
                     Write-Log -Message "Install scoop first: https://scoop.sh" -Level INFO
                     Write-Log -Message "Run: irm get.scoop.sh | iex" -Level INFO
-                    Pause-ForUser
+                    Wait-ForUser
                     return
                 }
                 Write-Log -Message "Adding nerd-fonts bucket..." -Level INFO
@@ -134,7 +134,7 @@ function Set-WinTermConfig {
             default {
                 # User cancelled font selection — skip config if it was a combo choice
                 if ($choice -eq "1") {
-                    Pause-ForUser
+                    Wait-ForUser
                     return
                 }
             }
@@ -158,7 +158,7 @@ function Set-WinTermConfig {
         } else {
             if (-not $fontInstalled -and $installFont) {
                 Write-Log -Message "Font installation was cancelled. Skipping config." -Level WARNING
-                Pause-ForUser
+                Wait-ForUser
                 return
             }
             if (-not $installFont) {
@@ -172,7 +172,7 @@ function Set-WinTermConfig {
         }
     }
 
-    Pause-ForUser
+    Wait-ForUser
 }
 
 function Set-PwshConfig {
@@ -203,7 +203,7 @@ function Set-PwshConfig {
                          -ConfigName "PowerShell 7"
     }
 
-    Pause-ForUser
+    Wait-ForUser
 }
 
 function Set-OhMyPoshConfig {
@@ -223,7 +223,7 @@ function Set-OhMyPoshConfig {
             "1" {
                 $installed = Install-WingetPackage "JanDeDobbeleer.OhMyPosh" "Oh My Posh"
                 if (-not $installed) {
-                    Pause-ForUser
+                    Wait-ForUser
                     return
                 }
             }
@@ -240,7 +240,7 @@ function Set-OhMyPoshConfig {
                      -FileNames @("zen.toml") `
                      -TargetDir "$env:USERPROFILE\.config\ohmyposh" `
                      -ConfigName "Oh My Posh"
-    Pause-ForUser
+    Wait-ForUser
 }
 
 function Install-Starship {
@@ -261,7 +261,7 @@ function Install-Starship {
             "1" {
                 $installed = Install-WingetPackage "Starship.Starship" "Starship"
                 if (-not $installed) {
-                    Pause-ForUser
+                    Wait-ForUser
                     return
                 }
             }
@@ -278,7 +278,7 @@ function Install-Starship {
     if (Get-Command pwsh -ErrorAction SilentlyContinue) {
         Write-Log -Message "PS 7+  profile: $docsDir\PowerShell\Microsoft.PowerShell_profile.ps1" -Level INFO
     }
-    Pause-ForUser
+    Wait-ForUser
 }
 
 function Set-FastFetchConfig {
@@ -298,7 +298,7 @@ function Set-FastFetchConfig {
             "1" {
                 $installed = Install-WingetPackage "Fastfetch-cli.Fastfetch" "FastFetch"
                 if (-not $installed) {
-                    Pause-ForUser
+                    Wait-ForUser
                     return
                 }
             }
@@ -316,7 +316,7 @@ function Set-FastFetchConfig {
                      -TargetDir "$env:USERPROFILE\.config\fastfetch" `
                      -TargetFileNames @("cat.txt", "config.jsonc") `
                      -ConfigName "FastFetch"
-    Pause-ForUser
+    Wait-ForUser
 }
 
 function Restore-ConfigBackup {
@@ -348,7 +348,7 @@ function Restore-ConfigBackup {
 
     if ($found.Count -eq 0) {
         Write-Log -Message "No config backups found." -Level INFO
-        Pause-ForUser
+        Wait-ForUser
         return
     }
 
@@ -391,5 +391,5 @@ function Restore-ConfigBackup {
             Write-Log -Message "Failed to restore $($item.Name): $($_.Exception.Message)" -Level ERROR
         }
     }
-    Pause-ForUser
+    Wait-ForUser
 }

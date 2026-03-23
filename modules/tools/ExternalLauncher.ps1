@@ -14,4 +14,4 @@ if ($tool) {
 }
 
 Invoke-Tool $ToolId
-Pause-ForUser
+Wait-ForUser

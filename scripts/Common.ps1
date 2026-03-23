@@ -31,7 +31,7 @@ function Write-Log {
     }
 }
 
-function Pause-ForUser {
+function Wait-ForUser {
     Read-Host "Press Enter to continue"
 }
 
@@ -210,14 +210,14 @@ function Save-TweakBackup {
 function Restore-TweakBackup {
     if (-not (Test-Path $script:TweakBackupDir)) {
         Write-Log -Message "No tweak backups found." -Level INFO
-        Pause-ForUser
+        Wait-ForUser
         return
     }
 
     $backups = Get-ChildItem -Path $script:TweakBackupDir -Filter "backup_*.json" -ErrorAction SilentlyContinue | Sort-Object LastWriteTime -Descending
     if ($backups.Count -eq 0) {
         Write-Log -Message "No tweak backups found." -Level INFO
-        Pause-ForUser
+        Wait-ForUser
         return
     }
 
@@ -258,7 +258,7 @@ function Restore-TweakBackup {
 
     Write-Log -Message "Restored $restored of $($selected.entries.Count) registry values. Errors: $errors" -Level $(if ($errors -eq 0) { 'SUCCESS' } else { 'WARNING' })
     Write-Log -Message "A system restart is recommended for changes to take effect." -Level INFO
-    Pause-ForUser
+    Wait-ForUser
 }
 
 function Get-ToolConfig {

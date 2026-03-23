@@ -5,7 +5,7 @@ function Set-ShortDateHours {
     Set-RegistryValue -Path "HKCU:\Control Panel\International" -Name "sShortTime" -Type String -Value "HH:mm" -Message "Short time format set to HH:mm"
     Set-RegistryValue -Path "HKCU:\Control Panel\International" -Name "sTimeFormat" -Type String -Value "HH:mm:ss" -Message "Time format set to HH:mm:ss"
     Write-Log -Message "Changes will take effect after restart." -Level INFO
-    Pause-ForUser
+    Wait-ForUser
 }
 
 function Disable-QuickAccess {
@@ -58,7 +58,7 @@ function Disable-QuickAccess {
             [System.Runtime.InteropServices.Marshal]::ReleaseComObject($shell) | Out-Null
         }
     }
-    Pause-ForUser
+    Wait-ForUser
 }
 
 function Expand-StartFolders {
@@ -69,6 +69,6 @@ function Expand-StartFolders {
         Start-AdminProcess -ScriptPath $organizerPath
     } else {
         Write-Log -Message "Organizer.ps1 not found at: $organizerPath" -Level ERROR
-        Pause-ForUser
+        Wait-ForUser
     }
 }

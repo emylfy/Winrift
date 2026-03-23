@@ -35,7 +35,7 @@ function Install-UniGetUI {
         Write-Log -Message "UniGetUI could not be installed via winget. Opening website for manual download..." -Level ERROR
         Start-Process "https://www.marticliment.com/unigetui/"
     }
-    Pause-ForUser
+    Wait-ForUser
 }
 
 function Show-AppCategoryMenu {

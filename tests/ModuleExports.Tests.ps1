@@ -71,7 +71,7 @@ Describe 'Common.ps1 exports' {
     }
 
     It 'defines function <_>' -ForEach @(
-        'Write-Log', 'Pause-ForUser', 'Show-MenuBox',
+        'Write-Log', 'Wait-ForUser', 'Show-MenuBox',
         'Assert-AdminOrElevate', 'Initialize-Logging', 'Invoke-MenuLoop',
         'Set-RegistryValue', 'Get-ToolConfig', 'Invoke-SecureScript',
         'Invoke-SecureDownload', 'Confirm-ExternalTool', 'Invoke-Tool',

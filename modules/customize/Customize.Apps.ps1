@@ -1,26 +1,26 @@
 function Invoke-Rectify11 {
     Clear-Host
     Invoke-Tool "rectify11"
-    Pause-ForUser
+    Wait-ForUser
 }
 
 function Install-SpotX {
     Clear-Host
     Invoke-Tool "spotx"
-    Pause-ForUser
+    Wait-ForUser
 }
 
 function Install-Spicetify {
     Clear-Host
     Invoke-Tool "spicetify"
-    Pause-ForUser
+    Wait-ForUser
 }
 
 function Install-SteamMillennium {
     Clear-Host
     $result = Invoke-Tool "steam-millennium" -Wait -ErrorMessage "Failed to install Steam Millennium. Make sure Steam is installed"
     if (-not $result) {
-        Pause-ForUser
+        Wait-ForUser
         return
     }
 
@@ -34,7 +34,7 @@ function Install-SteamMillennium {
     if ($installChoice -eq 'y') {
         Invoke-Tool "spacetheme"
     }
-    Pause-ForUser
+    Wait-ForUser
 }
 
 function Install-MacOSCursor {
@@ -43,7 +43,7 @@ function Install-MacOSCursor {
     $tool = Get-ToolConfig "macos-cursor"
     if (-not $tool) {
         Write-Log -Message "macOS Cursor tool config not found." -Level ERROR
-        Pause-ForUser
+        Wait-ForUser
         return
     }
 
@@ -81,7 +81,7 @@ function Install-MacOSCursor {
         $infFiles = Get-ChildItem -Path $extractPath -Filter "*.inf" -Recurse
         if ($infFiles.Count -eq 0) {
             Write-Log -Message "No cursor .inf files found in archive." -Level ERROR
-            Pause-ForUser
+            Wait-ForUser
             return
         }
 
@@ -121,7 +121,7 @@ function Install-MacOSCursor {
         $themeName = (Split-Path $cursorDir -Leaf)
         if ($themeName -match '(\.\.|[\\\/])') {
             Write-Log -Message "Invalid theme directory name: $themeName" -Level ERROR
-            Pause-ForUser
+            Wait-ForUser
             return
         }
         $persistDir = Join-Path "$env:USERPROFILE\.cursors" $themeName
@@ -180,7 +180,7 @@ function Install-MacOSCursor {
 
         if ($cursorMap.Count -eq 0) {
             Write-Log -Message "No cursor mappings found. Installation cannot proceed." -Level ERROR
-            Pause-ForUser
+            Wait-ForUser
             return
         }
 
@@ -224,5 +224,5 @@ function Install-MacOSCursor {
         Remove-Item $extractPath -Recurse -Force -ErrorAction SilentlyContinue
     }
 
-    Pause-ForUser
+    Wait-ForUser
 }

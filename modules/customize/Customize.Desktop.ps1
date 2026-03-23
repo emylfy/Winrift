@@ -25,7 +25,7 @@ function Install-GlazeWM {
         }
         default { return }
     }
-    Pause-ForUser
+    Wait-ForUser
 }
 
 function Copy-GlazeWMConfig {
@@ -70,28 +70,28 @@ function Install-StatusBar {
         }
         default { return }
     }
-    Pause-ForUser
+    Wait-ForUser
 }
 
 function Install-FlowLauncher {
     Clear-Host
     Write-Log -Message "Flow Launcher - productivity app launcher (Alfred/Raycast for Windows)" -Level INFO
     Install-WingetPackage "Flow-Launcher.Flow-Launcher" "Flow Launcher"
-    Pause-ForUser
+    Wait-ForUser
 }
 
 function Install-Windhawk {
     Clear-Host
     Write-Log -Message "Windhawk - marketplace for reversible Windows UI mods" -Level INFO
     Install-WingetPackage "RamenSoftware.Windhawk" "Windhawk"
-    Pause-ForUser
+    Wait-ForUser
 }
 
 function Install-Rainmeter {
     Clear-Host
     Write-Log -Message "Rainmeter - desktop customization with widgets and skins" -Level INFO
     Install-WingetPackage "Rainmeter.Rainmeter" "Rainmeter"
-    Pause-ForUser
+    Wait-ForUser
 }
 
 function Open-WallpaperBrowser {
@@ -111,5 +111,5 @@ function Open-WallpaperBrowser {
         "3" { Start-Process "https://wallhaven.cc/search?categories=100&purity=100&sorting=toplist&order=desc" }
         default { return }
     }
-    Pause-ForUser
+    Wait-ForUser
 }
