@@ -16,7 +16,7 @@ function Show-PrivacySexyMenu {
             Read-Host "Press Enter to continue"
         }
         "R" = { Start-Process $tool.docs }
-    } -ExitKey "3" -OnExit { & "$PSScriptRoot\SecurityMenu.ps1" }
+    } -ExitKey "3"
 }
 
 Show-PrivacySexyMenu

@@ -341,5 +341,4 @@ function Show-BenchmarkMenu {
 if ($MyInvocation.InvocationName -ne '.') {
     Assert-AdminOrElevate
     Show-BenchmarkMenu
-    Invoke-ReturnToMenu
 }

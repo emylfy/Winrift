@@ -20,14 +20,16 @@ function Show-MainMenu {
         "[2] Power Management",
         "[3] NVIDIA/AMD GPU Tweaks",
         "[4] Free Up Space",
+        "[5] Restore Previous Tweaks",
         "---",
-        "[5] Back to menu"
-    ) -Prompt "Enter your choice (1-5)" -Actions @{
+        "[6] Back to menu"
+    ) -Prompt "Enter your choice (1-6)" -Actions @{
         "1" = { Invoke-UniversalTweaks }
         "2" = { Invoke-PowerMenu }
         "3" = { Show-GPUMenu }
         "4" = { Clear-SystemSpace }
-    } -ExitKey "5" -OnExit { Invoke-ReturnToMenu }
+        "5" = { Restore-TweakBackup }
+    } -ExitKey "6"
 }
 
 Show-MainMenu

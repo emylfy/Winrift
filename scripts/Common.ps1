@@ -35,19 +35,6 @@ function Pause-ForUser {
     Read-Host "Press Enter to continue"
 }
 
-function Invoke-ReturnToMenu {
-    $launchDirFile = "$env:TEMP\winrift_launchdir.txt"
-    if (Test-Path $launchDirFile) {
-        $rootPath = (Get-Content $launchDirFile -Raw).Trim()
-        $mainScript = Join-Path $rootPath "Winrift.ps1"
-        if (Test-Path $mainScript) {
-            & $mainScript
-            return
-        }
-    }
-    exit
-}
-
 function Show-MenuBox {
     param(
         [string]$Title,
@@ -150,6 +137,16 @@ function Invoke-MenuLoop {
     }
 }
 
+$script:TweakBackupEntries = [System.Collections.Generic.List[hashtable]]::new()
+$_baseDir = $env:USERPROFILE
+if (-not $_baseDir) { $_baseDir = $env:HOME }
+if (-not $_baseDir) { $_baseDir = [System.IO.Path]::GetTempPath() }
+$script:TweakBackupDir = Join-Path $_baseDir "Winrift\tweaks"
+
+function Start-TweakSession {
+    $script:TweakBackupEntries.Clear()
+}
+
 function Set-RegistryValue {
     param (
         [string]$Path,
@@ -160,7 +157,26 @@ function Set-RegistryValue {
     )
 
     try {
-        if (-not (Test-Path $Path)) {
+        # Capture previous value for rollback
+        $existed = Test-Path $Path
+        $prevValue = $null
+        $prevType = $null
+        if ($existed) {
+            $prop = Get-ItemProperty -Path $Path -Name $Name -ErrorAction SilentlyContinue
+            if ($null -ne $prop -and $null -ne $prop.$Name) {
+                $prevValue = $prop.$Name
+                $prevType = (Get-Item $Path).GetValueKind($Name).ToString()
+            }
+        }
+        $script:TweakBackupEntries.Add(@{
+            Path      = $Path
+            Name      = $Name
+            PrevValue = $prevValue
+            PrevType  = $prevType
+            Existed   = ($null -ne $prevValue)
+        })
+
+        if (-not $existed) {
             New-Item -Path $Path -Force | Out-Null
         }
         Set-ItemProperty -Path $Path -Name $Name -Type $Type -Value $Value -Force
@@ -175,6 +191,74 @@ function Set-RegistryValue {
     catch {
         Write-Log -Message "Failed to set $Name at $Path. Error: $_" -Level ERROR
     }
+}
+
+function Save-TweakBackup {
+    if ($script:TweakBackupEntries.Count -eq 0) { return $null }
+    [System.IO.Directory]::CreateDirectory($script:TweakBackupDir) | Out-Null
+    $backup = @{
+        timestamp = (Get-Date -Format 'yyyy-MM-ddTHH:mm:ss')
+        entries   = @($script:TweakBackupEntries)
+    }
+    $fileName = "backup_$(Get-Date -Format 'yyyy-MM-dd_HH-mm-ss').json"
+    $filePath = Join-Path $script:TweakBackupDir $fileName
+    $backup | ConvertTo-Json -Depth 5 | Set-Content -Path $filePath -Encoding UTF8
+    Write-Log -Message "Tweak backup saved: $filePath ($($script:TweakBackupEntries.Count) entries)" -Level SUCCESS
+    return $filePath
+}
+
+function Restore-TweakBackup {
+    if (-not (Test-Path $script:TweakBackupDir)) {
+        Write-Log -Message "No tweak backups found." -Level INFO
+        Pause-ForUser
+        return
+    }
+
+    $backups = Get-ChildItem -Path $script:TweakBackupDir -Filter "backup_*.json" -ErrorAction SilentlyContinue | Sort-Object LastWriteTime -Descending
+    if ($backups.Count -eq 0) {
+        Write-Log -Message "No tweak backups found." -Level INFO
+        Pause-ForUser
+        return
+    }
+
+    $menuItems = @()
+    for ($i = 0; $i -lt [math]::Min($backups.Count, 10); $i++) {
+        $b = Get-Content $backups[$i].FullName -Raw | ConvertFrom-Json
+        $count = $b.entries.Count
+        $menuItems += "[$($i + 1)] $($b.timestamp) ($count changes)"
+    }
+    $cancelIdx = [math]::Min($backups.Count, 10) + 1
+    $menuItems += "---"
+    $menuItems += "[$cancelIdx] Cancel"
+
+    Show-MenuBox -Title "Restore Tweak Backup" -Items $menuItems
+    $choice = Read-Host ">"
+
+    $idx = 0
+    if (-not ([int]::TryParse($choice, [ref]$idx)) -or $idx -lt 1 -or $idx -gt $backups.Count -or $idx -eq $cancelIdx) { return }
+
+    $selected = Get-Content $backups[$idx - 1].FullName -Raw | ConvertFrom-Json
+    $restored = 0
+    $errors = 0
+
+    foreach ($entry in $selected.entries) {
+        try {
+            if ($entry.Existed -and $null -ne $entry.PrevValue) {
+                $type = if ($entry.PrevType) { $entry.PrevType } else { "String" }
+                Set-ItemProperty -Path $entry.Path -Name $entry.Name -Type $type -Value $entry.PrevValue -Force
+                $restored++
+            } elseif (-not $entry.Existed) {
+                Remove-ItemProperty -Path $entry.Path -Name $entry.Name -ErrorAction SilentlyContinue
+                $restored++
+            }
+        } catch {
+            $errors++
+        }
+    }
+
+    Write-Log -Message "Restored $restored of $($selected.entries.Count) registry values. Errors: $errors" -Level $(if ($errors -eq 0) { 'SUCCESS' } else { 'WARNING' })
+    Write-Log -Message "A system restart is recommended for changes to take effect." -Level INFO
+    Pause-ForUser
 }
 
 function Get-ToolConfig {

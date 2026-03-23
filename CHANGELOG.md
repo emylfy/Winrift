@@ -5,6 +5,27 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project uses [Calendar Versioning](https://calver.org/) (YY.M format).
 
+## [26.3] - 2026-03-24
+
+### March 24 — Kill navigation recursion, tweak rollback, CI hardening, cleanup
+
+- Removed `Invoke-ReturnToMenu` — eliminated recursive script re-invocation via temp file; sub-windows now close naturally when module exits
+- Removed `-NoExit` from all `Start-AdminProcess`/`Start-UserProcess` calls in `winrift.ps1` — sub-windows are ephemeral
+- Removed recursive `& "$PSScriptRoot\SecurityMenu.ps1"` calls from `DefendNot.ps1`, `RemoveWindowsAI.ps1` — replaced with `return`
+- Removed `OnExit { Invoke-ReturnToMenu }` from `Tweaks.ps1`, `SecurityMenu.ps1`, `WinScript.ps1`, `PrivacySexy.ps1`
+- Removed unused `chocolatey` entry from `tools.json`
+- Added tweak rollback system — `Start-TweakSession`, `Save-TweakBackup`, `Restore-TweakBackup` in `Common.ps1`; `Set-RegistryValue` now auto-captures previous values before writing
+- Added "Restore Previous Tweaks" menu option to `Tweaks.ps1`
+- Added tweak consequence warnings: RAM check for Memory tweaks (<16GB), laptop detection for Power tweaks (ChassisTypes), UNSAFE_COMMAND_BUFFER_REUSE warning for DirectX, AutoEndTasks data loss warning, maintenance disable warning
+- Changed `AdminLaunch.ps1` `$Arguments` parameter from `[string]` to `[string[]]` — fixes broken paths with spaces from `.Split(' ')`
+- Changed CI (`lint.yml`) from `ubuntu-latest` to `windows-latest` for both lint and test jobs
+- Changed CI lint job to `exit 1` on PSScriptAnalyzer findings (was silent `Write-Warning`)
+- Changed `powercfg` in `Tweaks.Power.ps1` from useless `try/catch` to `$LASTEXITCODE` check
+- Changed Docs submenu `break docsLoop` to `continue docsLoop` — user can open multiple docs without re-entering submenu
+- Changed `ExternalLauncher.ps1` — added `Pause-ForUser` so user sees result before window closes
+- Changed `UniGetUI.ps1` — removed `Assert-WingetAvailable` from startup (1-3s delay); winget only checked when actually installing
+- Updated tests: removed `Invoke-ReturnToMenu` tests, added tweak backup system tests, added multi-line log tests
+
 ## [26.3] - 2026-03-23
 
 ### March 23 — Rename Windots to Customize, fix pipeline leaks, restore backups, config quality

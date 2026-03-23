@@ -14,7 +14,9 @@ function Invoke-PowerMenu {
     $choice = Read-Host ">"
     if ($choice -eq "1") {
         New-SafeRestorePoint
+        Start-TweakSession
         Invoke-AggressivePowerTweaks
+        Save-TweakBackup
         Write-Host ""
         Write-Host "$Green Power Management tweaks applied successfully.$Reset"
         Write-Host "$Yellow A system restart is recommended for all changes to take effect.$Reset"
@@ -25,6 +27,12 @@ function Invoke-PowerMenu {
 
 function Invoke-AggressivePowerTweaks {
     Write-Host "`nApplying Aggressive Power Management tweaks...`n"
+
+    $chassis = (Get-CimInstance Win32_SystemEnclosure -ErrorAction SilentlyContinue).ChassisTypes
+    # ChassisTypes 9,10,14 = Laptop/Notebook/Sub Notebook
+    if ($chassis | Where-Object { $_ -in @(9, 10, 14) }) {
+        Write-Log -Message "WARNING: Laptop detected. These tweaks disable sleep/idle states and ASPM, which increases heat and battery drain. Skip if not on AC power." -Level WARNING
+    }
 
     # source - https://github.com/ancel1x/Ancels-Performance-Batch
     Set-RegistryValue -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Power" -Name "CsEnabled" -Type "DWord" -Value "0" -Message "Disabled connected standby for better performance"
@@ -43,11 +51,11 @@ function Invoke-AggressivePowerTweaks {
     # Activate Hidden Ultimate Performance Power Plan
     # e9a42b02-... = built-in Ultimate Performance scheme GUID (hidden by default)
     # eeeeeeee-... = custom GUID for the duplicated plan to avoid conflicts
-    try {
-        powercfg -duplicatescheme e9a42b02-d5df-448d-aa00-03f14749eb61 eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee 2>$null
-        powercfg -setactive eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee
+    powercfg -duplicatescheme e9a42b02-d5df-448d-aa00-03f14749eb61 eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee 2>$null
+    powercfg -setactive eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee
+    if ($LASTEXITCODE -eq 0) {
         Write-Log -Message "Activated Ultimate Performance power plan" -Level SUCCESS
-    } catch {
-        Write-Log -Message "Failed to activate Ultimate Performance plan: $($_.Exception.Message)" -Level ERROR
+    } else {
+        Write-Log -Message "Failed to activate Ultimate Performance plan (exit code: $LASTEXITCODE)" -Level ERROR
     }
 }

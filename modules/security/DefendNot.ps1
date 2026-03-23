@@ -52,11 +52,9 @@ while ($true) {
 
             $null = Invoke-Tool "defendnot" -SkipConfirm
             Read-Host "Press Enter to continue"
-            & "$PSScriptRoot\SecurityMenu.ps1"
             return
         }
         "N" {
-            & "$PSScriptRoot\SecurityMenu.ps1"
             return
         }
         "R" {

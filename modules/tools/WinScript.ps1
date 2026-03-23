@@ -16,7 +16,7 @@ function Show-WinScriptMenu {
             Read-Host "Press Enter to continue"
         }
         "R" = { Start-Process $tool.docs }
-    } -ExitKey "3" -OnExit { Invoke-ReturnToMenu }
+    } -ExitKey "3"
 }
 
 Show-WinScriptMenu

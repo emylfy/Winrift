@@ -17,8 +17,8 @@ function Show-InstallPrompt {
 
     switch ($choice) {
         "1" { Install-UniGetUI }
-        "2" { Invoke-ReturnToMenu; return }
-        default { Invoke-ReturnToMenu; return }
+        "2" { return }
+        default { return }
     }
 }
 
@@ -96,11 +96,6 @@ function Show-AppCategoryMenu {
 
 $Host.UI.RawUI.WindowTitle = "Winrift - App Bundles"
 
-if (-not (Assert-WingetAvailable)) {
-    Invoke-ReturnToMenu
-    return
-}
-
 $isInstalled = Test-Path "$env:LOCALAPPDATA\Programs\UniGetUI\UniGetUI.exe"
 
 if (-not $isInstalled) {
@@ -108,4 +103,3 @@ if (-not $isInstalled) {
 }
 
 Show-AppCategoryMenu
-Invoke-ReturnToMenu

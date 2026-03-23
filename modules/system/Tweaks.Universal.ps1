@@ -54,6 +54,7 @@ function Invoke-UniversalTweaks {
         if ($selection -eq "B" -or $selection -eq "b") { return }
 
         New-SafeRestorePoint
+        Start-TweakSession
 
         $tweakMap = @{
             "1"  = { Invoke-SystemLatencyTweaks }
@@ -104,6 +105,7 @@ function Invoke-UniversalTweaks {
         }
 
         Write-Progress -Completed -Activity "Applying System Tweaks"
+        Save-TweakBackup
 
         Write-Host ""
         Write-Host "$Green +---------------------------------------------+$Reset"
@@ -257,6 +259,7 @@ function Invoke-BootOptimizationTweaks {
 
 function Invoke-SystemMaintenanceTweaks {
     Write-Host "`nApplying System Maintenance tweaks...`n"
+    Write-Log -Message "WARNING: This disables Windows automatic maintenance, including disk optimization and security scans." -Level WARNING
 
     Set-RegistryValue -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Schedule\Maintenance" -Name "MaintenanceDisabled" -Type "DWord" -Value "1" -Message "Disabled automatic maintenance for better performance"
 
@@ -268,6 +271,7 @@ function Invoke-SystemMaintenanceTweaks {
 
 function Invoke-UIResponsivenessTweaks {
     Write-Host "`nApplying UI Responsiveness tweaks...`n"
+    Write-Log -Message "WARNING: AutoEndTasks will force-close unresponsive apps after ${WAIT_KILL_APP_TIMEOUT_MS}ms. Unsaved work may be lost." -Level WARNING
 
     Set-RegistryValue -Path "HKCU:\Control Panel\Desktop" -Name "AutoEndTasks" -Type "String" -Value "1" -Message "Enabled automatic ending of tasks"
     Set-RegistryValue -Path "HKCU:\Control Panel\Desktop" -Name "HungAppTimeout" -Type "String" -Value $HUNG_APP_TIMEOUT_MS -Message "Reduced hung application timeout"
@@ -280,6 +284,11 @@ function Invoke-UIResponsivenessTweaks {
 function Invoke-MemoryTweaks {
     Write-Host "`nApplying Memory Optimization tweaks...`n"
 
+    $totalRamGB = [math]::Round((Get-CimInstance Win32_ComputerSystem).TotalPhysicalMemory / 1GB, 0)
+    if ($totalRamGB -lt 16) {
+        Write-Log -Message "WARNING: Your system has ${totalRamGB}GB RAM. DisablePagingExecutive and LargeSystemCache are risky on systems with <16GB and may cause instability under load." -Level WARNING
+    }
+
     # source - https://github.com/SanGraphic/QuickBoost/blob/main/v2/MemoryTweaks.bat
     Set-RegistryValue -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Memory Management" -Name "LargeSystemCache" -Type "DWord" -Value "1" -Message "Enabled large system cache for better performance"
     Set-RegistryValue -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Memory Management" -Name "DisablePagingCombining" -Type "DWord" -Value "1" -Message "Disabled memory page combining"
@@ -288,6 +297,7 @@ function Invoke-MemoryTweaks {
 
 function Invoke-DirectXTweaks {
     Write-Host "`nApplying DirectX tweaks...`n"
+    Write-Log -Message "WARNING: UNSAFE_COMMAND_BUFFER_REUSE may cause GPU artifacts or crashes on some hardware. If you experience graphical glitches, revert this setting." -Level WARNING
 
     # source - https://youtu.be/itTcqcJxtbo
     Set-RegistryValue -Path "HKLM:\SOFTWARE\Microsoft\DirectX" -Name "D3D12_ENABLE_UNSAFE_COMMAND_BUFFER_REUSE" -Type "DWord" -Value "1" -Message "Enabled D3D12 command buffer reuse"

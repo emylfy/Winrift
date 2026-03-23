@@ -11,7 +11,7 @@ on:
 jobs:
   lint:
     name: Lint PowerShell
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
 
@@ -39,14 +39,15 @@ jobs:
 
           if ($results) {
             $results | Format-Table -AutoSize
-            Write-Warning "PSScriptAnalyzer found $($results.Count) issue(s)."
+            Write-Error "PSScriptAnalyzer found $($results.Count) issue(s)."
+            exit 1
           } else {
             Write-Host "No issues found." -ForegroundColor Green
           }
 
   test:
     name: Run Pester Tests
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
 

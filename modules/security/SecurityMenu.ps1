@@ -17,7 +17,7 @@ function Show-SecurityMenu {
         "1" = { Start-AdminProcess -ScriptPath "$menuRoot\DefendNot.ps1" -NoExit }
         "2" = { Start-AdminProcess -ScriptPath "$menuRoot\RemoveWindowsAI.ps1" -NoExit }
         "3" = { Start-AdminProcess -ScriptPath "$menuRoot\PrivacySexy.ps1" -NoExit }
-    } -ExitKey "4" -OnExit { Invoke-ReturnToMenu }
+    } -ExitKey "4"
 }
 
 Show-SecurityMenu

@@ -1,5 +1,4 @@
 . "$PSScriptRoot\scripts\Common.ps1"
-$PSScriptRoot | Set-Content "$env:TEMP\winrift_launchdir.txt" -Force
 
 # Load version from version.json
 $versionFile = Join-Path $PSScriptRoot "config\version.json"
@@ -68,9 +67,9 @@ function Show-MainMenu {
             }
             # Customize and App Bundles run without admin (user-space tools)
             if ($choice -in @("5", "6")) {
-                Start-UserProcess -ScriptPath $targetScript -NoExit
+                Start-UserProcess -ScriptPath $targetScript
             } else {
-                Start-AdminProcess -ScriptPath $targetScript -NoExit
+                Start-AdminProcess -ScriptPath $targetScript
             }
             continue outerLoop
         }
@@ -96,12 +95,12 @@ function Show-MainMenu {
 
                 if ($communityTools.ContainsKey($communityChoice)) {
                     $launcherPath = "$PSScriptRoot\modules\tools\ExternalLauncher.ps1"
-                    Start-AdminProcess -ScriptPath $launcherPath -Arguments "-ToolId $($communityTools[$communityChoice])" -NoExit
+                    Start-AdminProcess -ScriptPath $launcherPath -Arguments @("-ToolId", $communityTools[$communityChoice])
                     break communityLoop
                 }
 
                 if ($communityScripts.ContainsKey($communityChoice)) {
-                    Start-AdminProcess -ScriptPath $communityScripts[$communityChoice] -NoExit
+                    Start-AdminProcess -ScriptPath $communityScripts[$communityChoice]
                     break communityLoop
                 }
             }
@@ -129,7 +128,7 @@ function Show-MainMenu {
 
                 if ($docsUrls.ContainsKey($docsChoice)) {
                     Start-Process $docsUrls[$docsChoice]
-                    break docsLoop
+                    continue docsLoop
                 }
             }
             continue outerLoop

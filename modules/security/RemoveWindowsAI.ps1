@@ -31,11 +31,9 @@ while ($true) {
                 Remove-Item $tempScript -Force -ErrorAction SilentlyContinue
             }
             Read-Host "Press Enter to continue"
-            & "$PSScriptRoot\SecurityMenu.ps1"
             return
         }
         "N" {
-            & "$PSScriptRoot\SecurityMenu.ps1"
             return
         }
         "R" {

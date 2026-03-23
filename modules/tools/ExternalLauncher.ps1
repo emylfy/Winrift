@@ -14,5 +14,4 @@ if ($tool) {
 }
 
 $result = Invoke-Tool $ToolId
-if (-not $result) { exit 1 }
-exit
+Pause-ForUser

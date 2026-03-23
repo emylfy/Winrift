@@ -15,5 +15,4 @@ try {
     Show-CustomizeMenu
 } finally {
     Stop-Transcript -ErrorAction SilentlyContinue
-    Invoke-ReturnToMenu
 }

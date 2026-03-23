@@ -103,14 +103,6 @@
             "docs": "https://github.com/ful1e5/apple_cursor"
         },
         {
-            "id": "chocolatey",
-            "name": "Chocolatey",
-            "description": "Windows package manager",
-            "type": "irm",
-            "url": "https://community.chocolatey.org/install.ps1",
-            "docs": "https://chocolatey.org"
-        },
-        {
             "id": "rectify11",
             "name": "Rectify11",
             "description": "Windows 11 UI consistency fixes",

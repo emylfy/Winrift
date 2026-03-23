@@ -45,7 +45,7 @@ function Show-DeviceMenu {
         $choice = Read-Host ">"
 
         if ($choice -eq "") {
-            Invoke-ReturnToMenu; return
+            return
         } elseif ($choice -eq "3") {
             Install-IntelDSA
         } elseif ($choice -eq "5") {
