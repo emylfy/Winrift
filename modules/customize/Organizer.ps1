@@ -98,9 +98,7 @@ foreach ($targetDir in $targetPaths) {
 
     $subFolders = Get-ChildItem -Path $targetDir -Directory | Where-Object {
         $_.Name -notmatch $excludeRegex -and
-        -not $excludeHash.Contains($_.Name) -and
-        -not (Get-ChildItem -Path $_.FullName -Recurse -ErrorAction SilentlyContinue |
-              Where-Object { Test-IsExcluded -BaseName $_.BaseName -Name $_.Name })
+        -not $excludeHash.Contains($_.Name)
     }
 
     foreach ($folder in $subFolders) {

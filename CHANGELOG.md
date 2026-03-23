@@ -5,6 +5,52 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project uses [Calendar Versioning](https://calver.org/) (YY.M format).
 
+## [26.3] - 2026-03-23
+
+### March 23 — Rename Windots to Customize, fix pipeline leaks, restore backups, config quality
+
+- Renamed `modules/windots/` to `modules/customize/` — all files renamed from `Windots.*` to `Customize.*`
+- Added `Customize.Desktop.ps1` — GlazeWM, Zebar/YASB, Flow Launcher, Windhawk, Rainmeter, wallpaper browser
+- Added GlazeWM config (`config/glazewm/config.yaml`) with height resize keybindings (alt+i/o)
+- Added PowerShell 7 profile to `terminal.json`
+- Added `Restore-ConfigBackup` function — scans for `.bak` files across all config locations, shows date/size, restore one or all
+- Added `Install-WingetPackage` helper to `Common.ps1` — unified winget install with exit code handling, already-installed detection, `| Out-Host` to prevent pipeline pollution
+- Added `Pause-ForUser` helper to `Common.ps1`
+- Added `Start-UserProcess` to `AdminLaunch.ps1` for launching modules without elevation (WT tab support)
+- Added Wiki link to Docs & Guides submenu
+- Added `rectify11` entry to `tools.json`
+- Changed `Show-MenuBox` to auto-calculate width from content (no more overflow past box borders)
+- Changed Customize and App Bundles to run without admin elevation (`Start-UserProcess`)
+- Changed `Invoke-ReturnToMenu` placement inside `try/finally` in `Customize.ps1`
+- Changed `Copy-ConfigFiles` backup logic — preserves original `.bak`, won't overwrite on repeat runs
+- Changed `Set-PwshConfig` to use `[Environment]::GetFolderPath('MyDocuments')` instead of hardcoded path
+- Changed `Set-WinTermConfig` to properly handle font cancel in combo selection
+- Changed Oh My Posh, Starship, FastFetch installers to use `Install-WingetPackage` instead of raw `Start-Process winget`
+- Changed Starship, Oh My Posh, FastFetch menus — moved descriptions inside menu box instead of loose `Write-Log` above
+- Changed `Install-Starship` to show both PS 5.1 and PS 7+ profile paths
+- Changed `Disable-QuickAccess` — proper COM object cleanup, polling-based Explorer restart
+- Changed `Install-MacOSCursor` — inlined download with `Invoke-WebRequest`/`Get-FileHash`, `try/finally` for temp cleanup, combined path traversal regex
+- Changed macOS Cursor in `tools.json` from `browser` type to `download` with SHA256 hash verification
+- Changed UniGetUI package ID from `MartiCliment.UniGetUI` to `Devolutions.UniGetUI`
+- Changed UniGetUI install check from slow `winget list` to instant `Test-Path` for UniGetUI.exe
+- Changed PC Manager install from `Microsoft.PCManager` to `9PM860492SZD --source msstore`
+- Changed Intel DSA to launch after install/already-installed
+- Changed DefendNot to clean previous installation before re-install (fixes ExtractToDirectory conflict)
+- Changed RemoveWindowsAI to run as separate `powershell.exe` process (fixes GUI not showing)
+- Fixed pipeline pollution in `Invoke-Tool`, `Invoke-SecureScript`, `Install-WingetPackage` — added `| Out-Host` to prevent `True`/`False` leaking to console
+- Fixed `Invoke-SecureScript`/`Invoke-SecureDownload` — removed noisy "No hash provided" warning (only 1 of 14 tools has a hash)
+- Fixed em-dash encoding (`—` → `--`) in Common.ps1 warning messages for PS 5.1
+- Fixed PowerShell profile — replaced `Write-Warning` on startup with silent skip
+- Removed 13 redundant breadcrumb settings from VSCode `settings.json` (only `breadcrumbs.enabled: false` needed)
+- Removed dead `stickyScroll.scrollWithEditor`/`scrolling` settings, duplicate `layoutControl` from VSCode config
+- Removed `Windots.Apps.ps1`, `Windots.Configs.ps1`, `Windots.Customization.ps1`, `Windots.Menu.ps1`, `windots.ps1`, `config/vscode/snippet.txt`
+- Renamed `Set-WallpaperPack` to `Open-WallpaperBrowser`
+- Updated menu text "Windows Terminal config + Fira Code" → "Windows Terminal config + Nerd Font"
+- Changed README security note from collapsible `<details>` to blockquote
+- Changed `Benchmark.ps1` — added `$env:USERPROFILE` fallback chain for benchmark directory path
+- Changed `Initialize-Logging` — wrapped `Start-Transcript` in try/catch for locked file handling
+- Updated README, CONTRIBUTING, tests, and Customize README to match all renames
+
 ## [26.3] - 2026-03-22
 
 ### March 22 — Rebrand to Winrift, menu restructure, benchmark promotion, config flatten

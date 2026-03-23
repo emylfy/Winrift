@@ -96,8 +96,10 @@
             "id": "macos-cursor",
             "name": "macOS Cursor",
             "description": "macOS cursor theme for Windows",
-            "type": "browser",
+            "type": "download",
             "url": "https://github.com/ful1e5/apple_cursor/releases/download/v2.0.1/macOS-Windows.zip",
+            "filename": "macOS-Windows.zip",
+            "sha256": "64A2C74780908954A2EC497F67919709280EBB8EBDF3E3B9336BAC071589C9DE",
             "docs": "https://github.com/ful1e5/apple_cursor"
         },
         {
@@ -107,6 +109,14 @@
             "type": "irm",
             "url": "https://community.chocolatey.org/install.ps1",
             "docs": "https://chocolatey.org"
+        },
+        {
+            "id": "rectify11",
+            "name": "Rectify11",
+            "description": "Windows 11 UI consistency fixes",
+            "type": "browser",
+            "url": "https://rectify11.net/home",
+            "docs": "https://github.com/Rectify11/Installer"
         }
     ]
 }

@@ -1,4 +1,4 @@
-<h1 align="center">Windots</h1>
+<h1 align="center">Customize</h1>
 
 <p align="center">
   <a href="https://github.com/emylfy/winrift/stargazers"><img src="https://img.shields.io/github/stars/emylfy/winrift?style=for-the-badge&logo=starship&color=C9CBFF&logoColor=C9CBFF&labelColor=302D41" alt="GitHub Stars"></a>&nbsp;&nbsp;
@@ -12,7 +12,7 @@
 
 ## About
 
-Collection of configurations and tools to transform your Windows 11 into an elegant and productive environment. Install opinionated configs for your favorite editors, terminal, and shell — or pick only what you need.
+Transform your Windows 11 into an elegant and productive environment. Set up a tiling window manager, status bar, app launcher, shell prompt, and themed apps — or pick only what you need.
 
 ---
 
@@ -20,6 +20,7 @@ Collection of configurations and tools to transform your Windows 11 into an eleg
 
 - Windows 11 (22H2 or newer)
 - PowerShell 5.1 (included with Windows 11)
+- [winget](https://aka.ms/getwinget) (required for Desktop Environment, Oh My Posh, Starship, FastFetch)
 - Internet connection
 
 ---
@@ -34,6 +35,20 @@ irm https://raw.githubusercontent.com/emylfy/winrift/main/scripts/launch.ps1 | i
 
 ---
 
+## Desktop Environment
+
+Set up a full riced desktop with tiling windows, a status bar, and an app launcher.
+
+| Component | Description |
+| --- | --- |
+| [GlazeWM](https://github.com/glzr-io/glazewm) | i3-inspired tiling window manager with YAML config |
+| [Zebar](https://github.com/glzr-io/zebar) | Status bar and widgets (pairs with GlazeWM) |
+| [Flow Launcher](https://github.com/Flow-Launcher/Flow.Launcher) | Productivity launcher (Alfred/Raycast for Windows) |
+| [Windhawk](https://windhawk.net/) | Marketplace for reversible Windows UI mods |
+| [Rainmeter](https://www.rainmeter.net/) | Desktop widgets and skins |
+
+---
+
 ## Configs Installer
 
 Copy opinionated dotfiles for your favorite tools. All config files are bundled in `config/` and copied to the standard user directories.
@@ -41,20 +56,20 @@ Copy opinionated dotfiles for your favorite tools. All config files are bundled 
 | Component | Supported Apps | Config Source |
 | --- | --- | --- |
 | **Code Editors** | [VSCode](https://code.visualstudio.com/), [AIDE](https://github.com/codestoryai/aide), [Cursor](https://cursor.sh/), [Windsurf](https://windsurf.io/), [VSCodium](https://vscodium.com/), [Trae](https://trae.ai/) | `config/vscode/` |
-| **Terminal** | [Windows Terminal](https://github.com/microsoft/terminal) (includes Fira Code font setup) | `config/cli/terminal.json` |
+| **Terminal** | [Windows Terminal](https://github.com/microsoft/terminal) (includes Nerd Font setup) | `config/cli/terminal.json` |
 | **Shell** | [PowerShell](https://learn.microsoft.com/en-us/powershell/) + [Terminal-Icons](https://github.com/devblackops/Terminal-Icons) | `config/cli/Microsoft.PowerShell_profile.ps1` |
-| **Prompt** | [Oh My Posh](https://ohmyposh.dev/) (Zen theme) | `config/cli/zen.toml` |
+| **Prompt** | [Oh My Posh](https://ohmyposh.dev/) (Zen theme), [Starship](https://starship.rs/) | `config/cli/zen.toml` |
 | **System Info** | [FastFetch](https://github.com/fastfetch-cli/fastfetch) | `config/cli/fastfetch.jsonc` |
 
 ---
 
-## Apps & Tools
+## Apps & Themes
 
-Download and install additional customization tools — no dotfiles, just installers.
+Download and install additional customization tools.
 
 | Tool | Description |
 | --- | --- |
-| [Rectify11](https://rectify11.net/) | Windows 11 UI theme (opens download page) |
+| [Rectify11](https://rectify11.net/) | Windows 11 UI consistency fixes |
 | [SpotX](https://github.com/SpotX-Official/SpotX) | Spotify ad-blocker mod |
 | [Spicetify](https://spicetify.app/) | Spotify customization framework |
 | [Steam Millennium](https://steambrew.app/) | Steam theming framework + optional [Space Theme](https://github.com/SpaceTheme/Steam) |
@@ -62,13 +77,13 @@ Download and install additional customization tools — no dotfiles, just instal
 
 ---
 
-## Customization Tweaks
+## Windows Look & Feel
 
 Windows shell and UI adjustments applied via registry.
 
 | Tweak | Description |
 | --- | --- |
-| **Short Date & Time Format** | Sets taskbar format to `dd MMM yyyy` and `HH:mm` (e.g. Feb 17, 17:57) |
+| **Short Date & Time Format** | Sets taskbar format to `MMM dd yyyy` and `HH:mm` (e.g. Feb 17 2026, 17:57) |
 | **Disable Quick Access Pinning** | Stops Windows from automatically pinning folders to Quick Access |
 | **Start Menu Organizer** | Selectively pulls app shortcuts out of folders to the Start menu root |
 

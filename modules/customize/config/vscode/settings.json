@@ -1,5 +1,5 @@
 {
-	// ─── Workbench ────────────────────────────────────────────────────────────
+	// ─── Workbench
 	// General UI layout, sidebar, scrolling, and list behavior
 
 	"workbench.sideBar.location": "left", // Move sidebar to the left side
@@ -9,7 +9,7 @@
 	"workbench.tree.indent": 16, // Tree indentation width in pixels
 	"workbench.tree.renderIndentGuides": "none", // Remove indent guide lines in tree views
 
-	// ─── Explorer ─────────────────────────────────────────────────────────────
+	// ─── Explorer
 	// File tree behavior, auto-save, and hidden folders
 
 	"explorer.compactFolders": false, // Show each folder on its own line (no collapsing single-child folders)
@@ -26,7 +26,7 @@
 	"files.insertFinalNewline": true, // Add empty newline at end of file on save
 	"files.trimTrailingWhitespace": true, // Remove trailing spaces from lines on save
 
-	// ─── Tabbar & Toolbar ─────────────────────────────────────────────────────
+	// ─── Tabbar & Toolbar
 	// Tab labels, tab sizing, breadcrumbs, navigation, and editor toolbar
 
 	// Custom tab labels for Next.js App Router — shows route path instead of generic "page.tsx"
@@ -45,21 +45,8 @@
 	"workbench.navigationControl.enabled": false, // Hide top-right corner navigation arrows
 	"window.density.editorTabHeight": "compact", // Thinner tab height
 	"breadcrumbs.enabled": false, // Disable breadcrumbs entirely
-	"breadcrumbs.icons": false, // Hide icons in breadcrumb navigation
-	"breadcrumbs.showArrays": false, // Hide arrays from breadcrumbs
-	"breadcrumbs.showBooleans": false, // Hide booleans from breadcrumbs
-	"breadcrumbs.showClasses": false, // Hide classes from breadcrumbs
-	"breadcrumbs.showConstructors": false, // Hide constructors from breadcrumbs
-	"breadcrumbs.showEnumMembers": false, // Hide enum members from breadcrumbs
-	"breadcrumbs.showEvents": false, // Hide events from breadcrumbs
-	"breadcrumbs.showFields": false, // Hide fields from breadcrumbs
-	"breadcrumbs.showFiles": false, // Hide file names from breadcrumbs
-	"breadcrumbs.showFunctions": false, // Hide functions from breadcrumbs
-	"breadcrumbs.showKeys": false, // Hide object keys from breadcrumbs
-	"breadcrumbs.showMethods": false, // Hide methods from breadcrumbs
-	"breadcrumbs.symbolPath": "off", // Hide symbol path in breadcrumbs
 
-	// ─── Cursor ───────────────────────────────────────────────────────────────
+	// ─── Cursor
 	// Cursor appearance, animation, and multi-cursor behavior
 
 	"editor.cursorBlinking": "phase", // Cursor fades in/out smoothly
@@ -68,7 +55,7 @@
 	"editor.cursorWidth": 2, // Cursor width in pixels
 	"editor.multiCursorModifier": "ctrlCmd", // Use Cmd/Ctrl + Click to add additional cursors
 
-	// ─── Editor ───────────────────────────────────────────────────────────────
+	// ─── Editor
 	// Core editing behavior, scrolling, suggestions, and indentation
 
 	"editor.accessibilitySupport": "off", // Disable accessibility features for better performance
@@ -90,15 +77,13 @@
 	"editor.scrollbar.horizontal": "hidden", // Hide horizontal scrollbar
 	"editor.smoothScrolling": true, // Animate editor scrolling
 	"editor.stickyScroll.enabled": false, // Disable sticky scroll (pinned scope headers)
-	"editor.stickyScroll.scrollWithEditor": false, // Sticky scroll does not follow editor scroll position
-	"editor.stickyScroll.scrolling": true, // Allow scrolling within the sticky scroll area
 	"editor.suggestSelection": "first", // Always pre-select the first suggestion in the list
 	"editor.tabSize": 2, // Tab width equals 2 spaces
 	"editor.unicodeHighlight.ambiguousCharacters": false, // Don't warn about visually ambiguous unicode characters
 	"editor.wordWrapColumn": 80, // Wrap lines at column 80 (when word wrap is enabled)
 	"editor.wrappingIndent": "same", // Wrapped lines keep the same indentation level
 
-	// ─── Editor Fonts & Lines ─────────────────────────────────────────────────
+	// ─── Editor Fonts & Lines
 	// Font family, size, weight, ligatures, and line height
 
 	"custom-ui-style.font.sansSerif": "Maple Mono", // UI font for menus, sidebar, and panels
@@ -110,7 +95,7 @@
 	"editor.letterSpacing": 0.05, // Slight letter spacing for improved readability
 	"editor.lineHeight": 1.8, // Line height multiplier (spacious lines)
 
-	// ─── Editor Tokens ────────────────────────────────────────────────────────
+	// ─── Editor Tokens
 	// Syntax highlighting overrides — italic and non-italic scopes
 
 	"editor.tokenColorCustomizations": {
@@ -146,7 +131,7 @@
 		]
 	},
 
-	// ─── Themes ───────────────────────────────────────────────────────────────
+	// ─── Themes
 	// Color themes (auto light/dark), icon theme, and frosted glass effect
 
 	"window.autoDetectColorScheme": true, // Automatically switch between light and dark theme based on OS setting
@@ -166,20 +151,19 @@
 		"terminalOverlay": "blur(30px)"
 	},
 
-	// ─── Window ───────────────────────────────────────────────────────────────
+	// ─── Window
 	// Window behavior, title, zoom, and chrome controls
 
 	"window.commandCenter": false, // Hide the command center button in the title bar
 	"window.confirmBeforeClose": "keyboardOnly", // Ask for confirmation only when closing via keyboard shortcut
-	"window.layoutControl.enabled": false, // Hide the layout control button in the title bar (alias for workbench)
+	"window.layoutControl.enabled": false, // Hide the layout control button in the title bar
 	"window.openFilesInNewWindow": "off", // Open files in the current window instead of a new one
 	"window.title": " ", // Empty title bar text for a clean, minimal look
 	"window.zoomLevel": 1, // Zoom level +1 (slightly zoomed in)
 	"workbench.activityBar.location": "hidden", // Hide the activity bar (icons for Explorer, Search, etc.)
-	"workbench.layoutControl.enabled": false, // Hide the editor layout control button in the title bar
 	"workbench.startupEditor": "newUntitledFile", // Open a new untitled file on startup instead of the welcome page
 
-	// ─── Git ──────────────────────────────────────────────────────────────────
+	// ─── Git
 	// Git commit, sync, fetch, and diff behavior
 
 	"git.autofetch": true, // Automatically fetch from remote in the background
@@ -188,7 +172,7 @@
 	"git.openRepositoryInParentFolders": "never", // Don't auto-detect Git repos in parent folders
 	"scm.diffDecorations": "none", // Remove git diff decorations (colored bars) from editor gutter
 
-	// ─── Terminal ─────────────────────────────────────────────────────────────
+	// ─── Terminal
 	// Integrated terminal appearance and behavior
 
 	"terminal.integrated.cursorStyle": "line", // Thin line cursor in the terminal
@@ -196,7 +180,7 @@
 	"terminal.integrated.fontSize": 13, // Terminal font size in pixels
 	"terminal.integrated.tabs.enabled": false, // Hide the terminal tab bar
 
-	// ─── Languages & Formatters ───────────────────────────────────────────────
+	// ─── Languages & Formatters
 	// Language-specific settings, formatters, and Emmet
 
 	"diffEditor.ignoreTrimWhitespace": false, // Show whitespace differences in the diff editor
@@ -218,7 +202,7 @@
 	"prettier.singleQuote": true, // Use single quotes everywhere
 	"prettier.useTabs": true, // Indent with tabs instead of spaces
 
-	// ─── Spell Check ──────────────────────────────────────────────────────────
+	// ─── Spell Check
 	// cSpell spell checker configuration
 
 	"cSpell.enabled": true, // Enable the spell checker
@@ -236,10 +220,9 @@
 	},
 	"cSpell.language": "en", // Check spelling in English
 
-	// ─── Misc ─────────────────────────────────────────────────────────────────
+	// ─── Misc
 	// Security, AI features, debug, and extension settings
 
-	"chat.agentsControl.enabled": true, // Enable the chat agents control panel
 	"chat.disableAIFeatures": true, // Disable Copilot and other AI-powered features
 	"chat.viewSessions.enabled": false, // Hide the Copilot chat sessions view
 	"debug.focusWindowOnBreak": false, // Don't steal window focus when hitting a breakpoint
@@ -247,7 +230,7 @@
 	"debug.showInlineBreakpointCandidates": false, // Hide inline breakpoint placement indicators
 	"debug.toolBarLocation": "hidden", // Hide the floating debug toolbar
 	"extensions.ignoreRecommendations": true, // Suppress extension recommendation notifications
-	"security.workspace.trust.untrustedFiles": "open", // Open files from untrusted workspaces without a warning
+	"security.workspace.trust.untrustedFiles": "prompt", // Ask before opening files from untrusted workspaces
 	"update.mode": "none", // Disable VS Code automatic updates
 	"workbench.tips.enabled": false // Disable tip of the day notifications
 }

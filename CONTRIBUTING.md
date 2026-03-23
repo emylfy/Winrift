@@ -66,7 +66,7 @@ winrift/
 │   ├── drivers/            # Driver installation
 │   ├── tools/              # Third-party tool integrations
 │   ├── unigetui/           # Package manager integration
-│   └── windots/            # Customization and ricing
+│   └── customize/          # Desktop environment, themes, configs
 ├── docs/                   # Documentation and guides
 └── media/                  # Icons, logos, assets
 ```

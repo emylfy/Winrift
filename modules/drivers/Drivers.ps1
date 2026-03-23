@@ -66,9 +66,11 @@ function Install-IntelDSA {
         & winget install Intel.IntelDriverAndSupportAssistant --accept-package-agreements --accept-source-agreements
 
         if ($LASTEXITCODE -eq 0) {
-            Write-Log -Message "Successfully installed Intel DSA. It will scan for Intel drivers automatically." -Level SUCCESS
+            Write-Log -Message "Intel DSA installed. Launching..." -Level SUCCESS
+            Start-Process "https://www.intel.com/content/www/us/en/support/intel-driver-support-assistant.html"
         } elseif ($LASTEXITCODE -eq $WINGET_ALREADY_INSTALLED) {
-            Write-Log -Message "Intel DSA is already installed." -Level INFO
+            Write-Log -Message "Intel DSA is already installed. Launching..." -Level INFO
+            Start-Process "https://www.intel.com/content/www/us/en/support/intel-driver-support-assistant.html"
         } else {
             Write-Log -Message "Failed to install Intel DSA. Opening download page..." -Level ERROR
             Start-Process "https://www.intel.com/content/www/us/en/support/detect.html"

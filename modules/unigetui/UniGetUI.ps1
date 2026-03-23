@@ -26,29 +26,16 @@ function Install-UniGetUI {
     Clear-Host
     Write-Log -Message "Checking UniGetUI installation..." -Level INFO
 
-    try {
-        & winget source update 2>$null
-    } catch {
-        Write-Log -Message "Failed to update winget sources: $($_.Exception.Message)" -Level WARNING
-    }
+    $installed = Install-WingetPackage "Devolutions.UniGetUI" "UniGetUI"
 
-    $isInstalled = & winget list --id MartiCliment.UniGetUI --accept-source-agreements 2>$null | Select-String "MartiCliment.UniGetUI"
-
-    if ($isInstalled) {
-        Write-Log -Message "UniGetUI is already installed. Launching..." -Level SUCCESS
+    if ($installed) {
+        Write-Log -Message "Launching UniGetUI..." -Level INFO
         Start-Process "unigetui:"
     } else {
-        Write-Log -Message "Installing UniGetUI..." -Level INFO
-        & winget install MartiCliment.UniGetUI --accept-package-agreements --accept-source-agreements
-
-        if ($LASTEXITCODE -eq 0) {
-            Write-Log -Message "Successfully installed UniGetUI." -Level SUCCESS
-            Start-Process "unigetui:"
-        } else {
-            Write-Log -Message "Failed to install UniGetUI. Opening website for manual download..." -Level ERROR
-            Start-Process "https://www.marticliment.com/unigetui/"
-        }
+        Write-Log -Message "UniGetUI could not be installed via winget. Opening website for manual download..." -Level ERROR
+        Start-Process "https://www.marticliment.com/unigetui/"
     }
+    Pause-ForUser
 }
 
 function Show-AppCategoryMenu {
@@ -114,8 +101,7 @@ if (-not (Assert-WingetAvailable)) {
     return
 }
 
-$isInstalled = & winget list --id MartiCliment.UniGetUI --accept-source-agreements 2>$null |
-    Select-String "MartiCliment.UniGetUI"
+$isInstalled = Test-Path "$env:LOCALAPPDATA\Programs\UniGetUI\UniGetUI.exe"
 
 if (-not $isInstalled) {
     Show-InstallPrompt

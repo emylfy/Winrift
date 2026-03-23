@@ -20,7 +20,7 @@ function Show-MainMenu {
         "2" = "$PSScriptRoot\modules\system\Tweaks.ps1"
         "3" = "$PSScriptRoot\modules\security\SecurityMenu.ps1"
         "4" = "$PSScriptRoot\modules\drivers\Drivers.ps1"
-        "5" = "$PSScriptRoot\modules\windots\Windots.ps1"
+        "5" = "$PSScriptRoot\modules\customize\Customize.ps1"
         "6" = "$PSScriptRoot\modules\unigetui\UniGetUI.ps1"
     }
 
@@ -38,21 +38,21 @@ function Show-MainMenu {
         "1" = "https://github.com/emylfy/winrift/blob/main/docs/tweaks_guide.md"
         "2" = "https://github.com/emylfy/winrift/blob/main/docs/autounattend_guide.md"
         "3" = "https://github.com/emylfy/winrift/blob/main/docs/tests.md"
+        "4" = "https://github.com/emylfy/Winrift/wiki"
     }
 
     :outerLoop while ($true) {
         Clear-Host
-        Write-Host
         Show-MenuBox -Title "Winrift - Break through default Windows" -Items @(
             "[1]  Benchmark - Measure system performance",
             "[2]  System Tweaks - Optimization & power management",
             "[3]  Security & Privacy - Defender, Copilot, privacy",
             "[4]  Drivers - NVIDIA, AMD, Intel, OEM",
-            "[5]  Desktop Ricing - Terminal, VSCode, themes, apps",
+            "[5]  Customize - Desktop, terminal, themes",
             "[6]  App Bundles - Install app collections",
             "---",
             "[7]  Community Tools",
-            "[D]  Docs & Guides"
+            "[8]  Docs & Guides"
         )
 
         $choice = Read-Host ">"
@@ -66,7 +66,12 @@ function Show-MainMenu {
                 Read-Host "Press Enter to continue"
                 continue outerLoop
             }
-            Start-AdminProcess -ScriptPath $targetScript -NoExit
+            # Customize and App Bundles run without admin (user-space tools)
+            if ($choice -in @("5", "6")) {
+                Start-UserProcess -ScriptPath $targetScript -NoExit
+            } else {
+                Start-AdminProcess -ScriptPath $targetScript -NoExit
+            }
             continue outerLoop
         }
 
@@ -104,20 +109,21 @@ function Show-MainMenu {
         }
 
         # Docs & Guides submenu
-        if ($choice -eq "D" -or $choice -eq "d") {
+        if ($choice -eq "8") {
             :docsLoop while ($true) {
                 Clear-Host
                 Show-MenuBox -Title "Docs & Guides" -Items @(
                     "[1]  Tweaks Guide - What each tweak does",
                     "[2]  Answer File Guide - Windows installation",
                     "[3]  Benchmark Guide - Methodology & results",
+                    "[4]  Wiki - Full documentation",
                     "---",
-                    "[4]  Back to main menu"
+                    "[5]  Back to main menu"
                 )
 
                 $docsChoice = Read-Host ">"
 
-                if ($docsChoice -eq "4" -or $docsChoice -eq "") {
+                if ($docsChoice -eq "5" -or $docsChoice -eq "") {
                     break docsLoop
                 }
 

@@ -40,7 +40,17 @@ while ($true) {
                 Write-Log -Message "Windows Security > Virus & threat protection > Manage settings > Tamper Protection: Off" -Level WARNING
             }
 
-            Invoke-Tool "defendnot" -SkipConfirm
+            # Remove previous installation to avoid ExtractToDirectory conflict
+            if (Test-Path $defendnotPath) {
+                try {
+                    Remove-Item $defendnotPath -Recurse -Force -ErrorAction Stop
+                    Write-Log -Message "Removed previous installation." -Level INFO
+                } catch {
+                    Write-Log -Message "Could not remove $defendnotPath -- files may be locked." -Level WARNING
+                }
+            }
+
+            $null = Invoke-Tool "defendnot" -SkipConfirm
             Read-Host "Press Enter to continue"
             & "$PSScriptRoot\SecurityMenu.ps1"
             return

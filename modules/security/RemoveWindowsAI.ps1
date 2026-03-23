@@ -18,7 +18,18 @@ while ($true) {
     $choice = Read-Host ">"
     switch ($choice.ToUpper()) {
         "Y" {
-            Invoke-Tool "removewindowsai" -SkipConfirm
+            $tempScript = Join-Path $env:TEMP "RemoveWindowsAI.ps1"
+            try {
+                Write-Log -Message "Downloading RemoveWindowsAI..." -Level INFO
+                Invoke-WebRequest -Uri $tool.url -OutFile $tempScript -UseBasicParsing -ErrorAction Stop
+                Write-Log -Message "Launching RemoveWindowsAI..." -Level INFO
+                Start-Process powershell.exe -ArgumentList "-ExecutionPolicy Bypass -File `"$tempScript`"" -Wait
+                Write-Log -Message "RemoveWindowsAI completed." -Level SUCCESS
+            } catch {
+                Write-Log -Message "Failed: $($_.Exception.Message)" -Level ERROR
+            } finally {
+                Remove-Item $tempScript -Force -ErrorAction SilentlyContinue
+            }
             Read-Host "Press Enter to continue"
             & "$PSScriptRoot\SecurityMenu.ps1"
             return

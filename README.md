@@ -51,12 +51,7 @@ irm https://raw.githubusercontent.com/emylfy/winrift/main/scripts/install.ps1 | 
 
 </details>
 
-<details>
-<summary>Security note on irm | iex</summary>
-
-This is a common PowerShell install pattern (similar to `curl | sh`). The full source code is open at [github.com/emylfy/winrift](https://github.com/emylfy/winrift). All external scripts are verified with SHA256 hashes before execution.
-
-</details>
+> **Security note:** This is a common PowerShell install pattern (similar to `curl | sh`). The full source code is open at [github.com/emylfy/winrift](https://github.com/emylfy/winrift). All external scripts are verified with SHA256 hashes before execution.
 
 ---
 
@@ -105,7 +100,7 @@ Other tools apply tweaks and hope for the best. Winrift measures 13 system metri
 | **GPU Tweaks** | NVIDIA and AMD-specific optimizations with automatic device detection; hybrid GPU support |
 | **Security & Privacy** | Disable Defender ([DefendNot](https://github.com/es3n1n/defendnot)), remove Copilot/Recall ([RemoveWindowsAI](https://github.com/zoicware/RemoveWindowsAI)), privacy hardening ([privacy.sexy](https://github.com/undergroundwires/privacy.sexy)) |
 | **Drivers** | NVIDIA, AMD, Intel DSA auto-install, HP, Lenovo, ASUS, Acer, MSI, Dell, Huawei, Xiaomi, Gigabyte |
-| **Desktop Ricing** | Configs for VSCode/Cursor/Windsurf, Terminal, PowerShell, Oh My Posh, FastFetch, SpotX, Spicetify, Steam themes, Rectify11, macOS cursor |
+| **Customize** | Desktop environment ([GlazeWM](https://github.com/glzr-io/glazewm), [Zebar](https://github.com/glzr-io/zebar), [Flow Launcher](https://github.com/Flow-Launcher/Flow.Launcher), [Windhawk](https://windhawk.net/), [Rainmeter](https://www.rainmeter.net/)), terminal & shell configs, editor configs, app themes (Spotify, Steam, browser), Windows look & feel (dark mode, taskbar, accent color) |
 | **App Bundles** | Curated winget collections via [UniGetUI](https://github.com/marticliment/UniGetUI) — Development, Browsers, Utilities, Productivity, Creative & Media, Gaming, Communications |
 | **[Answer File](docs/autounattend_guide.md)** | Automated Windows 11 install — removes 25 bloatware apps, disables telemetry, cleans taskbar |
 

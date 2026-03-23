@@ -1,0 +1,159 @@
+# GlazeWM configuration — Winrift defaults
+# Docs: https://github.com/glzr-io/glazewm
+
+general:
+  # Show GlazeWM in system tray
+  show_tray_icon: true
+
+  # Focus window under cursor on workspace switch
+  focus_follows_cursor: false
+
+gaps:
+  inner_gap: "8px"
+  outer_gap:
+    top: "8px"
+    right: "8px"
+    bottom: "8px"
+    left: "8px"
+
+window_effects:
+  focused_window:
+    border:
+      enabled: true
+      color: "#cba6f7"
+
+  other_windows:
+    border:
+      enabled: true
+      color: "#585b70"
+
+window_behavior:
+  initial_state: "tiling"
+  state_defaults:
+    floating:
+      centered: true
+      shown_on_top: false
+    fullscreen:
+      maximized: false
+      shown_on_top: false
+
+workspaces:
+  - name: "1"
+    display_name: "1"
+  - name: "2"
+    display_name: "2"
+  - name: "3"
+    display_name: "3"
+  - name: "4"
+    display_name: "4"
+  - name: "5"
+    display_name: "5"
+  - name: "6"
+    display_name: "6"
+  - name: "7"
+    display_name: "7"
+  - name: "8"
+    display_name: "8"
+  - name: "9"
+    display_name: "9"
+
+window_rules:
+  - commands: ["ignore"]
+    match:
+      - window_process: { equals: "zebar" }
+      - window_title: { regex: "[Pp]icture.in.[Pp]icture" }
+      - window_class: { regex: "TaskManagerWindow|#32770" }
+
+  - commands: ["set-floating"]
+    match:
+      - window_process: { regex: "Steam|steamwebhelper" }
+      - window_class: { regex: "MsiDialogCloseClass" }
+
+keybindings:
+  # Focus
+  - commands: ["focus --direction left"]
+    bindings: ["alt+h", "alt+left"]
+  - commands: ["focus --direction right"]
+    bindings: ["alt+l", "alt+right"]
+  - commands: ["focus --direction up"]
+    bindings: ["alt+k", "alt+up"]
+  - commands: ["focus --direction down"]
+    bindings: ["alt+j", "alt+down"]
+
+  # Move window
+  - commands: ["move --direction left"]
+    bindings: ["alt+shift+h", "alt+shift+left"]
+  - commands: ["move --direction right"]
+    bindings: ["alt+shift+l", "alt+shift+right"]
+  - commands: ["move --direction up"]
+    bindings: ["alt+shift+k", "alt+shift+up"]
+  - commands: ["move --direction down"]
+    bindings: ["alt+shift+j", "alt+shift+down"]
+
+  # Resize
+  - commands: ["resize --width -2%"]
+    bindings: ["alt+u"]
+  - commands: ["resize --width +2%"]
+    bindings: ["alt+p"]
+  - commands: ["resize --height -2%"]
+    bindings: ["alt+i"]
+  - commands: ["resize --height +2%"]
+    bindings: ["alt+o"]
+
+  # Layout
+  - commands: ["toggle-tiling-direction"]
+    bindings: ["alt+v"]
+  - commands: ["toggle-floating --centered"]
+    bindings: ["alt+shift+space"]
+  - commands: ["toggle-fullscreen"]
+    bindings: ["alt+f"]
+
+  # Close
+  - commands: ["close"]
+    bindings: ["alt+shift+q"]
+
+  # Workspaces
+  - commands: ["focus --workspace 1"]
+    bindings: ["alt+1"]
+  - commands: ["focus --workspace 2"]
+    bindings: ["alt+2"]
+  - commands: ["focus --workspace 3"]
+    bindings: ["alt+3"]
+  - commands: ["focus --workspace 4"]
+    bindings: ["alt+4"]
+  - commands: ["focus --workspace 5"]
+    bindings: ["alt+5"]
+  - commands: ["focus --workspace 6"]
+    bindings: ["alt+6"]
+  - commands: ["focus --workspace 7"]
+    bindings: ["alt+7"]
+  - commands: ["focus --workspace 8"]
+    bindings: ["alt+8"]
+  - commands: ["focus --workspace 9"]
+    bindings: ["alt+9"]
+
+  # Move to workspace
+  - commands: ["move --workspace 1"]
+    bindings: ["alt+shift+1"]
+  - commands: ["move --workspace 2"]
+    bindings: ["alt+shift+2"]
+  - commands: ["move --workspace 3"]
+    bindings: ["alt+shift+3"]
+  - commands: ["move --workspace 4"]
+    bindings: ["alt+shift+4"]
+  - commands: ["move --workspace 5"]
+    bindings: ["alt+shift+5"]
+  - commands: ["move --workspace 6"]
+    bindings: ["alt+shift+6"]
+  - commands: ["move --workspace 7"]
+    bindings: ["alt+shift+7"]
+  - commands: ["move --workspace 8"]
+    bindings: ["alt+shift+8"]
+  - commands: ["move --workspace 9"]
+    bindings: ["alt+shift+9"]
+
+  # WM commands
+  - commands: ["wm-redraw"]
+    bindings: ["alt+shift+r"]
+  - commands: ["wm-exit"]
+    bindings: ["alt+shift+e"]

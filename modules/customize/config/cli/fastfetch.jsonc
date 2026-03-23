@@ -40,7 +40,7 @@
 		},
 		{
 			"type": "packages",
-			"format": "{} (apt)",
+			"format": "{}",
 			"key": " ",
 			"keyColor": "34"
 		},

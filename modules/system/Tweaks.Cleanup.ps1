@@ -34,7 +34,7 @@ function Clear-SystemSpace {
         "3" = {
             if (-not (Assert-WingetAvailable)) { Read-Host "Press Enter to continue"; return }
             Write-Log -Message "Installing PC Manager..." -Level INFO
-            & winget install Microsoft.PCManager --accept-package-agreements --accept-source-agreements
+            & winget install 9PM860492SZD --source msstore --accept-package-agreements --accept-source-agreements
 
             if ($LASTEXITCODE -eq 0) {
                 Write-Log -Message "Successfully installed PC Manager." -Level SUCCESS

@@ -2,7 +2,10 @@ if (-not (Get-Command Write-Log -ErrorAction SilentlyContinue)) {
     . "$PSScriptRoot\..\..\scripts\Common.ps1"
 }
 
-$script:BenchmarkDir = Join-Path $env:USERPROFILE "Winrift\benchmarks"
+$script:BenchmarkRoot = $env:USERPROFILE
+if (-not $script:BenchmarkRoot) { $script:BenchmarkRoot = $env:HOME }
+if (-not $script:BenchmarkRoot) { $script:BenchmarkRoot = [System.IO.Path]::GetTempPath() }
+$script:BenchmarkDir = Join-Path $script:BenchmarkRoot "Winrift\benchmarks"
 
 function Get-PerformanceSnapshot {
     param(

@@ -31,6 +31,10 @@ function Write-Log {
     }
 }
 
+function Pause-ForUser {
+    Read-Host "Press Enter to continue"
+}
+
 function Invoke-ReturnToMenu {
     $launchDirFile = "$env:TEMP\winrift_launchdir.txt"
     if (Test-Path $launchDirFile) {
@@ -48,8 +52,18 @@ function Show-MenuBox {
     param(
         [string]$Title,
         [string[]]$Items,
-        [int]$Width = 56
+        [int]$Width = 0
     )
+
+    if ($Width -le 0) {
+        $maxLen = $Title.Length
+        foreach ($item in $Items) {
+            if ($item -ne "---" -and $item -notmatch '^---\s+' -and $item.Length -gt $maxLen) {
+                $maxLen = $item.Length
+            }
+        }
+        $Width = [math]::Max($maxLen + 4, 40)
+    }
 
     $border = "$Purple +" + ("-" * $Width) + "+$Reset"
     $totalPad = $Width - 2 - $Title.Length
@@ -105,7 +119,11 @@ function Initialize-Logging {
     $logDir = Join-Path $env:USERPROFILE "Winrift\logs"
     if (-not (Test-Path $logDir)) { New-Item -Path $logDir -ItemType Directory -Force | Out-Null }
     $script:LogFile = Join-Path $logDir "${ModuleName}_$(Get-Date -Format 'yyyy-MM-dd_HH-mm-ss').log"
-    Start-Transcript -Path $script:LogFile -Append | Out-Null
+    try {
+        Start-Transcript -Path $script:LogFile -Append -ErrorAction Stop | Out-Null
+    } catch {
+        # Transcript already running or file locked - continue without file logging
+    }
     Write-Log -Message "Session log: $script:LogFile" -Level INFO
 }
 
@@ -191,7 +209,7 @@ function Invoke-SecureScript {
         Write-Log -Message "Hash verified for $ToolName" -Level SUCCESS
     }
 
-    & ([ScriptBlock]::Create($scriptContent))
+    & ([ScriptBlock]::Create($scriptContent)) | Out-Host
 }
 
 function Invoke-SecureDownload {
@@ -307,7 +325,7 @@ function Invoke-Tool {
                 $downloadPath = Join-Path $env:TEMP $tool.filename
                 Invoke-SecureDownload -Url $tool.url -OutFile $downloadPath -ToolName $tool.name -ExpectedHash $hash
                 if ($OnSuccess) {
-                    & $OnSuccess $downloadPath
+                    & $OnSuccess $downloadPath | Out-Host
                 } else {
                     $startArgs = @{ FilePath = $downloadPath }
                     if ($Wait) { $startArgs.Wait = $true }
@@ -326,7 +344,7 @@ function Invoke-Tool {
         if ($SuccessMessage) { $msg = $SuccessMessage } else { $msg = "$($tool.name) completed successfully." }
         Write-Log -Message $msg -Level SUCCESS
         if ($OnSuccess -and $tool.type -ne "download") {
-            & $OnSuccess
+            & $OnSuccess | Out-Host
         }
         return $true
     } catch {
@@ -357,6 +375,33 @@ function Assert-WingetAvailable {
         return $false
     }
     return $true
+}
+
+function Install-WingetPackage {
+    param(
+        [string]$PackageId,
+        [string]$Name
+    )
+
+    if (-not (Assert-WingetAvailable)) { return $false }
+
+    Write-Log -Message "Installing $Name..." -Level INFO
+    try {
+        & winget install $PackageId --accept-package-agreements --accept-source-agreements | Out-Host
+        if ($LASTEXITCODE -eq 0) {
+            Write-Log -Message "$Name installed successfully." -Level SUCCESS
+            return $true
+        } elseif ($LASTEXITCODE -eq -1978335189) { # APPINSTALLER_CLI_ERROR_ALREADY_INSTALLED
+            Write-Log -Message "$Name is already installed." -Level INFO
+            return $true
+        } else {
+            Write-Log -Message "Failed to install $Name (exit code: $LASTEXITCODE)." -Level ERROR
+            return $false
+        }
+    } catch {
+        Write-Log -Message "Error installing ${Name}: $($_.Exception.Message)" -Level ERROR
+        return $false
+    }
 }
 
 function Invoke-NativeCommand {
