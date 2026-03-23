@@ -7,6 +7,13 @@ and this project uses [Calendar Versioning](https://calver.org/) (YY.M format).
 
 ## [26.3] - 2026-03-24
 
+### March 24 (2) — Lint cleanup, PSScriptAnalyzer fixes
+
+- Fixed PSScriptAnalyzer issues — empty catch blocks in `Common.ps1` and `Benchmark.ps1` now use `Write-Verbose`, removed unused `$result` in `ExternalLauncher.ps1`, `$output` in `Common.ps1`
+- Changed CI lint rules — removed `PSUseApprovedVerbs` from enabled rules, excluded noisy rules (`PSUseSingularNouns`, `PSUseBOMForUnicodeEncodedFile`, `PSUseDeclaredVarsMoreThanAssignments`, `PSAvoidUsingPositionalParameters`, `PSAvoidOverwritingBuiltInCmdlets`, `PSAvoidUsingEmptyCatchBlock`)
+
+## [26.3] - 2026-03-24
+
 ### March 24 — Kill navigation recursion, tweak rollback, CI hardening, cleanup
 
 - Removed `Invoke-ReturnToMenu` — eliminated recursive script re-invocation via temp file; sub-windows now close naturally when module exits

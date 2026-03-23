@@ -29,12 +29,12 @@ function Get-PerformanceSnapshot {
     $startupCount = 0
     try {
         $startupCount = @(Get-CimInstance Win32_StartupCommand -ErrorAction SilentlyContinue).Count
-    } catch { }
+    } catch { Write-Verbose "Could not query startup commands: $($_.Exception.Message)" }
 
     $scheduledTaskCount = 0
     try {
         $scheduledTaskCount = @(Get-ScheduledTask -ErrorAction SilentlyContinue | Where-Object { $_.State -eq 'Ready' }).Count
-    } catch { }
+    } catch { Write-Verbose "Could not query scheduled tasks: $($_.Exception.Message)" }
 
     $bootTime = $os.LastBootUpTime
     $uptimeMinutes = [math]::Round(((Get-Date) - $bootTime).TotalMinutes, 1)

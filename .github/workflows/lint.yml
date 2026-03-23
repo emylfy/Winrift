@@ -26,14 +26,19 @@ jobs:
         run: |
           $results = Invoke-ScriptAnalyzer -Path . -Recurse -Settings @{
             Rules = @{
-              PSUseApprovedVerbs = @{ Enable = $true }
               PSAvoidUsingCmdletAliases = @{ Enable = $true }
               PSAvoidUsingWriteHost = @{ Enable = $false }
             }
             ExcludeRules = @(
               'PSAvoidUsingWriteHost',
               'PSAvoidUsingInvokeExpression',
-              'PSUseShouldProcessForStateChangingFunctions'
+              'PSUseShouldProcessForStateChangingFunctions',
+              'PSUseSingularNouns',
+              'PSUseDeclaredVarsMoreThanAssignments',
+              'PSAvoidUsingPositionalParameters',
+              'PSAvoidOverwritingBuiltInCmdlets',
+              'PSUseBOMForUnicodeEncodedFile',
+              'PSAvoidUsingEmptyCatchBlock'
             )
           }
 

@@ -109,7 +109,7 @@ function Initialize-Logging {
     try {
         Start-Transcript -Path $script:LogFile -Append -ErrorAction Stop | Out-Null
     } catch {
-        # Transcript already running or file locked - continue without file logging
+        Write-Verbose "Transcript not started: $($_.Exception.Message)"
     }
     Write-Log -Message "Session log: $script:LogFile" -Level INFO
 }
@@ -497,7 +497,7 @@ function Invoke-NativeCommand {
     )
 
     try {
-        $output = & $Command @Arguments 2>&1
+        $null = & $Command @Arguments 2>&1
         if ($null -ne $LASTEXITCODE -and $LASTEXITCODE -ne 0) {
             if ($ErrorMessage) { $msg = $ErrorMessage } else { $msg = "Command failed: $Command $($Arguments -join ' ')" }
             Write-Log -Message "$msg (exit code: $LASTEXITCODE)" -Level ERROR

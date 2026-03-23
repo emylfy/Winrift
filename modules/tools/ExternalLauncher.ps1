@@ -13,5 +13,5 @@ if ($tool) {
     $Host.UI.RawUI.WindowTitle = "$($tool.name) Launcher"
 }
 
-$result = Invoke-Tool $ToolId
+Invoke-Tool $ToolId
 Pause-ForUser
