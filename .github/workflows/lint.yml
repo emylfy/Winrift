@@ -13,7 +13,7 @@ jobs:
     name: Lint PowerShell
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Install PSScriptAnalyzer
         shell: pwsh
@@ -54,7 +54,7 @@ jobs:
     name: Run Pester Tests
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Install Pester
         shell: pwsh
