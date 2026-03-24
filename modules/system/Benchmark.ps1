@@ -7,6 +7,8 @@ if (-not $script:BenchmarkRoot) { $script:BenchmarkRoot = $env:HOME }
 if (-not $script:BenchmarkRoot) { $script:BenchmarkRoot = [System.IO.Path]::GetTempPath() }
 $script:BenchmarkDir = Join-Path $script:BenchmarkRoot "Winrift\benchmarks"
 
+. "$PSScriptRoot\HealthScore.ps1"
+
 function Get-PerformanceSnapshot {
     param(
         [int]$Samples = 10,
@@ -328,13 +330,15 @@ function Show-BenchmarkMenu {
         "[1] Run Benchmark (Before tweaks)",
         "[2] Run Benchmark (After tweaks)",
         "[3] View Last Report",
+        "[4] System Health Score",
         "---",
-        "[4] Back"
-    ) -Prompt "Enter your choice (1-4)" -Actions @{
+        "[5] Back"
+    ) -Prompt "Enter your choice (1-5)" -Actions @{
         "1" = { Invoke-Benchmark -Phase Before }
         "2" = { Invoke-Benchmark -Phase After }
         "3" = { Invoke-Benchmark -Phase Compare }
-    } -ExitKey "4"
+        "4" = { Invoke-HealthScore }
+    } -ExitKey "5"
 }
 
 # Standalone entry point (skipped when dot-sourced from Tweaks.ps1)

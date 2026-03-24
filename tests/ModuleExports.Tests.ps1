@@ -38,6 +38,26 @@ BeforeDiscovery {
                 'Set-ShortDateHours', 'Disable-QuickAccess', 'Expand-StartFolders'
             )
         }
+        @{
+            File = 'modules/system/Tweaks.Drift.ps1'
+            ExpectedFunctions = @(
+                'Get-DesiredState', 'Test-DriftedEntries', 'Show-DriftReport',
+                'Invoke-DriftReapply', 'Register-DriftScheduledTask',
+                'Unregister-DriftScheduledTask', 'Get-DriftScheduledTaskStatus',
+                'Show-DriftMenu'
+            )
+        }
+        @{
+            File = 'modules/system/HealthScore.ps1'
+            ExpectedFunctions = @(
+                'Get-ThresholdScore', 'Format-ScoreBar',
+                'Get-LatencyScore', 'Get-MemoryScore', 'Get-ProcessBloatScore',
+                'Get-StartupScore', 'Get-PrivacyScore', 'Get-StorageScore', 'Get-NetworkScore',
+                'Get-SystemHealthData', 'Get-CategoryScores', 'Get-CompositeScore',
+                'Show-HealthScoreReport',
+                'Save-HealthScore', 'Invoke-HealthScore'
+            )
+        }
     )
 }
 
@@ -75,7 +95,9 @@ Describe 'Common.ps1 exports' {
         'Assert-AdminOrElevate', 'Initialize-Logging', 'Invoke-MenuLoop',
         'Set-RegistryValue', 'Get-ToolConfig', 'Invoke-SecureScript',
         'Invoke-SecureDownload', 'Confirm-ExternalTool', 'Invoke-Tool',
-        'Assert-WingetAvailable', 'Install-WingetPackage', 'Invoke-NativeCommand'
+        'Assert-WingetAvailable', 'Install-WingetPackage', 'Invoke-NativeCommand',
+        'Save-DesiredState', 'Save-TweakBackup', 'Start-TweakSession',
+        'New-SafeRestorePoint', 'Restore-TweakBackup'
     ) {
         $functionNames | Should -Contain $_
     }

@@ -19,29 +19,33 @@ function Show-GPUMenu {
         "---",
         "[4] Back to menu"
     ) -Actions @{
-        "1" = { Invoke-NvidiaTweaks }
-        "2" = { Invoke-AMDTweaks }
-        "3" = { Invoke-HybridTweaks }
+        "1" = {
+            Start-TweakSession
+            $script:DesiredStateCategory = "NVIDIA GPU"
+            $null = Invoke-NvidiaTweaks
+            Save-TweakBackup
+            Save-DesiredState
+        }
+        "2" = {
+            Start-TweakSession
+            $script:DesiredStateCategory = "AMD GPU"
+            $null = Invoke-AMDTweaks
+            Save-TweakBackup
+            Save-DesiredState
+        }
+        "3" = {
+            Start-TweakSession
+            $script:DesiredStateCategory = "NVIDIA GPU"
+            $null = Invoke-NvidiaTweaks -NoExit
+            $script:DesiredStateCategory = "AMD GPU"
+            $null = Invoke-AMDTweaks -NoExit
+            Save-TweakBackup
+            Save-DesiredState
+            Write-Host ""
+            Write-Host "$Purple Press any key to return to the GPU menu...$Reset"
+            $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
+        }
     } -ExitKey "4"
-}
-
-function Invoke-HybridTweaks {
-    Write-Log -Message "Applying tweaks for hybrid GPU configuration (NVIDIA + AMD)..." -Level INFO
-    $nvidiaOk = Invoke-NvidiaTweaks -NoExit
-    $amdOk = Invoke-AMDTweaks -NoExit
-
-    if ($nvidiaOk -and $amdOk) {
-        Write-Log -Message "Successfully applied tweaks for both NVIDIA and AMD GPUs." -Level SUCCESS
-    } elseif ($nvidiaOk) {
-        Write-Log -Message "Applied NVIDIA tweaks. AMD GPU was not detected." -Level WARNING
-    } elseif ($amdOk) {
-        Write-Log -Message "Applied AMD tweaks. NVIDIA GPU was not detected." -Level WARNING
-    } else {
-        Write-Log -Message "No supported GPUs detected." -Level ERROR
-    }
-    Write-Host ""
-    Write-Host "$Purple Press any key to return to the GPU menu...$Reset"
-    $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
 }
 
 function Invoke-NvidiaTweaks {

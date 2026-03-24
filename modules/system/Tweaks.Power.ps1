@@ -15,8 +15,10 @@ function Invoke-PowerMenu {
     if ($choice -eq "1") {
         New-SafeRestorePoint
         Start-TweakSession
+        $script:DesiredStateCategory = "Aggressive Power Management"
         Invoke-AggressivePowerTweaks
         Save-TweakBackup
+        Save-DesiredState
         Write-Host ""
         Write-Host "$Green Power Management tweaks applied successfully.$Reset"
         Write-Host "$Yellow A system restart is recommended for all changes to take effect.$Reset"

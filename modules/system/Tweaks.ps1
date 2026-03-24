@@ -13,6 +13,7 @@ Initialize-Logging -ModuleName "tweaks"
 . "$PSScriptRoot\Tweaks.Power.ps1"
 . "$PSScriptRoot\Tweaks.GPU.ps1"
 . "$PSScriptRoot\Tweaks.Cleanup.ps1"
+. "$PSScriptRoot\Tweaks.Drift.ps1"
 function Show-MainMenu {
     $Host.UI.RawUI.WindowTitle = "Winrift - System Tweaks"
     Invoke-MenuLoop -Title "System Tweaks" -Items @(
@@ -21,15 +22,17 @@ function Show-MainMenu {
         "[3] NVIDIA/AMD GPU Tweaks",
         "[4] Free Up Space",
         "[5] Restore Previous Tweaks",
+        "[6] Drift Detection",
         "---",
-        "[6] Back to menu"
-    ) -Prompt "Enter your choice (1-6)" -Actions @{
+        "[7] Back to menu"
+    ) -Prompt "Enter your choice (1-7)" -Actions @{
         "1" = { Invoke-UniversalTweaks }
         "2" = { Invoke-PowerMenu }
         "3" = { Show-GPUMenu }
         "4" = { Clear-SystemSpace }
         "5" = { Restore-TweakBackup }
-    } -ExitKey "6"
+        "6" = { Show-DriftMenu }
+    } -ExitKey "7"
 }
 
 Show-MainMenu

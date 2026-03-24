@@ -48,21 +48,24 @@ function Show-MenuBox {
     if ($Width -le 0) {
         $maxLen = $Title.Length
         foreach ($item in $Items) {
-            if ($item -ne "---" -and $item -notmatch '^---\s+' -and $item.Length -gt $maxLen) {
+            if ($item -match '^---\s+(.+?)\s*-*$') {
+                $divLen = (" $($Matches[1].TrimEnd('- ')) ").Length
+                if ($divLen -gt $maxLen) { $maxLen = $divLen }
+            } elseif ($item -ne "---" -and $item.Length -gt $maxLen) {
                 $maxLen = $item.Length
             }
         }
-        $Width = [math]::Max($maxLen + 4, 40)
+        $Width = [math]::Max($maxLen + 3, 40)
     }
 
     $border = "$Purple +" + ("-" * $Width) + "+$Reset"
-    $totalPad = $Width - 2 - $Title.Length
+    $totalPad = $Width - $Title.Length
     $leftPad = [math]::Floor($totalPad / 2)
     $rightPad = $totalPad - $leftPad
     $titlePadded = (" " * $leftPad) + $Title + (" " * $rightPad)
     Write-Host ""
     Write-Host $border
-    Write-Host "$Purple '$Purple $titlePadded $Purple'$Reset"
+    Write-Host "$Purple '$Purple$titlePadded$Purple'$Reset"
     Write-Host $border
     foreach ($item in $Items) {
         if ($item -match '^---\s+(.+?)\s*-*$') {
@@ -74,8 +77,8 @@ function Show-MenuBox {
         } elseif ($item -eq "---") {
             Write-Host $border
         } else {
-            $itemPadded = $item.PadRight($Width - 2)
-            Write-Host "$Purple '$Reset $itemPadded $Purple'$Reset"
+            $itemPadded = $item.PadRight($Width - 1)
+            Write-Host "$Purple '$Reset $itemPadded$Purple'$Reset"
         }
     }
     Write-Host $border
@@ -141,13 +144,18 @@ function Invoke-MenuLoop {
 }
 
 $script:TweakBackupEntries = [System.Collections.Generic.List[hashtable]]::new()
+$script:DesiredStateEntries = [System.Collections.Generic.List[hashtable]]::new()
+$script:DesiredStateCategory = "Uncategorized"
 $_baseDir = $env:USERPROFILE
 if (-not $_baseDir) { $_baseDir = $env:HOME }
 if (-not $_baseDir) { $_baseDir = [System.IO.Path]::GetTempPath() }
 $script:TweakBackupDir = Join-Path $_baseDir "Winrift\tweaks"
+$script:DesiredStateDir = Join-Path $_baseDir "Winrift\tweaks"
 
 function Start-TweakSession {
     $script:TweakBackupEntries.Clear()
+    $script:DesiredStateEntries.Clear()
+    $script:DesiredStateCategory = "Uncategorized"
 }
 
 function Set-RegistryValue {
@@ -188,6 +196,13 @@ function Set-RegistryValue {
         if ($null -eq $written) {
             Write-Log -Message "Failed to verify $Name at $Path - value not found after write" -Level ERROR
         } else {
+            $script:DesiredStateEntries.Add(@{
+                Path     = $Path
+                Name     = $Name
+                Value    = $Value
+                Type     = $Type
+                Category = $script:DesiredStateCategory
+            })
             Write-Log -Message $Message -Level SUCCESS
         }
     }
@@ -208,6 +223,49 @@ function Save-TweakBackup {
     $backup | ConvertTo-Json -Depth 5 | Set-Content -Path $filePath -Encoding UTF8
     Write-Log -Message "Tweak backup saved: $filePath ($($script:TweakBackupEntries.Count) entries)" -Level SUCCESS
     return $filePath
+}
+
+function Save-DesiredState {
+    if ($script:DesiredStateEntries.Count -eq 0) { return }
+    [System.IO.Directory]::CreateDirectory($script:DesiredStateDir) | Out-Null
+    $filePath = Join-Path $script:DesiredStateDir "desired_state.json"
+
+    $existing = @()
+    if (Test-Path $filePath) {
+        try {
+            $json = Get-Content $filePath -Raw | ConvertFrom-Json
+            if ($json.entries) { $existing = @($json.entries) }
+        } catch {
+            Write-Log -Message "Could not read existing desired state, starting fresh." -Level WARNING
+        }
+    }
+
+    $lookup = [ordered]@{}
+    foreach ($entry in $existing) {
+        $key = "$($entry.Path)|$($entry.Name)"
+        $lookup[$key] = $entry
+    }
+
+    $now = Get-Date -Format 'yyyy-MM-ddTHH:mm:ss'
+    foreach ($entry in $script:DesiredStateEntries) {
+        $key = "$($entry.Path)|$($entry.Name)"
+        $lookup[$key] = @{
+            Path      = $entry.Path
+            Name      = $entry.Name
+            Value     = $entry.Value
+            Type      = $entry.Type
+            Category  = $entry.Category
+            UpdatedAt = $now
+        }
+    }
+
+    $state = @{
+        version     = 1
+        lastUpdated = $now
+        entries     = @($lookup.Values)
+    }
+    $state | ConvertTo-Json -Depth 5 | Set-Content -Path $filePath -Encoding UTF8
+    Write-Log -Message "Desired state updated: $filePath ($($lookup.Count) total entries)" -Level SUCCESS
 }
 
 function Restore-TweakBackup {

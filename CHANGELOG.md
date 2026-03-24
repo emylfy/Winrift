@@ -7,6 +7,25 @@ and this project uses [Calendar Versioning](https://calver.org/) (YY.M format).
 
 ## [26.3] - 2026-03-25
 
+### March 25 (2) — Health Score, drift detection, desired state tracking, pipeline fixes
+
+- Added `modules/system/HealthScore.ps1` — composite 0-100 system health score across 7 categories (Latency, Memory, Process Bloat, Startup, Privacy, Storage, Network) with weighted scoring, threshold-band interpolation, visual bar display, and JSON persistence to `~/Winrift/health/`
+- Added `modules/system/Tweaks.Drift.ps1` — drift detection system that compares current registry values against saved desired state; supports manual scan with one-click reapply, scheduled task triggered by Windows Update (Event ID 19), and desired state reset
+- Added `Save-DesiredState` to `Common.ps1` — persists every successful `Set-RegistryValue` write to `desired_state.json` with upsert logic (merges by Path+Name); `$script:DesiredStateCategory` tracks tweak category per write
+- Added "System Health Score" as `[4]` in Benchmark menu (`Benchmark.ps1`)
+- Added "Drift Detection" as `[6]` in System Tweaks menu (`Tweaks.ps1`)
+- Changed GPU menu (`Tweaks.GPU.ps1`) — inlined `Invoke-HybridTweaks` into menu actions; each GPU tweak action now saves desired state and tweak backup
+- Changed `Tweaks.Universal.ps1`, `Tweaks.Power.ps1` — tweak sessions now save desired state after application
+- Changed main menu title to include version (`Winrift v$AppVersion`); separator changed from `---` to `--- Explore & Learn ---`
+- Changed `Show-MenuBox` in `Common.ps1` — improved separator width calculation and item padding
+- Fixed pipeline pollution — added `$null =` to `Invoke-Tool`, `Install-WingetPackage`, `Invoke-NativeCommand` calls in `Customize.Apps.ps1`, `Customize.Desktop.ps1`, `PrivacySexy.ps1`, `Tweaks.Cleanup.ps1`, `WinScript.ps1`
+- Removed lowercase `winrift.ps1` duplicate — only `Winrift.ps1` (PascalCase) remains
+- Added `tests/HealthScore.Tests.ps1` — function exports, `Get-ThresholdScore` interpolation, `Format-ScoreBar` rendering, scorer unit tests, `Get-CompositeScore` weighting
+- Added `tests/Drift.Tests.ps1` — function exports, `Save-DesiredState` schema validation, upsert merge logic
+- Updated `tests/ModuleExports.Tests.ps1` — added Drift and HealthScore function lists, added backup/restore exports to Common.ps1 tests
+
+## [26.3] - 2026-03-25
+
 ### March 25 — ISO Builder, community files, README overhaul, autounattend fix
 
 - Added `modules/iso/ISOBuilder.ps1` — embed `autounattend.xml` into a Windows 11 ISO, producing a ready-to-burn image with oscdimg.exe (auto-downloaded from Microsoft Symbol Server with Y/N/A confirmation)

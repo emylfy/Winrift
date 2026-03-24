@@ -43,7 +43,7 @@ function Show-MainMenu {
 
     :outerLoop while ($true) {
         Clear-Host
-        Show-MenuBox -Title "Winrift - Break through default Windows" -Items @(
+        Show-MenuBox -Title "Winrift v$script:AppVersion - Break through default Windows" -Items @(
             "[1]  Benchmark - Measure system performance",
             "[2]  System Tweaks - Optimization & power management",
             "[3]  Security & Privacy - Defender, Copilot, privacy",
@@ -51,7 +51,7 @@ function Show-MainMenu {
             "[5]  Customize - Desktop, terminal, themes",
             "[6]  App Bundles - Install app collections",
             "[7]  ISO Builder - Embed answer file into Windows ISO",
-            "---",
+            "--- Explore & Learn ---",
             "[8]  Community Tools",
             "[9]  Docs & Guides"
         )

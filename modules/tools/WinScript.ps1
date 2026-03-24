@@ -12,7 +12,7 @@ function Show-WinScriptMenu {
     ) -Prompt "Select an option" -Actions @{
         "1" = { Start-Process $tool.docs }
         "2" = {
-            Invoke-Tool "winscript"
+            $null = Invoke-Tool "winscript"
             Read-Host "Press Enter to continue"
         }
         "R" = { Start-Process $tool.docs }

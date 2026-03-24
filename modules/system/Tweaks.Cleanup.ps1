@@ -15,7 +15,7 @@ function Clear-SystemSpace {
     ) -Actions @{
         "1" = {
             Write-Log -Message "Disabling Reserved Storage..." -Level INFO
-            Invoke-NativeCommand -Command "dism" `
+            $null = Invoke-NativeCommand -Command "dism" `
                 -Arguments @("/Online", "/Set-ReservedStorageState", "/State:Disabled") `
                 -SuccessMessage "Reserved Storage disabled." `
                 -ErrorMessage "Failed to disable Reserved Storage"
@@ -23,7 +23,7 @@ function Clear-SystemSpace {
         }
         "2" = {
             Write-Log -Message "Cleaning up WinSxS (this may take several minutes)..." -Level INFO
-            Invoke-NativeCommand -Command "dism" `
+            $null = Invoke-NativeCommand -Command "dism" `
                 -Arguments @("/Online", "/Cleanup-Image", "/StartComponentCleanup", "/ResetBase", "/RestoreHealth") `
                 -SuccessMessage "WinSxS cleanup complete." `
                 -ErrorMessage "WinSxS cleanup encountered issues"

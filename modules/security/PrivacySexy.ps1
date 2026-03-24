@@ -12,7 +12,7 @@ function Show-PrivacySexyMenu {
     ) -Actions @{
         "1" = { Start-Process $tool.docs }
         "2" = {
-            Invoke-Tool "privacysexy" -OnSuccess { param($path) Start-Process cmd -ArgumentList "/c `"$path`"" -Wait }
+            $null = Invoke-Tool "privacysexy" -OnSuccess { param($path) Start-Process cmd -ArgumentList "/c `"$path`"" -Wait }
             Read-Host "Press Enter to continue"
         }
         "R" = { Start-Process $tool.docs }

@@ -94,6 +94,7 @@ function Invoke-UniversalTweaks {
             if ($tweakMap.ContainsKey($key)) {
                 $current++
                 $catName = $categoryNames[$key]
+                $script:DesiredStateCategory = $catName
                 Write-Progress -Activity "Applying System Tweaks" `
                     -Status "($current/$total) $catName..." `
                     -PercentComplete ([math]::Round(($current / $total) * 100))
@@ -106,6 +107,7 @@ function Invoke-UniversalTweaks {
 
         Write-Progress -Completed -Activity "Applying System Tweaks"
         Save-TweakBackup
+        Save-DesiredState
 
         Write-Host ""
         Write-Host "$Green +---------------------------------------------+$Reset"

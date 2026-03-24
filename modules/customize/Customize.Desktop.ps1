@@ -18,7 +18,7 @@ function Install-GlazeWM {
             if ($installed) { Copy-GlazeWMConfig }
         }
         "2" {
-            Install-WingetPackage "glzr-io.glazewm" "GlazeWM"
+            $null = Install-WingetPackage "glzr-io.glazewm" "GlazeWM"
         }
         "3" {
             Copy-GlazeWMConfig
@@ -63,10 +63,10 @@ function Install-StatusBar {
 
     switch ($choice) {
         "1" {
-            Install-WingetPackage "glzr-io.zebar" "Zebar"
+            $null = Install-WingetPackage "glzr-io.zebar" "Zebar"
         }
         "2" {
-            Install-WingetPackage "amnweb.yasb" "YASB"
+            $null = Install-WingetPackage "amnweb.yasb" "YASB"
         }
         default { return }
     }
@@ -76,21 +76,21 @@ function Install-StatusBar {
 function Install-FlowLauncher {
     Clear-Host
     Write-Log -Message "Flow Launcher - productivity app launcher (Alfred/Raycast for Windows)" -Level INFO
-    Install-WingetPackage "Flow-Launcher.Flow-Launcher" "Flow Launcher"
+    $null = Install-WingetPackage "Flow-Launcher.Flow-Launcher" "Flow Launcher"
     Wait-ForUser
 }
 
 function Install-Windhawk {
     Clear-Host
     Write-Log -Message "Windhawk - marketplace for reversible Windows UI mods" -Level INFO
-    Install-WingetPackage "RamenSoftware.Windhawk" "Windhawk"
+    $null = Install-WingetPackage "RamenSoftware.Windhawk" "Windhawk"
     Wait-ForUser
 }
 
 function Install-Rainmeter {
     Clear-Host
     Write-Log -Message "Rainmeter - desktop customization with widgets and skins" -Level INFO
-    Install-WingetPackage "Rainmeter.Rainmeter" "Rainmeter"
+    $null = Install-WingetPackage "Rainmeter.Rainmeter" "Rainmeter"
     Wait-ForUser
 }
 

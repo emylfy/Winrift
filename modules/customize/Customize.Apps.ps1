@@ -1,18 +1,18 @@
 function Invoke-Rectify11 {
     Clear-Host
-    Invoke-Tool "rectify11"
+    $null = Invoke-Tool "rectify11"
     Wait-ForUser
 }
 
 function Install-SpotX {
     Clear-Host
-    Invoke-Tool "spotx"
+    $null = Invoke-Tool "spotx"
     Wait-ForUser
 }
 
 function Install-Spicetify {
     Clear-Host
-    Invoke-Tool "spicetify"
+    $null = Invoke-Tool "spicetify"
     Wait-ForUser
 }
 
@@ -32,7 +32,7 @@ function Install-SteamMillennium {
     $installChoice = Read-Host "Install Space Theme? (Y/N)"
 
     if ($installChoice -eq 'y') {
-        Invoke-Tool "spacetheme"
+        $null = Invoke-Tool "spacetheme"
     }
     Wait-ForUser
 }
