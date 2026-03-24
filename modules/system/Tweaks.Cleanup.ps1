@@ -1,7 +1,5 @@
 . "$PSScriptRoot\..\..\scripts\Common.ps1"
 
-# Named Constants
-$WINGET_ALREADY_INSTALLED = -1978335189  # Winget exit code when package is already installed
 $PC_MANAGER_AUMID = "Microsoft.MicrosoftPCManager_8wekyb3d8bbwe!App"
 $PC_MANAGER_STORE = "ms-windows-store://pdp?hl=en-us&gl=us&ocid=pdpshare&referrer=storeforweb&productid=9pm860492szd&storecid=storeweb-pdp-open-cta"
 
@@ -32,19 +30,11 @@ function Clear-SystemSpace {
             Read-Host "Press Enter to continue"
         }
         "3" = {
-            if (-not (Assert-WingetAvailable)) { Read-Host "Press Enter to continue"; return }
-            Write-Log -Message "Installing PC Manager..." -Level INFO
-            & winget install 9PM860492SZD --source msstore --accept-package-agreements --accept-source-agreements
-
-            if ($LASTEXITCODE -eq 0) {
-                Write-Log -Message "Successfully installed PC Manager." -Level SUCCESS
+            $installed = Install-WingetPackage "9PM860492SZD" "PC Manager" -Source "msstore"
+            if ($installed) {
                 Start-Sleep -Seconds 2
                 Start-Process "shell:AppsFolder\$PC_MANAGER_AUMID"
-            } elseif ($LASTEXITCODE -eq $WINGET_ALREADY_INSTALLED) {
-                Write-Log -Message "PC Manager is already installed. Launching..." -Level INFO
-                Start-Process "shell:AppsFolder\$PC_MANAGER_AUMID"
             } else {
-                Write-Log -Message "Failed to install PC Manager (exit code: $LASTEXITCODE). Please try manually." -Level ERROR
                 Start-Process $PC_MANAGER_STORE
                 Read-Host "Press Enter to continue"
             }

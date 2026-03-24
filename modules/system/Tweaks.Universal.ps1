@@ -38,12 +38,12 @@ function Invoke-UniversalTweaks {
             "[7]  Power Management",
             "[8]  System Responsiveness",
             "[9]  Boot Optimization",
-            "[10] System Maintenance",
+            "[10] System Maintenance *",
             "[11] UI Responsiveness",
             "[12] Memory Optimization",
-            "[13] DirectX Enhancements",
-            "---",
-            "[A]  Apply ALL tweaks",
+            "[13] DirectX Enhancements *",
+            "--- * = opt-in only, not included in Apply ALL ---",
+            "[A]  Apply ALL safe tweaks",
             "[B]  Back to menu"
         )
 
@@ -81,7 +81,7 @@ function Invoke-UniversalTweaks {
         }
 
         if ($selection -eq "A" -or $selection -eq "a") {
-            $selectedKeys = @("1","2","3","4","5","6","7","8","9","10","11","12","13")
+            $selectedKeys = @("1","2","3","4","5","6","7","8","9","11","12")
         } else {
             $selectedKeys = $selection -split ',' | ForEach-Object { $_.Trim() }
         }

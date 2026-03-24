@@ -2,9 +2,6 @@
 
 Initialize-Logging -ModuleName "drivers"
 
-# Winget exit code for "package already installed"
-$WINGET_ALREADY_INSTALLED = -1978335189
-
 function Show-DeviceMenu {
     $Host.UI.RawUI.WindowTitle = "Winrift - Drivers"
 
@@ -60,23 +57,10 @@ function Show-DeviceMenu {
 }
 
 function Install-IntelDSA {
-    if (-not (Assert-WingetAvailable)) { return }
-    Write-Log -Message "Installing Intel Driver & Support Assistant..." -Level INFO
-    try {
-        & winget install Intel.IntelDriverAndSupportAssistant --accept-package-agreements --accept-source-agreements
-
-        if ($LASTEXITCODE -eq 0) {
-            Write-Log -Message "Intel DSA installed. Launching..." -Level SUCCESS
-            Start-Process "https://www.intel.com/content/www/us/en/support/intel-driver-support-assistant.html"
-        } elseif ($LASTEXITCODE -eq $WINGET_ALREADY_INSTALLED) {
-            Write-Log -Message "Intel DSA is already installed. Launching..." -Level INFO
-            Start-Process "https://www.intel.com/content/www/us/en/support/intel-driver-support-assistant.html"
-        } else {
-            Write-Log -Message "Failed to install Intel DSA. Opening download page..." -Level ERROR
-            Start-Process "https://www.intel.com/content/www/us/en/support/detect.html"
-        }
-    } catch {
-        Write-Log -Message "Error installing Intel DSA: $($_.Exception.Message)" -Level ERROR
+    $installed = Install-WingetPackage "Intel.IntelDriverAndSupportAssistant" "Intel Driver & Support Assistant"
+    if ($installed) {
+        Start-Process "https://www.intel.com/content/www/us/en/support/intel-driver-support-assistant.html"
+    } else {
         Start-Process "https://www.intel.com/content/www/us/en/support/detect.html"
     }
     Start-Sleep -Seconds 2
@@ -90,18 +74,9 @@ function Show-LenovoMenu {
         "[3] Back to Manufacturer Selection"
     ) -Actions @{
         "1" = {
-            if (-not (Assert-WingetAvailable)) { return }
-            Write-Log -Message "Installing Lenovo Vantage..." -Level INFO
-            try {
-                winget install "9WZDNCRFJ4MV" --accept-package-agreements --accept-source-agreements
-                if ($LASTEXITCODE -eq 0) {
-                    Write-Log -Message "Successfully installed Lenovo Vantage." -Level SUCCESS
-                } else {
-                    Write-Log -Message "Failed to install Lenovo Vantage. Please install manually from the Microsoft Store." -Level ERROR
-                    Start-Process "ms-windows-store://pdp?hl=en-us&gl=us&ocid=pdpshare&referrer=storeforweb&productid=9WZDNCRFJ4MV&storecid=storeweb-pdp-open-cta"
-                }
-            } catch {
-                Write-Log -Message "Error installing Lenovo Vantage: $($_.Exception.Message)" -Level ERROR
+            $installed = Install-WingetPackage "9WZDNCRFJ4MV" "Lenovo Vantage"
+            if (-not $installed) {
+                Start-Process "ms-windows-store://pdp?hl=en-us&gl=us&ocid=pdpshare&referrer=storeforweb&productid=9WZDNCRFJ4MV&storecid=storeweb-pdp-open-cta"
             }
             Start-Sleep -Seconds 2
         }

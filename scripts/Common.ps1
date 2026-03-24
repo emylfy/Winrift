@@ -4,6 +4,9 @@ $Red = "$([char]0x1b)[38;5;203m"
 $Green = "$([char]0x1b)[38;5;120m"
 $Yellow = "$([char]0x1b)[38;5;220m"
 
+# Winget exit code for "package already installed"
+$WINGET_ALREADY_INSTALLED = -1978335189
+
 function Write-Log {
     param(
         [string]$Message,
@@ -464,18 +467,21 @@ function Assert-WingetAvailable {
 function Install-WingetPackage {
     param(
         [string]$PackageId,
-        [string]$Name
+        [string]$Name,
+        [string]$Source = ""
     )
 
     if (-not (Assert-WingetAvailable)) { return $false }
 
     Write-Log -Message "Installing $Name..." -Level INFO
     try {
-        & winget install $PackageId --accept-package-agreements --accept-source-agreements | Out-Host
+        $wingetArgs = @($PackageId, "--accept-package-agreements", "--accept-source-agreements")
+        if ($Source -ne "") { $wingetArgs += @("--source", $Source) }
+        & winget install @wingetArgs | Out-Host
         if ($LASTEXITCODE -eq 0) {
             Write-Log -Message "$Name installed successfully." -Level SUCCESS
             return $true
-        } elseif ($LASTEXITCODE -eq -1978335189) { # APPINSTALLER_CLI_ERROR_ALREADY_INSTALLED
+        } elseif ($LASTEXITCODE -eq $WINGET_ALREADY_INSTALLED) {
             Write-Log -Message "$Name is already installed." -Level INFO
             return $true
         } else {

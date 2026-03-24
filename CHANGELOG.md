@@ -5,6 +5,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project uses [Calendar Versioning](https://calver.org/) (YY.M format).
 
+## [26.3] - 2026-03-25
+
+### March 25 — ISO Builder, community files, README overhaul, autounattend fix
+
+- Added `modules/iso/ISOBuilder.ps1` — embed `autounattend.xml` into a Windows 11 ISO, producing a ready-to-burn image with oscdimg.exe (auto-downloaded from Microsoft Symbol Server with Y/N/A confirmation)
+- Added answer file selection in ISO Builder — choose Winrift default or custom `autounattend.xml` via file picker; explains what the answer file does before embedding
+- Added ISO Builder as main menu item `[7]` in `Winrift.ps1`; runs with admin elevation
+- Added `CODE_OF_CONDUCT.md` — Contributor Covenant v2.1 summary with private reporting via GitHub Security Advisories
+- Added `.github/PULL_REQUEST_TEMPLATE.md` — Summary, Risk, Testing checklist, Screenshots sections
+- Added `.github/dependabot.yml` — weekly GitHub Actions version updates
+- Changed `docs/autounattend.xml` — regenerated via schneegans generator with `BypassNetworkCheck=true` (BypassNRO); adds "I don't have internet" option during OOBE so users can choose Microsoft or local account
+- Changed main menu numbering — Community Tools shifted to `[8]`, Docs & Guides to `[9]`
+- Changed `Install-WingetPackage` — added `-Source` parameter for msstore packages; centralized `$WINGET_ALREADY_INSTALLED` constant to `Common.ps1` (removed duplicates from `Drivers.ps1`, `Tweaks.Cleanup.ps1`)
+- Refactored `Drivers.ps1` — `Install-IntelDSA` and Lenovo Vantage install now use `Install-WingetPackage` helper instead of inline winget calls
+- Refactored `Tweaks.Cleanup.ps1` — PC Manager install now uses `Install-WingetPackage` helper
+- Changed `Tweaks.Universal.ps1` — marked System Maintenance `[10]` and DirectX Enhancements `[13]` as opt-in only (excluded from "Apply ALL safe tweaks")
+- Updated README — new tagline, version badge, "Why Winrift?" section, updated features table with ISO Builder and tweak categories, rollback troubleshooting entry
+
 ## [26.3] - 2026-03-24
 
 ### March 24 (2) — Lint cleanup, PSScriptAnalyzer fixes
@@ -285,6 +303,7 @@ and this project uses [Calendar Versioning](https://calver.org/) (YY.M format).
 ## [25.05.1] - 2025-05-17
 
 ### Added
+
 - SSD-specific tweak section in system optimizations
 - Enhanced `Organizer.ps1` with refined file filtering and new exclusions
 - Trae, GitHub Desktop, Spotify, and Android SDK Platform-Tools added to bundles
@@ -292,35 +311,42 @@ and this project uses [Calendar Versioning](https://calver.org/) (YY.M format).
 - Visual customizations: Rectify11, SpotX, Spicetify, Steam Millennium (Space Theme), and macOS cursor
 
 ### Changed
+
 - Reorganized configuration files and scripts
 - UI enhancements and simplified admin process elevation
 - Strengthened PowerShell reliability through improved error management for profiles
 
 ### Fixed
+
 - Removed outdated tweaks
 - Fixed GPU tweak exit issue
 
 ## [25.05] - 2025-05-01
 
 ### Added
+
 - GTweak launcher integration
 - WizTree and RyTuneX added to Utilities bundle
 - Privacy.sexy now supports launching latest standard preset from privacylearn.com
 
 ### Fixed
+
 - Corrected UniGetUI bundle paths
 - Removed tweak that caused "USB not recognized" after executing Universal tweaks
 
 ## [25.04] - 2025-04-06
 
 ### Added
+
 - WinScript now operational in portable mode without installation requirement
 - Expanded UniGetUI bundles with additional packages
 
 ### Changed
+
 - All scripts now run on PowerShell, resolving issues where tweaks would fail silently
 
 ### Fixed
+
 - Refactored project structure for better organization
 - Fixed script launch from command
 - Updated README
