@@ -115,17 +115,13 @@ function Invoke-UniversalTweaks {
                 }
 
                 $script:DesiredStateCategory = $catName
-                Write-Progress -Activity "Applying System Tweaks" `
-                    -Status "($current/$total) $catName..." `
-                    -PercentComplete ([math]::Round(($current / $total) * 100))
+                Write-Host "`n$Dim[$current/$total]$Reset $catName"
                 & $tweakMap[$key]
                 $appliedCategories += $key
             } else {
                 Write-Log -Message "Unknown option: $key" -Level SKIP
             }
         }
-
-        Write-Progress -Completed -Activity "Applying System Tweaks"
 
         if ($appliedCategories.Count -gt 0) {
             Write-Host ""
@@ -156,7 +152,6 @@ function Invoke-UniversalTweaks {
 }
 
 function Invoke-SystemLatencyTweaks {
-    Write-Host "`nApplying System Latency tweaks...`n"
 
     # Changing Interrupts behavior for lower latency
     # source - https://youtu.be/Gazv0q3njYU
@@ -168,7 +163,6 @@ function Invoke-SystemLatencyTweaks {
 }
 
 function Invoke-InputDeviceTweaks {
-    Write-Host "`nApplying Input Device tweaks...`n"
 
     # MouseDataQueueSize and KeyboardDataQueueSize - smaller buffer = faster processing
     Set-RegistryValue -Path "HKLM:\SYSTEM\CurrentControlSet\Services\mouclass\Parameters" -Name "MouseDataQueueSize" -Type "DWord" -Value $INPUT_QUEUE_SIZE -Message "Optimized mouse input buffer size"
@@ -184,7 +178,6 @@ function Invoke-InputDeviceTweaks {
 }
 
 function Invoke-SSDTweaks {
-    Write-Host "`nApplying SSD/NVMe tweaks...`n"
 
     $hasSSD = Get-PhysicalDisk | Where-Object { $_.MediaType -eq 'SSD' -or $_.BusType -eq 'NVMe' } | Measure-Object | Select-Object -ExpandProperty Count
     if ($hasSSD -gt 0) {
@@ -227,7 +220,6 @@ function Invoke-SSDTweaks {
 }
 
 function Invoke-GPUTweaks {
-    Write-Host "`nApplying GPU Performance tweaks...`n"
 
     # HwSchMode - Hardware Accelerated GPU Scheduling, reduces latency
     Set-RegistryValue -Path "HKLM:\SYSTEM\CurrentControlSet\Control\GraphicsDrivers" -Name "HwSchMode" -Type "DWord" -Value "2" -Message "Optimized GPU hardware scheduling"
@@ -235,7 +227,6 @@ function Invoke-GPUTweaks {
 }
 
 function Invoke-NetworkTweaks {
-    Write-Host "`nApplying Network tweaks...`n"
 
     # Disable network throttling - especially helpful with gigabit networks
     # source - https://youtu.be/EmdosMT5TtA
@@ -244,7 +235,6 @@ function Invoke-NetworkTweaks {
 }
 
 function Invoke-CPUTweaks {
-    Write-Host "`nApplying CPU Performance tweaks...`n"
 
     # source - https://youtu.be/FxpRL7wheGc
     Set-RegistryValue -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile" -Name "LazyModeTimeout" -Type "DWord" -Value $LAZY_MODE_TIMEOUT_MS -Message "Set optimal lazy mode timeout for better CPU responsiveness"
@@ -252,7 +242,6 @@ function Invoke-CPUTweaks {
 }
 
 function Invoke-PowerTweaks {
-    Write-Host "`nApplying Power Management tweaks...`n"
 
     # Disable Power Throttling - removes background throttling overhead
     Set-RegistryValue -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Power\PowerThrottling" -Name "PowerThrottlingOff" -Type "DWord" -Value "1" -Message "Disabled power throttling for maximum performance"
@@ -268,7 +257,6 @@ function Invoke-PowerTweaks {
 }
 
 function Invoke-SystemResponsivenessTweaks {
-    Write-Host "`nApplying System Responsiveness tweaks...`n"
 
     # Set Priority For Programs Instead Of Background Services
     # source - https://youtu.be/bqDMG1ZS-Yw
@@ -278,14 +266,12 @@ function Invoke-SystemResponsivenessTweaks {
 }
 
 function Invoke-BootOptimizationTweaks {
-    Write-Host "`nApplying Boot Optimization tweaks...`n"
 
     Set-RegistryValue -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Serialize" -Name "Startupdelayinmsec" -Type "DWord" -Value "0" -Message "Removed startup delay for faster boot"
     Set-RegistryValue -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" -Name "DelayedDesktopSwitchTimeout" -Type "DWord" -Value "0" -Message "Removed desktop switch delay"
 }
 
 function Invoke-SystemMaintenanceTweaks {
-    Write-Host "`nApplying System Maintenance tweaks...`n"
 
     Set-RegistryValue -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Schedule\Maintenance" -Name "MaintenanceDisabled" -Type "DWord" -Value "1" -Message "Disabled automatic maintenance for better performance"
 
@@ -296,7 +282,6 @@ function Invoke-SystemMaintenanceTweaks {
 }
 
 function Invoke-UIResponsivenessTweaks {
-    Write-Host "`nApplying UI Responsiveness tweaks...`n"
     Write-Log -Message "WARNING: AutoEndTasks will force-close unresponsive apps after ${WAIT_KILL_APP_TIMEOUT_MS}ms. Unsaved work may be lost." -Level WARNING
 
     Set-RegistryValue -Path "HKCU:\Control Panel\Desktop" -Name "AutoEndTasks" -Type "String" -Value "1" -Message "Enabled automatic ending of tasks"
@@ -308,7 +293,6 @@ function Invoke-UIResponsivenessTweaks {
 }
 
 function Invoke-MemoryTweaks {
-    Write-Host "`nApplying Memory Optimization tweaks...`n"
 
     $totalRamGB = [math]::Round((Get-CimInstance Win32_ComputerSystem).TotalPhysicalMemory / 1GB, 0)
     if ($totalRamGB -lt 16) {
@@ -322,7 +306,6 @@ function Invoke-MemoryTweaks {
 }
 
 function Invoke-DirectXTweaks {
-    Write-Host "`nApplying DirectX tweaks...`n"
 
     # source - https://youtu.be/itTcqcJxtbo
     Set-RegistryValue -Path "HKLM:\SOFTWARE\Microsoft\DirectX" -Name "D3D12_ENABLE_UNSAFE_COMMAND_BUFFER_REUSE" -Type "DWord" -Value "1" -Message "Enabled D3D12 command buffer reuse"

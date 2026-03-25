@@ -28,6 +28,20 @@ To re-view the last report without collecting new data:
 Invoke-Benchmark -Phase Compare
 ```
 
+## Benchmark Menu
+
+From the main menu, select **Benchmark** to access:
+
+| Option | Action |
+| :---: | :--- |
+| 1 | Run Benchmark (Before tweaks) |
+| 2 | Run Benchmark (After tweaks) |
+| 3 | View Last Report |
+| 4 | [System Health Score](health_score.md) — composite 0–100 rating across 7 categories |
+| 5 | Back |
+
+**Recommended workflow:** Before → Apply tweaks → Reboot → After → Compare → Health Score.
+
 ## Metrics
 
 | Metric | Source | What It Shows |
@@ -50,24 +64,10 @@ All sampled metrics are averaged over 10 readings at 3-second intervals (~30 sec
 
 ## Interpreting Results
 
-The report shows a comparison table:
-
-```
- +------------------------------------------------------------------+
- ' Winrift Performance Report                                    '
- +------------------------------------------------------------------+
- '   Metric                    Before       After       Change      '
- +------------------------------------------------------------------+
- '   CPU idle load             3.2%         1.1%        ▼ 66%      '
- '   RAM usage                 2,800 MB     2,100 MB    ▼ 25%      '
- '   Running processes         142          98          ▼ 31%      '
- '   ...                                                            '
- +------------------------------------------------------------------+
-```
+The report shows a before/after comparison table for all metrics with percentage change.
 
 - **▼** indicates a decrease (typically better for all metrics)
 - **▲** indicates an increase (typically worse for resource metrics)
-- Percentage shows relative change from the baseline
 
 ### Expected Ranges
 
@@ -102,6 +102,14 @@ All benchmark data is stored in `%USERPROFILE%\Winrift\benchmarks\`:
 - **GPU tweaks** are not measured — GPU performance requires specialized tools (FrameView, CapFrameX)
 - **Network tweaks** — throughput/latency changes require external test servers to measure accurately
 - **Single-point measurement** — for statistically significant results, run multiple before/after cycles
+
+## Health Score
+
+The benchmark menu includes a **System Health Score** (option 4) that rates your system's optimization state across 7 weighted categories: Latency, Privacy, Memory, Network, Process Bloat, Startup, and Storage.
+
+It reuses `Get-PerformanceSnapshot` with reduced sampling (3 samples at 2-second intervals) and adds configuration checks (privacy registry keys, storage settings, network state).
+
+Full documentation: [Health Score Guide](health_score.md)
 
 ## Pester Tests
 

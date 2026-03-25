@@ -96,7 +96,9 @@ Other tools apply tweaks and hope for the best. Winrift measures 13 system metri
 | Feature | What it does |
 | :--- | :--- |
 | **[Benchmark](docs/tests.md)** | Measure 13 system metrics (CPU, RAM, DPC rate, disk latency, context switches...) before and after tweaks |
+| **[Health Score](docs/health_score.md)** | Composite 0–100 system health rating across 7 weighted categories (latency, privacy, memory, network, process bloat, startup, storage) with delta tracking and recommendations |
 | **[System Tweaks](docs/tweaks_guide.md)** | 13 optimization categories — latency, input, SSD/NVMe, GPU scheduling, network, CPU, power, responsiveness, boot, UI, memory, maintenance, DirectX |
+| **[Drift Detection](docs/drift_detection.md)** | Monitors whether Windows Updates revert applied tweaks; auto-check via scheduled task; one-click reapply |
 | **GPU Tweaks** | NVIDIA and AMD-specific optimizations with automatic device detection; hybrid GPU support |
 | **Security & Privacy** | Disable Defender ([DefendNot](https://github.com/es3n1n/defendnot)), remove Copilot/Recall ([RemoveWindowsAI](https://github.com/zoicware/RemoveWindowsAI)), privacy hardening ([privacy.sexy](https://github.com/undergroundwires/privacy.sexy)) |
 | **Drivers** | NVIDIA, AMD, Intel DSA auto-install + 9 OEM manufacturers: HP, Lenovo, ASUS, Acer, MSI, Dell, Huawei, Xiaomi, Gigabyte |

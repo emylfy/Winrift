@@ -108,30 +108,29 @@ Describe 'Set-RegistryValue' {
 }
 
 Describe 'Tweak Backup System' {
-    It 'Start-TweakSession clears previous entries' {
+    It 'Start-TweakSession resets category' {
+        $script:DesiredStateCategory = "Test"
         Start-TweakSession
-        # Backup should produce null with 0 entries
-        $result = Save-TweakBackup 6>&1
-        $result | Should -BeNullOrEmpty
+        $script:DesiredStateCategory | Should -Be "Uncategorized"
     }
 
     It 'Save-TweakBackup creates valid JSON file' -Skip:(-not ($IsWindows -or $env:OS -match 'Windows')) {
-        $tmpDir = Join-Path ([System.IO.Path]::GetTempPath()) "pester_backup_$(Get-Random)"
-        New-Item -Path $tmpDir -ItemType Directory -Force | Out-Null
         try {
-            Start-TweakSession
+            $script:TweakBackupEntries.Clear()
+            $script:DesiredStateEntries.Clear()
             # Create a test registry key and use Set-RegistryValue
             $testPath = "HKCU:\SOFTWARE\WinriftTest_$(Get-Random)"
             Set-RegistryValue -Path $testPath -Name "TestValue" -Type "String" -Value "test" -Message "Test" 6>&1 | Out-Null
 
-            $backupPath = Save-TweakBackup 6>&1
-            $jsonFiles = $backupPath | Where-Object { $_ -is [string] -and $_ -match '\.json$' }
+            $script:TweakBackupEntries.Count | Should -BeGreaterThan 0
+            Save-TweakBackup 6>&1 | Out-Null
+            $jsonFiles = Get-ChildItem -Path $script:TweakBackupDir -Filter "backup_*.json" -ErrorAction SilentlyContinue | Sort-Object LastWriteTime -Descending | Select-Object -First 1
             $jsonFiles | Should -Not -BeNullOrEmpty
 
             # Cleanup test registry
             Remove-Item $testPath -Recurse -Force -ErrorAction SilentlyContinue
         } finally {
-            Remove-Item $tmpDir -Recurse -Force -ErrorAction SilentlyContinue
+            $script:TweakBackupEntries.Clear()
         }
     }
 

@@ -1,5 +1,7 @@
 ﻿[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
 
+$ProgressPreference = 'SilentlyContinue'
+
 $Purple = "$([char]0x1b)[38;5;141m"
 $Dim = "$([char]0x1b)[38;5;243m"
 $Reset = "$([char]0x1b)[0m"
@@ -125,11 +127,13 @@ function New-SafeRestorePoint {
 }
 
 function Assert-AdminOrElevate {
+    param([string]$ScriptPath)
     if (-not ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole(
         [Security.Principal.WindowsBuiltInRole]::Administrator)) {
         Write-Host "Not running as admin. Elevating..." -ForegroundColor Yellow
         . "$PSScriptRoot\AdminLaunch.ps1"
-        Start-AdminProcess -ScriptPath $PSCommandPath
+        if (-not $ScriptPath) { $ScriptPath = (Get-PSCallStack)[1].ScriptName }
+        Start-AdminProcess -ScriptPath $ScriptPath
         exit
     }
 }
@@ -216,7 +220,7 @@ function Set-RegistryValue {
         if (-not $existed) {
             New-Item -Path $Path -Force | Out-Null
         }
-        Set-ItemProperty -Path $Path -Name $Name -Type $Type -Value $Value -Force
+        Set-ItemProperty -Path $Path -Name $Name -Type $Type -Value $Value -Force -ErrorAction Stop
 
         $written = (Get-ItemProperty -Path $Path -Name $Name -ErrorAction SilentlyContinue).$Name
         if ($null -eq $written) {
@@ -496,8 +500,10 @@ function Invoke-Tool {
             }
         }
 
-        if ($SuccessMessage) { $msg = $SuccessMessage } else { $msg = "$($tool.name) completed successfully." }
-        Write-Log -Message $msg -Level SUCCESS
+        if ($tool.type -ne "browser") {
+            if ($SuccessMessage) { $msg = $SuccessMessage } else { $msg = "$($tool.name) completed successfully." }
+            Write-Log -Message $msg -Level SUCCESS
+        }
         if ($OnSuccess -and $tool.type -ne "download") {
             & $OnSuccess | Out-Host
         }

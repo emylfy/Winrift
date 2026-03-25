@@ -3,11 +3,30 @@
 All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
-and this project uses [Calendar Versioning](https://calver.org/) (YY.M format).
+and this project uses [Calendar Versioning](https://calver.org/) (YY.M.patch format).
 
-## [26.3] - 2026-03-25
+## [26.3.15] - 2026-03-25
 
-### March 25 (3) — UI overhaul, inline modules, health score v2, logging, bugfixes
+### Customize reorganization, admin elevation, versioning, polish
+
+- Reorganized Customize menu — merged Editor Configs + App Themes into "Apps", merged Windows Look & Feel into "Windows"; 6 categories reduced to 4 with inline descriptions
+- Added "Import VSCode Config" flow — description + GitHub preview link before editor selection; replaces flat 7-editor list
+- Removed macOS Cursor from Customize (broken, unreliable .inf install)
+- Changed `Winrift.ps1` — added `Assert-AdminOrElevate` at startup; all inline modules inherit admin
+- Fixed `Assert-AdminOrElevate` — uses `(Get-PSCallStack)[1].ScriptName` to re-launch correct script on elevation
+- Fixed `Start-UserProcess` — uses `runas /trustlevel:0x20000` to actually drop admin privileges; prefers `wt.exe` when available
+- Fixed `Set-RegistryValue` — added `-ErrorAction Stop` to `Set-ItemProperty`; no more false `[SUCCESS]` on "Access denied"
+- Changed `Invoke-Tool` — skips `[SUCCESS]` message for `browser` type tools (just opens URL)
+- Changed `Write-Progress` replaced with `[N/total]` text counter in tweak loop; removed "Applying X tweaks..." headers from all tweak functions
+- Added `$ProgressPreference = 'SilentlyContinue'` globally — kills blue progress bar (also speeds up `Invoke-WebRequest` in PS 5.1)
+- Fixed `Benchmark.ps1` — restored standalone guard for test compatibility; uses `&` call operator from Winrift
+- Switched to CalVer + patch versioning (`YY.M.patch`) — retroactive tags `v26.3.0` through `v26.3.14` on all March commits
+- Updated docs — removed UI box elements from `health_score.md`, `drift_detection.md`, `tests.md`
+- Updated tests — fixed `Start-TweakSession` and `Save-TweakBackup` tests for accumulated session model
+
+## [26.3.14] - 2026-03-25
+
+### UI overhaul, inline modules, health score v2, logging, bugfixes
 
 #### UI Redesign
 - Changed `Show-MenuBox` in `Common.ps1` — new rounded Unicode borders (`╭╮╰╯─│`) with dimmed gray frame (`$Dim`, 243), bright purple title, section headers as colored text instead of `├─┤` dividers, top/bottom padding inside box
@@ -64,9 +83,9 @@ and this project uses [Calendar Versioning](https://calver.org/) (YY.M format).
 - Fixed PC Manager install — soft fallback to Microsoft Store on `0x80004004` error
 - Changed `Install-WingetPackage` — added `--silent` + `--disable-interactivity` for clean output; added `-ShowProgress` switch for large packages (used by UniGetUI)
 
-## [26.3] - 2026-03-25
+## [26.3.13] - 2026-03-25
 
-### March 25 (2) — Health Score, drift detection, desired state tracking, pipeline fixes
+### Health Score, drift detection, desired state tracking, pipeline fixes
 
 - Added `modules/system/HealthScore.ps1` — composite 0-100 system health score across 7 categories (Latency, Memory, Process Bloat, Startup, Privacy, Storage, Network) with weighted scoring, threshold-band interpolation, visual bar display, and JSON persistence to `~/Winrift/health/`
 - Added `modules/system/Tweaks.Drift.ps1` — drift detection system that compares current registry values against saved desired state; supports manual scan with one-click reapply, scheduled task triggered by Windows Update (Event ID 19), and desired state reset
@@ -83,9 +102,9 @@ and this project uses [Calendar Versioning](https://calver.org/) (YY.M format).
 - Added `tests/Drift.Tests.ps1` — function exports, `Save-DesiredState` schema validation, upsert merge logic
 - Updated `tests/ModuleExports.Tests.ps1` — added Drift and HealthScore function lists, added backup/restore exports to Common.ps1 tests
 
-## [26.3] - 2026-03-25
+## [26.3.12] - 2026-03-25
 
-### March 25 — ISO Builder, community files, README overhaul, autounattend fix
+### ISO Builder, community files, README overhaul, autounattend fix
 
 - Added `modules/iso/ISOBuilder.ps1` — embed `autounattend.xml` into a Windows 11 ISO, producing a ready-to-burn image with oscdimg.exe (auto-downloaded from Microsoft Symbol Server with Y/N/A confirmation)
 - Added answer file selection in ISO Builder — choose Winrift default or custom `autounattend.xml` via file picker; explains what the answer file does before embedding
@@ -101,16 +120,16 @@ and this project uses [Calendar Versioning](https://calver.org/) (YY.M format).
 - Changed `Tweaks.Universal.ps1` — marked System Maintenance `[10]` and DirectX Enhancements `[13]` as opt-in only (excluded from "Apply ALL safe tweaks")
 - Updated README — new tagline, version badge, "Why Winrift?" section, updated features table with ISO Builder and tweak categories, rollback troubleshooting entry
 
-## [26.3] - 2026-03-24
+## [26.3.11] - 2026-03-24
 
-### March 24 (2) — Lint cleanup, PSScriptAnalyzer fixes
+### Lint cleanup, PSScriptAnalyzer fixes
 
 - Fixed PSScriptAnalyzer issues — empty catch blocks in `Common.ps1` and `Benchmark.ps1` now use `Write-Verbose`, removed unused `$result` in `ExternalLauncher.ps1`, `$output` in `Common.ps1`
 - Changed CI lint rules — removed `PSUseApprovedVerbs` from enabled rules, excluded noisy rules (`PSUseSingularNouns`, `PSUseBOMForUnicodeEncodedFile`, `PSUseDeclaredVarsMoreThanAssignments`, `PSAvoidUsingPositionalParameters`, `PSAvoidOverwritingBuiltInCmdlets`, `PSAvoidUsingEmptyCatchBlock`)
 
-## [26.3] - 2026-03-24
+## [26.3.10] - 2026-03-24
 
-### March 24 — Kill navigation recursion, tweak rollback, CI hardening, cleanup
+### Kill navigation recursion, tweak rollback, CI hardening, cleanup
 
 - Removed `Invoke-ReturnToMenu` — eliminated recursive script re-invocation via temp file; sub-windows now close naturally when module exits
 - Removed `-NoExit` from all `Start-AdminProcess`/`Start-UserProcess` calls in `winrift.ps1` — sub-windows are ephemeral
@@ -129,9 +148,9 @@ and this project uses [Calendar Versioning](https://calver.org/) (YY.M format).
 - Changed `UniGetUI.ps1` — removed `Assert-WingetAvailable` from startup (1-3s delay); winget only checked when actually installing
 - Updated tests: removed `Invoke-ReturnToMenu` tests, added tweak backup system tests, added multi-line log tests
 
-## [26.3] - 2026-03-23
+## [26.3.9] - 2026-03-23
 
-### March 23 — Rename Windots to Customize, fix pipeline leaks, restore backups, config quality
+### Rename Windots to Customize, fix pipeline leaks, restore backups, config quality
 
 - Renamed `modules/windots/` to `modules/customize/` — all files renamed from `Windots.*` to `Customize.*`
 - Added `Customize.Desktop.ps1` — GlazeWM, Zebar/YASB, Flow Launcher, Windhawk, Rainmeter, wallpaper browser
@@ -175,9 +194,9 @@ and this project uses [Calendar Versioning](https://calver.org/) (YY.M format).
 - Changed `Initialize-Logging` — wrapped `Start-Transcript` in try/catch for locked file handling
 - Updated README, CONTRIBUTING, tests, and Customize README to match all renames
 
-## [26.3] - 2026-03-22
+## [26.3.8] - 2026-03-22
 
-### March 22 — Rebrand to Winrift, menu restructure, benchmark promotion, config flatten
+### Rebrand to Winrift, menu restructure, benchmark promotion, config flatten
 
 - Rebranded project from Simplify11 to Winrift across all files, URLs, window titles, menus, reports, docs, and issue templates
 - Renamed `simplify11.ps1` to `winrift.ps1`; updated all references in `Common.ps1`, `launch.ps1`, `install.ps1`
@@ -205,7 +224,7 @@ and this project uses [Calendar Versioning](https://calver.org/) (YY.M format).
 - Updated Windots README paths to match flattened config directory
 - Updated `ModuleExports.Tests.ps1` to match refactored Windots menu function names
 
-### March 22 — Tech debt cleanup, security flow simplification, WT tab support
+### Tech debt cleanup, security flow simplification, WT tab support
 
 - Extracted magic numbers into named constants in `Tweaks.Universal.ps1` (accessibility flags, timeouts, network throttling, priority separation) and `Tweaks.Cleanup.ps1` (PC Manager AUMID, Store link)
 - Replaced hardcoded GPU indices 0000-0003 with dynamic `Get-DisplayAdapterIndices` registry scan in `Tweaks.GPU.ps1`
@@ -219,9 +238,9 @@ and this project uses [Calendar Versioning](https://calver.org/) (YY.M format).
 - Cleaned VSCode settings: removed Cyrillic `allowedCharacters`, changed `cSpell.language` from `en,ru` to `en`
 - Added `.mailmap` to unify 5 author name variants (Emylfy, Emalfai, emylfy, eai, ✦ Emylfy) into one
 
-## [26.3] - 2026-03-21
+## [26.3.7] - 2026-03-21
 
-### March 21 — PowerShell 5.1 compatibility, test fixes, encoding cleanup
+### PowerShell 5.1 compatibility, test fixes, encoding cleanup
 
 - Fixed all PS 7+ `$var = if () {} else {}` assignment syntax across `Common.ps1` (4 instances), `simplify11.ps1`, `UniGetUI.ps1` for PS 5.1 compatibility
 - Fixed `simplify11.ps1` version.json path from root to `config/version.json` (was always showing "unknown")
@@ -234,7 +253,9 @@ and this project uses [Calendar Versioning](https://calver.org/) (YY.M format).
 - Added NVIDIA GPU detection to `Invoke-NvidiaTweaks` — scans display adapter registry before applying tweaks, skips with WARNING if not found
 - Changed `Invoke-NvidiaTweaks` and `Invoke-AMDTweaks` to return `$true`/`$false` indicating whether tweaks were applied
 
-### March 21 — Power Management split, driver improvements, security hardening, docs overhaul
+## [26.3.6] - 2026-03-21
+
+### Power Management split, driver improvements, security hardening, docs overhaul
 
 - Added `Tweaks.Power.ps1` — aggressive power tweaks extracted into separate module with AC power warning
 - Added `Assert-WingetAvailable` in `Common.ps1` — auto-installs winget via `Add-AppxPackage`, falls back to Microsoft Store
@@ -252,7 +273,9 @@ and this project uses [Calendar Versioning](https://calver.org/) (YY.M format).
 - Changed `autounattend_guide.md` — updated Method 3 to tiny11maker-reforged with 25H2 support; added Unattend-Generator re-import tip
 - Changed README — removed duplicate tweak description, fixed emoji duplication, added tweaks guide link
 
-### March 16 — Secure tool dispatch, `Invoke-Tool` refactor, and expanded tests
+## [26.3.5] - 2026-03-16
+
+### Secure tool dispatch, Invoke-Tool refactor, and expanded tests
 
 - Added `Get-ToolConfig`, `Invoke-SecureScript`, `Invoke-SecureDownload`, `Invoke-Tool`, and `Invoke-NativeCommand` to `Common.ps1` — unified, config-driven tool dispatch with optional SHA256 hash verification
 - Added 10 new tool entries to `config/tools.json`: `defendnot`, `privacysexy`, `removewindowsai`, `winscript`, `spotx`, `spicetify`, `steam-millennium`, `spacetheme`, `macos-cursor`, `chocolatey`
@@ -268,7 +291,9 @@ and this project uses [Calendar Versioning](https://calver.org/) (YY.M format).
 - Changed `tests/Config.Tests.ps1` — updated type whitelist to include `browser`; added `fallbackUrl` HTTPS test and `docs` property test; fixed `BeforeAll` scoping for bundle file list
 - Removed "Why Simplify11?" comparison table and FAQ section from README
 
-### March 16 — Windots refactor, Pester tests, and CI pipeline
+## [26.3.4] - 2026-03-16
+
+### Windots refactor, Pester tests, and CI pipeline
 
 - Added `Copy-ConfigFiles` helper in `Windots.Configs.ps1` — reusable config-copy-with-logging for all dotfile installers
 - Added `Test-IsExcluded` function in `Organizer.ps1` — centralizes file/folder exclusion logic
@@ -291,7 +316,9 @@ and this project uses [Calendar Versioning](https://calver.org/) (YY.M format).
 - Changed `Write-Log` catch block now surfaces warning instead of silently swallowing errors
 - Fixed `Expand-StartFolders` path resolution — uses `$PSScriptRoot` directly instead of double parent traversal
 
-### March 16 — Bundle overhaul, return-to-menu navigation, and documentation rewrite
+## [26.3.3] - 2026-03-16
+
+### Bundle overhaul, return-to-menu navigation, and documentation rewrite
 
 - Added `Invoke-ReturnToMenu` in `Common.ps1` — reads saved launch directory from temp file and re-launches `simplify11.ps1` in the same window
 - Added launch directory persistence — `simplify11.ps1` writes `$PSScriptRoot` to `$env:TEMP\simplify11_launchdir.txt` at startup so child modules can navigate back
@@ -315,7 +342,9 @@ and this project uses [Calendar Versioning](https://calver.org/) (YY.M format).
 - Changed updated project logo
 - Removed unused `Simplify11` function from `Windots.Menu.psm1`
 
-### March 15 — Loop menus, Show-MenuBox, logging, and Tweaks submodules
+## [26.3.2] - 2026-03-15
+
+### Loop menus, Show-MenuBox, logging, and Tweaks submodules
 
 - Added reusable `Show-Menu` framework in `Common.ps1` — eliminates hundreds of lines of duplicated menu code
 - Added `Write-Header` helper in `Common.ps1` for consistent section headers
@@ -341,7 +370,9 @@ and this project uses [Calendar Versioning](https://calver.org/) (YY.M format).
 - Fixed version loading centralized via `Get-AppVersion` — `simplify11.ps1` no longer reads `version.json` directly
 - Fixed version tag in `CHANGELOG.md` aligned to `[26.3]` to match `version.json` (CalVer)
 
-### March 13 — Architecture refactor with shared utilities, config-driven tools, and CI
+## [26.3.1] - 2026-03-13
+
+### Architecture refactor with shared utilities, config-driven tools, and CI
 
 - Added `config/` directory for centralized configuration: `version.json`, `tools.json`, `bundles/`
 - Added config-driven `ExternalLauncher.ps1` — single file handles all external tool launches via `tools.json`
@@ -355,7 +386,9 @@ and this project uses [Calendar Versioning](https://calver.org/) (YY.M format).
 - Removed individual tool wrapper files (`WinUtil.ps1`, `Sparkle.ps1`, `GTweak.ps1`) — replaced by `ExternalLauncher.ps1`
 - Removed `.DS_Store` tracked file from repository
 
-### March 10 — Code quality, safety, docs, and UX
+## [26.3.0] - 2026-03-10
+
+### Code quality, safety, docs, and UX
 
 - Added System Restore Point creation before applying any tweaks
 - Added selective tweak application — choose which categories to apply

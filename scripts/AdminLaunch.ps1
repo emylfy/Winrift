@@ -4,26 +4,17 @@
         [string]$ScriptPath,
 
         [Parameter(Mandatory = $false)]
-        [string[]]$Arguments = @(),
-
-        [Parameter(Mandatory = $false)]
-        [switch]$NoExit
+        [string[]]$Arguments = @()
     )
-    $useWindowsTerminal = Get-Command wt.exe -ErrorAction SilentlyContinue
+    # Drop admin privileges using runas /trustlevel:0x20000 (basic user)
+    $psArgs = "-ExecutionPolicy Bypass -File `"$ScriptPath`""
+    if ($Arguments.Count -gt 0) { $psArgs += " " + ($Arguments -join " ") }
 
-    $psArgs = @()
-    if ($NoExit) { $psArgs += "-NoExit" }
-    $psArgs += @("-ExecutionPolicy", "Bypass", "-File", $ScriptPath)
-    if ($Arguments.Count -gt 0) { $psArgs += $Arguments }
-
-    $insideWT = $null -ne $env:WT_SESSION
-
-    if ($useWindowsTerminal -and $insideWT) {
-        & wt.exe -w 0 new-tab powershell.exe @psArgs
-    } elseif ($useWindowsTerminal) {
-        & wt.exe powershell.exe @psArgs
+    $useWT = Get-Command wt.exe -ErrorAction SilentlyContinue
+    if ($useWT) {
+        Start-Process "runas.exe" -ArgumentList "/trustlevel:0x20000 `"wt.exe powershell.exe $psArgs`""
     } else {
-        Start-Process -FilePath "powershell.exe" -ArgumentList $psArgs
+        Start-Process "runas.exe" -ArgumentList "/trustlevel:0x20000 `"powershell.exe $psArgs`""
     }
 }
 

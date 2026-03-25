@@ -1,4 +1,5 @@
 ﻿. "$PSScriptRoot\scripts\Common.ps1"
+Assert-AdminOrElevate
 
 # Load version from version.json
 $versionFile = Join-Path $PSScriptRoot "config\version.json"
@@ -71,7 +72,7 @@ function Show-MainMenu {
             if ($choice -in @("5", "6")) {
                 Start-UserProcess -ScriptPath $targetScript
             } else {
-                . $targetScript
+                & $targetScript
                 $Host.UI.RawUI.WindowTitle = "Winrift v$script:AppVersion"
             }
             continue outerLoop
@@ -103,7 +104,7 @@ function Show-MainMenu {
                 }
 
                 if ($communityScripts.ContainsKey($communityChoice)) {
-                    . $communityScripts[$communityChoice]
+                    & $communityScripts[$communityChoice]
                     $Host.UI.RawUI.WindowTitle = "Winrift v$script:AppVersion"
                     break communityLoop
                 }

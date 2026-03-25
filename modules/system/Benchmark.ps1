@@ -336,5 +336,8 @@ function Show-BenchmarkMenu {
     } -ExitKey "5"
 }
 
-Initialize-Logging -ModuleName "benchmark"
-Show-BenchmarkMenu
+# Entry point — skipped when dot-sourced from tests
+if ($MyInvocation.InvocationName -ne '.') {
+    Initialize-Logging -ModuleName "benchmark"
+    Show-BenchmarkMenu
+}

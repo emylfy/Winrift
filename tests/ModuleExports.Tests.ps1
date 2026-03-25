@@ -5,8 +5,8 @@ BeforeDiscovery {
             File = 'modules/customize/Customize.Menu.ps1'
             ExpectedFunctions = @(
                 'Show-CustomizeMenu', 'Show-DesktopMenu', 'Show-TerminalMenu',
-                'Show-AppsMenu', 'Show-SpotifyToolsMenu', 'Show-VSCodeMenu',
-                'Show-WindowsLookMenu'
+                'Show-AppsMenu', 'Show-VSCodeConfigMenu', 'Show-SpotifyToolsMenu',
+                'Show-WindowsMenu'
             )
         }
         @{
@@ -21,7 +21,7 @@ BeforeDiscovery {
             File = 'modules/customize/Customize.Apps.ps1'
             ExpectedFunctions = @(
                 'Invoke-Rectify11', 'Install-SpotX', 'Install-Spicetify',
-                'Install-SteamMillennium', 'Install-MacOSCursor'
+                'Install-SteamMillennium'
             )
         }
         @{
