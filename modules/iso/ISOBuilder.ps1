@@ -1,8 +1,8 @@
-$scriptRoot = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
-. "$scriptRoot\scripts\Common.ps1"
-
-Assert-AdminOrElevate
-Initialize-Logging
+﻿$scriptRoot = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
+if (-not (Get-Command Write-Log -ErrorAction SilentlyContinue)) {
+    . "$scriptRoot\scripts\Common.ps1"
+}
+Initialize-Logging -ModuleName "isobuilder"
 
 $OSCDIMG_URL = "https://msdl.microsoft.com/download/symbols/oscdimg.exe/3D44737265000/oscdimg.exe"
 $ADK_PAGE = "https://learn.microsoft.com/en-us/windows-hardware/get-started/adk-install"
@@ -31,9 +31,9 @@ function Get-OscdimgPath {
         "Source: msdl.microsoft.com (Microsoft's official Symbol Server)",
         "Same source used by tiny11maker and Windows ADK tools.",
         "",
-        "[Y] Download from Microsoft",
-        "[N] Cancel",
-        "[A] Open ADK download page (install manually)"
+        "Y › Download from Microsoft",
+        "N › Cancel",
+        "A › Open ADK download page (install manually)"
     )
 
     while ($true) {
@@ -137,9 +137,9 @@ function Build-WinriftISO {
             "  - Bypasses TPM/SecureBoot/RAM checks",
             "  - Creates Winrift desktop shortcut",
             "",
-            "[1] Use Winrift default answer file",
-            "[2] Use your own autounattend.xml",
-            "[3] Cancel"
+            "1 › Use Winrift default answer file",
+            "2 › Use your own autounattend.xml",
+            "3 › Cancel"
         )
 
         $xmlSource = $null
@@ -228,8 +228,8 @@ function Build-WinriftISO {
 # Menu
 Clear-Host
 Invoke-MenuLoop -Title "Winrift ISO Builder" -Items @(
-    "[1] Build ISO - embed autounattend.xml into Windows 11 ISO",
-    "[2] Back"
+    "1 › Build ISO - embed autounattend.xml into Windows 11 ISO",
+    "2 › Back"
 ) -Actions @{
     "1" = { Build-WinriftISO }
 } -ExitKey "2"

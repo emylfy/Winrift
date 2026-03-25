@@ -1,4 +1,4 @@
-function Invoke-Rectify11 {
+﻿function Invoke-Rectify11 {
     Clear-Host
     $null = Invoke-Tool "rectify11"
     Wait-ForUser
@@ -27,7 +27,7 @@ function Install-SteamMillennium {
     Clear-Host
     Show-MenuBox -Title "Space Theme Installation" -Items @(
         "Would you like to install Space Theme for Steam?",
-        "[Y] Yes   [N] No"
+        "Y › Yes   N › No"
     )
     $installChoice = Read-Host "Install Space Theme? (Y/N)"
 

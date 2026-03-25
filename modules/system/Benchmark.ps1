@@ -1,4 +1,4 @@
-if (-not (Get-Command Write-Log -ErrorAction SilentlyContinue)) {
+﻿if (-not (Get-Command Write-Log -ErrorAction SilentlyContinue)) {
     . "$PSScriptRoot\..\..\scripts\Common.ps1"
 }
 
@@ -138,7 +138,6 @@ function Save-Snapshot {
 
     $copy | ConvertTo-Json -Depth 5 | Set-Content -Path $filePath -Encoding UTF8
     Write-Log -Message "Snapshot saved: $filePath" -Level SUCCESS
-    return $filePath
 }
 
 function Compare-Snapshots {
@@ -159,11 +158,13 @@ function Compare-Snapshots {
     }
 
     if (-not $BeforeFile -or -not (Test-Path $BeforeFile)) {
-        Write-Log -Message "Before snapshot not found. Run: Invoke-Benchmark -Phase Before" -Level ERROR
+        Write-Log -Message "No benchmark data yet. Run Benchmark (Before tweaks) first." -Level WARNING
+        Wait-ForUser
         return $null
     }
     if (-not $AfterFile -or -not (Test-Path $AfterFile)) {
-        Write-Log -Message "After snapshot not found. Run: Invoke-Benchmark -Phase After" -Level ERROR
+        Write-Log -Message "Only the Before snapshot exists. Run Benchmark (After tweaks) to generate a report." -Level WARNING
+        Wait-ForUser
         return $null
     }
 
@@ -288,11 +289,9 @@ function Invoke-Benchmark {
         'Before' {
             Write-Log -Message "Starting BEFORE benchmark..." -Level INFO
             $snapshot = Get-PerformanceSnapshot
-            $savedPath = Save-Snapshot -Phase Before -Snapshot $snapshot
+            Save-Snapshot -Phase Before -Snapshot $snapshot | Out-Null
             Write-Host ""
             Write-Log -Message "Baseline recorded. Now apply tweaks, reboot, then run Benchmark (After)." -Level INFO
-            Write-Host ""
-            Write-Host "  Saved to: $savedPath"
             Write-Host ""
             Read-Host "  Press Enter to continue"
         }
@@ -304,9 +303,7 @@ function Invoke-Benchmark {
 
             $comparison = Compare-Snapshots
             if ($comparison) {
-                $reportPath = Export-BenchmarkReport -Comparison $comparison
-                Write-Host ""
-                Write-Host "  Report saved to: $reportPath"
+                Export-BenchmarkReport -Comparison $comparison | Out-Null
                 Write-Host ""
                 Read-Host "  Press Enter to continue"
             }
@@ -314,9 +311,7 @@ function Invoke-Benchmark {
         'Compare' {
             $comparison = Compare-Snapshots
             if ($comparison) {
-                $reportPath = Export-BenchmarkReport -Comparison $comparison
-                Write-Host ""
-                Write-Host "  Report saved to: $reportPath"
+                Export-BenchmarkReport -Comparison $comparison | Out-Null
                 Write-Host ""
                 Read-Host "  Press Enter to continue"
             }
@@ -327,12 +322,12 @@ function Invoke-Benchmark {
 function Show-BenchmarkMenu {
     $Host.UI.RawUI.WindowTitle = "Winrift - Benchmark"
     Invoke-MenuLoop -Title "Benchmark - Measure, Tweak, Verify" -Items @(
-        "[1] Run Benchmark (Before tweaks)",
-        "[2] Run Benchmark (After tweaks)",
-        "[3] View Last Report",
-        "[4] System Health Score",
+        "1 › Run Benchmark (Before tweaks)",
+        "2 › Run Benchmark (After tweaks)",
+        "3 › View Last Report",
+        "4 › System Health Score",
         "---",
-        "[5] Back"
+        "5 › Back"
     ) -Prompt "Enter your choice (1-5)" -Actions @{
         "1" = { Invoke-Benchmark -Phase Before }
         "2" = { Invoke-Benchmark -Phase After }
@@ -341,8 +336,5 @@ function Show-BenchmarkMenu {
     } -ExitKey "5"
 }
 
-# Standalone entry point (skipped when dot-sourced from Tweaks.ps1)
-if ($MyInvocation.InvocationName -ne '.') {
-    Assert-AdminOrElevate
-    Show-BenchmarkMenu
-}
+Initialize-Logging -ModuleName "benchmark"
+Show-BenchmarkMenu

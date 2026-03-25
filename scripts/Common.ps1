@@ -1,4 +1,7 @@
+﻿[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+
 $Purple = "$([char]0x1b)[38;5;141m"
+$Dim = "$([char]0x1b)[38;5;243m"
 $Reset = "$([char]0x1b)[0m"
 $Red = "$([char]0x1b)[38;5;203m"
 $Green = "$([char]0x1b)[38;5;120m"
@@ -45,54 +48,78 @@ function Show-MenuBox {
         [int]$Width = 0
     )
 
+    $h = [string][char]0x2500  # ─
+    $v = [string][char]0x2502  # │
+    $tl = [string][char]0x256D # ╭
+    $tr = [string][char]0x256E # ╮
+    $bl = [string][char]0x2570 # ╰
+    $br = [string][char]0x256F # ╯
+
     if ($Width -le 0) {
-        $maxLen = $Title.Length
+        $maxLen = $Title.Length + 2
         foreach ($item in $Items) {
             if ($item -match '^---\s+(.+?)\s*-*$') {
-                $divLen = (" $($Matches[1].TrimEnd('- ')) ").Length
-                if ($divLen -gt $maxLen) { $maxLen = $divLen }
-            } elseif ($item -ne "---" -and $item.Length -gt $maxLen) {
-                $maxLen = $item.Length
+                $sectionLen = ("  $($Matches[1].TrimEnd('- '))").Length
+                if ($sectionLen -gt $maxLen) { $maxLen = $sectionLen }
+            } elseif ($item -ne "---") {
+                $plainLen = ($item -replace '\x1b\[[0-9;]*m', '').Length
+                if ($plainLen -gt $maxLen) { $maxLen = $plainLen }
             }
         }
         $Width = [math]::Max($maxLen + 3, 40)
     }
 
-    $border = "$Purple +" + ("-" * $Width) + "+$Reset"
-    $totalPad = $Width - $Title.Length
-    $leftPad = [math]::Floor($totalPad / 2)
-    $rightPad = $totalPad - $leftPad
-    $titlePadded = (" " * $leftPad) + $Title + (" " * $rightPad)
+    # Top border with title: ╭─ Title ───...───╮
+    $titleText = "$h $Title "
+    $topFill = $Width - $titleText.Length
+    if ($topFill -lt 0) { $topFill = 0 }
     Write-Host ""
-    Write-Host $border
-    Write-Host "$Purple '$Purple$titlePadded$Purple'$Reset"
-    Write-Host $border
+    Write-Host "$Dim $tl$h $Purple$Title$Dim $($h * $topFill)$tr$Reset"
+
+    # Top padding
+    Write-Host "$Dim $v$Reset$(" " * $Width)$Dim$v$Reset"
+
     foreach ($item in $Items) {
         if ($item -match '^---\s+(.+?)\s*-*$') {
-            $text = " $($Matches[1].TrimEnd('- ')) "
-            $totalDashes = $Width - $text.Length
-            $leftDashes = [math]::Floor($totalDashes / 2)
-            $rightDashes = $totalDashes - $leftDashes
-            Write-Host "$Purple +$("-" * $leftDashes)$text$("-" * $rightDashes)+$Reset"
+            # Section header: empty line + colored text
+            $sectionText = $Matches[1].TrimEnd('- ')
+            Write-Host "$Dim $v$Reset$(" " * $Width)$Dim$v$Reset"
+            $pad = $Width - ("  $sectionText").Length
+            if ($pad -lt 0) { $pad = 0 }
+            Write-Host "$Dim $v$Reset  $Purple$sectionText$Reset$(" " * $pad)$Dim$v$Reset"
         } elseif ($item -eq "---") {
-            Write-Host $border
+            # Plain divider: just an empty line
+            Write-Host "$Dim $v$Reset$(" " * $Width)$Dim$v$Reset"
         } else {
-            $itemPadded = $item.PadRight($Width - 1)
-            Write-Host "$Purple '$Reset $itemPadded$Purple'$Reset"
+            $plainItem = $item -replace '\x1b\[[0-9;]*m', ''
+            $pad = ($Width - 1) - $plainItem.Length
+            if ($pad -lt 0) { $pad = 0 }
+            $itemPadded = $item + (" " * $pad)
+            Write-Host "$Dim $v$Reset $itemPadded$Dim$v$Reset"
         }
     }
-    Write-Host $border
+
+    # Bottom padding + border
+    Write-Host "$Dim $v$Reset$(" " * $Width)$Dim$v$Reset"
+    Write-Host "$Dim $bl$($h * $Width)$br$Reset"
 }
 
+$script:RestorePointCreated = $false
+
 function New-SafeRestorePoint {
+    if ($script:RestorePointCreated) {
+        Write-Log -Message "Restore point already created this session" -Level SKIP
+        return
+    }
     Write-Host "`n$Purple Creating System Restore Point before applying tweaks...$Reset"
     try {
         Enable-ComputerRestore -Drive "$env:SystemDrive\" -ErrorAction SilentlyContinue
-        Checkpoint-Computer -Description "Winrift - Before System Tweaks $(Get-Date -Format 'yyyy-MM-dd HH:mm')" -RestorePointType MODIFY_SETTINGS -ErrorAction Stop
+        Checkpoint-Computer -Description "Winrift - Before System Tweaks $(Get-Date -Format 'yyyy-MM-dd HH:mm')" -RestorePointType MODIFY_SETTINGS -ErrorAction Stop -WarningAction SilentlyContinue
         Write-Log -Message "System Restore Point created successfully." -Level SUCCESS
+        $script:RestorePointCreated = $true
     } catch {
         Write-Log -Message "Could not create restore point: $($_.Exception.Message)" -Level WARNING
-        Write-Log -Message "Proceeding without restore point. Consider creating one manually." -Level WARNING
+        $script:RestorePointCreated = $true  # Don't retry — Windows blocks within 1440 min anyway
     }
     Write-Host ""
 }
@@ -153,8 +180,7 @@ $script:TweakBackupDir = Join-Path $_baseDir "Winrift\tweaks"
 $script:DesiredStateDir = Join-Path $_baseDir "Winrift\tweaks"
 
 function Start-TweakSession {
-    $script:TweakBackupEntries.Clear()
-    $script:DesiredStateEntries.Clear()
+    # Don't clear if entries already accumulated this session
     $script:DesiredStateCategory = "Uncategorized"
 }
 
@@ -222,7 +248,6 @@ function Save-TweakBackup {
     $filePath = Join-Path $script:TweakBackupDir $fileName
     $backup | ConvertTo-Json -Depth 5 | Set-Content -Path $filePath -Encoding UTF8
     Write-Log -Message "Tweak backup saved: $filePath ($($script:TweakBackupEntries.Count) entries)" -Level SUCCESS
-    return $filePath
 }
 
 function Save-DesiredState {
@@ -286,11 +311,11 @@ function Restore-TweakBackup {
     for ($i = 0; $i -lt [math]::Min($backups.Count, 10); $i++) {
         $b = Get-Content $backups[$i].FullName -Raw | ConvertFrom-Json
         $count = $b.entries.Count
-        $menuItems += "[$($i + 1)] $($b.timestamp) ($count changes)"
+        $menuItems += "$($i + 1) › $($b.timestamp) ($count changes)"
     }
     $cancelIdx = [math]::Min($backups.Count, 10) + 1
     $menuItems += "---"
-    $menuItems += "[$cancelIdx] Cancel"
+    $menuItems += "$cancelIdx › Cancel"
 
     Show-MenuBox -Title "Restore Tweak Backup" -Items $menuItems
     $choice = Read-Host ">"
@@ -389,34 +414,20 @@ function Confirm-ExternalTool {
         [Parameter(Mandatory)][psobject]$Tool
     )
 
-    $boxWidth = 57
-    $urlLine = "URL:    $($Tool.url)"
-    if ($urlLine.Length -gt ($boxWidth - 4)) {
-        $boxWidth = $urlLine.Length + 4
-    }
-    $border = "$Yellow +" + ("-" * $boxWidth) + "+$Reset"
+    $items = @(
+        "This tool will fetch and run a script from the web.",
+        "Tool:   $($Tool.name)",
+        "URL:    $($Tool.url)"
+    )
+    if ($Tool.docs) { $items += "Source: $($Tool.docs)" }
+    $items += "---"
+    $items += "Y › Run   N › Cancel   R › Review source"
 
-    Write-Host ""
-    Write-Host $border
-    Write-Host "$Yellow '$Yellow  WARNING: External script execution                     $Yellow'$Reset"
-    Write-Host $border
-    $line1 = "This tool will fetch and run a script from the web.".PadRight($boxWidth - 2)
-    Write-Host "$Yellow '$Reset $line1$Yellow'$Reset"
-    $toolLine = "Tool:   $($Tool.name)".PadRight($boxWidth - 2)
-    Write-Host "$Yellow '$Reset $toolLine$Yellow'$Reset"
-    $urlPadded = $urlLine.PadRight($boxWidth - 2)
-    Write-Host "$Yellow '$Reset $urlPadded$Yellow'$Reset"
-    if ($Tool.docs) {
-        $docsLine = "Source: $($Tool.docs)".PadRight($boxWidth - 2)
-        Write-Host "$Yellow '$Reset $docsLine$Yellow'$Reset"
-    }
-    Write-Host $border
-    Write-Host ""
-    Write-Host "  [Y] Run   [N] Cancel   [R] Review project source"
+    Show-MenuBox -Title "External script execution" -Items $items
     Write-Host ""
 
     while ($true) {
-        $response = Read-Host "Your choice"
+        $response = Read-Host " Your choice"
         switch ($response.ToUpper()) {
             "Y" { return $true }
             "N" { return $false }
@@ -424,9 +435,8 @@ function Confirm-ExternalTool {
                 if ($Tool.docs) {
                     Start-Process $Tool.docs
                     Write-Host "$Green  Opened project source in browser.$Reset"
-                    Write-Host "  [Y] Run   [N] Cancel"
                 } else {
-                    Write-Host "$Yellow  No documentation URL available for this tool.$Reset"
+                    Write-Host "$Yellow  No documentation URL available.$Reset"
                 }
             }
             default {
@@ -526,27 +536,35 @@ function Install-WingetPackage {
     param(
         [string]$PackageId,
         [string]$Name,
-        [string]$Source = ""
+        [string]$Source = "",
+        [switch]$ShowProgress
     )
 
     if (-not (Assert-WingetAvailable)) { return $false }
 
-    Write-Log -Message "Installing $Name..." -Level INFO
+    Write-Host -NoNewline "$Purple  Installing $Name...$Reset"
     try {
-        $wingetArgs = @($PackageId, "--accept-package-agreements", "--accept-source-agreements")
+        $wingetArgs = @($PackageId, "--accept-package-agreements", "--accept-source-agreements", "--disable-interactivity")
+        if (-not $ShowProgress) { $wingetArgs += "--silent" }
         if ($Source -ne "") { $wingetArgs += @("--source", $Source) }
-        & winget install @wingetArgs | Out-Host
+        if ($ShowProgress) {
+            Write-Host ""
+            & winget install @wingetArgs | Out-Host
+        } else {
+            & winget install @wingetArgs 2>&1 | Out-Null
+        }
         if ($LASTEXITCODE -eq 0) {
-            Write-Log -Message "$Name installed successfully." -Level SUCCESS
+            Write-Host " $Green done$Reset"
             return $true
         } elseif ($LASTEXITCODE -eq $WINGET_ALREADY_INSTALLED) {
-            Write-Log -Message "$Name is already installed." -Level INFO
+            Write-Host " $Yellow already installed$Reset"
             return $true
         } else {
-            Write-Log -Message "Failed to install $Name (exit code: $LASTEXITCODE)." -Level ERROR
+            Write-Host " $Red failed$Reset (exit code: $LASTEXITCODE)"
             return $false
         }
     } catch {
+        Write-Host " $Red error$Reset"
         Write-Log -Message "Error installing ${Name}: $($_.Exception.Message)" -Level ERROR
         return $false
     }

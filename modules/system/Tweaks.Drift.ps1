@@ -1,4 +1,4 @@
-param(
+﻿param(
     [switch]$AutoCheck
 )
 
@@ -99,7 +99,6 @@ function Show-DriftReport {
             "No drift detected.",
             "All $okCount monitored values match desired state."
         )
-        Wait-ForUser
         return $null
     }
 
@@ -229,11 +228,11 @@ function Show-DriftMenu {
     $taskLabel = if ($taskRegistered) { "Disable" } else { "Enable" }
 
     Invoke-MenuLoop -Title "Drift Detection" -Items @(
-        "[1] Check for drift now",
-        "[2] $taskLabel auto-check after Windows Update",
-        "[3] Clear desired state (reset monitoring)",
+        "1 › Check for drift now",
+        "2 › $taskLabel auto-check after Windows Update",
+        "3 › Clear desired state (reset monitoring)",
         "---",
-        "[4] Back"
+        "4 › Back"
     ) -Actions @{
         "1" = {
             $drifted = Show-DriftReport

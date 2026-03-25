@@ -1,4 +1,4 @@
-# Config-driven external tool launcher
+﻿# Config-driven external tool launcher
 # All tool definitions live in config/tools.json - no more per-tool wrapper files
 
 param(
@@ -7,6 +7,7 @@ param(
 )
 
 . "$PSScriptRoot\..\..\scripts\Common.ps1"
+Initialize-Logging -ModuleName "tool-$ToolId"
 
 $tool = Get-ToolConfig $ToolId
 if ($tool) {

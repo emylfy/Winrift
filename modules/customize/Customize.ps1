@@ -1,4 +1,4 @@
-. "$PSScriptRoot\..\..\scripts\Common.ps1"
+﻿. "$PSScriptRoot\..\..\scripts\Common.ps1"
 $Host.UI.RawUI.WindowTitle = "Winrift - Customize"
 
 Initialize-Logging -ModuleName "customize"

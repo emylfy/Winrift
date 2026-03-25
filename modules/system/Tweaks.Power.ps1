@@ -1,4 +1,4 @@
-. "$PSScriptRoot\..\..\scripts\Common.ps1"
+﻿. "$PSScriptRoot\..\..\scripts\Common.ps1"
 # https://github.com/ancel1x/Ancels-Performance-Batch
 
 function Invoke-PowerMenu {
@@ -8,8 +8,8 @@ function Invoke-PowerMenu {
         "Disables Connected Standby, CPU idle states,",
         "and PCIe ASPM. Skip if on battery.",
         "---",
-        "[1] Apply Power Management Tweaks",
-        "[2] Back to menu"
+        "1 › Apply Power Management Tweaks",
+        "2 › Back to menu"
     )
     $choice = Read-Host ">"
     if ($choice -eq "1") {
@@ -53,8 +53,8 @@ function Invoke-AggressivePowerTweaks {
     # Activate Hidden Ultimate Performance Power Plan
     # e9a42b02-... = built-in Ultimate Performance scheme GUID (hidden by default)
     # eeeeeeee-... = custom GUID for the duplicated plan to avoid conflicts
-    powercfg -duplicatescheme e9a42b02-d5df-448d-aa00-03f14749eb61 eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee 2>$null
-    powercfg -setactive eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee
+    powercfg -duplicatescheme e9a42b02-d5df-448d-aa00-03f14749eb61 eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee 2>$null | Out-Null
+    powercfg -setactive eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee 2>$null | Out-Null
     if ($LASTEXITCODE -eq 0) {
         Write-Log -Message "Activated Ultimate Performance power plan" -Level SUCCESS
     } else {

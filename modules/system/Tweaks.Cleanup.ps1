@@ -1,4 +1,4 @@
-. "$PSScriptRoot\..\..\scripts\Common.ps1"
+﻿. "$PSScriptRoot\..\..\scripts\Common.ps1"
 
 $PC_MANAGER_AUMID = "Microsoft.MicrosoftPCManager_8wekyb3d8bbwe!App"
 $PC_MANAGER_STORE = "ms-windows-store://pdp?hl=en-us&gl=us&ocid=pdpshare&referrer=storeforweb&productid=9pm860492szd&storecid=storeweb-pdp-open-cta"
@@ -7,11 +7,11 @@ function Clear-SystemSpace {
     $Host.UI.RawUI.WindowTitle = "System Cleaner"
 
     Invoke-MenuLoop -Title "Free Up Disk Space" -Items @(
-        "[1] Disable Reserved Storage (up to 7GB for Windows updates)",
-        "[2] Clean up WinSxS (remove old component versions)",
-        "[3] Install and Launch PC Manager (Official Microsoft Utility)",
+        "1 › Disable Reserved Storage (up to 7GB for Windows updates)",
+        "2 › Clean up WinSxS (remove old component versions)",
+        "3 › Install and Launch PC Manager (Official Microsoft Utility)",
         "---",
-        "[4] Back to menu"
+        "4 › Back to menu"
     ) -Actions @{
         "1" = {
             Write-Log -Message "Disabling Reserved Storage..." -Level INFO
@@ -35,8 +35,9 @@ function Clear-SystemSpace {
                 Start-Sleep -Seconds 2
                 Start-Process "shell:AppsFolder\$PC_MANAGER_AUMID"
             } else {
+                Write-Log -Message "Opening Microsoft Store instead..." -Level INFO
                 Start-Process $PC_MANAGER_STORE
-                Read-Host "Press Enter to continue"
+                Wait-ForUser
             }
         }
     } -ExitKey "4"

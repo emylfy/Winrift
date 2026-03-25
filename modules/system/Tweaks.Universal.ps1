@@ -1,4 +1,4 @@
-. "$PSScriptRoot\..\..\scripts\Common.ps1"
+﻿. "$PSScriptRoot\..\..\scripts\Common.ps1"
 # https://github.com/AlchemyTweaks/Verified-Tweaks
 # https://github.com/SanGraphic/QuickBoost
 # https://github.com/UnLovedCookie/CoutX
@@ -26,35 +26,39 @@ $MENU_SHOW_DELAY_MS         = "0"
 $WAIT_KILL_SVC_TIMEOUT_MS   = "2000"
 
 function Invoke-UniversalTweaks {
+    $sessionStarted = $false
     while ($true) {
         Clear-Host
         Show-MenuBox -Title "Select tweak categories to apply" -Items @(
-            "[1]  System Latency",
-            "[2]  Input Device Optimization",
-            "[3]  SSD/NVMe Performance",
-            "[4]  GPU Hardware Scheduling",
-            "[5]  Network Optimization",
-            "[6]  CPU Performance",
-            "[7]  Power Management",
-            "[8]  System Responsiveness",
-            "[9]  Boot Optimization",
-            "[10] System Maintenance *",
-            "[11] UI Responsiveness",
-            "[12] Memory Optimization",
-            "[13] DirectX Enhancements *",
-            "--- * = opt-in only, not included in Apply ALL ---",
-            "[A]  Apply ALL safe tweaks",
-            "[B]  Back to menu"
+            "1 › System Latency",
+            "2 › Input Device Optimization",
+            "3 › SSD/NVMe Performance",
+            "4 › GPU Hardware Scheduling",
+            "5 › Network Optimization",
+            "6 › CPU Performance",
+            "7 › Power Management",
+            "8 › System Responsiveness",
+            "9 › Boot Optimization",
+            "10 › UI Responsiveness",
+            "11 › Memory Optimization",
+            "--- Advanced (opt-in, not included in Apply ALL) ---",
+            "12 › System Maintenance",
+            "13 › DirectX Enhancements",
+            "---",
+            "A › Apply ALL safe tweaks",
+            "B › Back to menu"
         )
 
         Write-Host ""
-        Write-Host "$Yellow Enter numbers separated by commas (e.g. 1,3,5) or A for all:$Reset"
-        $selection = Read-Host ">"
+        $selection = Read-Host " Select categories (e.g. 1 3 5 or A for all)"
 
-        if ($selection -eq "B" -or $selection -eq "b") { return }
+        if ($selection -eq "B" -or $selection -eq "b") { break }
 
-        New-SafeRestorePoint
-        Start-TweakSession
+        if (-not $sessionStarted) {
+            New-SafeRestorePoint
+            Start-TweakSession
+            $sessionStarted = $true
+        }
 
         $tweakMap = @{
             "1"  = { Invoke-SystemLatencyTweaks }
@@ -66,9 +70,9 @@ function Invoke-UniversalTweaks {
             "7"  = { Invoke-PowerTweaks }
             "8"  = { Invoke-SystemResponsivenessTweaks }
             "9"  = { Invoke-BootOptimizationTweaks }
-            "10" = { Invoke-SystemMaintenanceTweaks }
-            "11" = { Invoke-UIResponsivenessTweaks }
-            "12" = { Invoke-MemoryTweaks }
+            "10" = { Invoke-UIResponsivenessTweaks }
+            "11" = { Invoke-MemoryTweaks }
+            "12" = { Invoke-SystemMaintenanceTweaks }
             "13" = { Invoke-DirectXTweaks }
         }
 
@@ -76,14 +80,19 @@ function Invoke-UniversalTweaks {
             "1" = "System Latency"; "2" = "Input Device Optimization"; "3" = "SSD/NVMe Performance"
             "4" = "GPU Hardware Scheduling"; "5" = "Network Optimization"; "6" = "CPU Performance"
             "7" = "Power Management"; "8" = "System Responsiveness"; "9" = "Boot Optimization"
-            "10" = "System Maintenance"; "11" = "UI Responsiveness"; "12" = "Memory Optimization"
-            "13" = "DirectX Enhancements"
+            "10" = "UI Responsiveness"; "11" = "Memory Optimization"
+            "12" = "System Maintenance"; "13" = "DirectX Enhancements"
+        }
+
+        $optInWarnings = @{
+            "12" = "This disables Windows automatic maintenance, including disk optimization and security scans."
+            "13" = "UNSAFE_COMMAND_BUFFER_REUSE may cause GPU artifacts or crashes on some hardware."
         }
 
         if ($selection -eq "A" -or $selection -eq "a") {
-            $selectedKeys = @("1","2","3","4","5","6","7","8","9","11","12")
+            $selectedKeys = @("1","2","3","4","5","6","7","8","9","10","11")
         } else {
-            $selectedKeys = $selection -split ',' | ForEach-Object { $_.Trim() }
+            $selectedKeys = $selection -split '[,\s]+' | Where-Object { $_ -ne '' }
         }
 
         $appliedCategories = @()
@@ -94,6 +103,17 @@ function Invoke-UniversalTweaks {
             if ($tweakMap.ContainsKey($key)) {
                 $current++
                 $catName = $categoryNames[$key]
+
+                if ($optInWarnings.ContainsKey($key)) {
+                    Write-Host ""
+                    Write-Log -Message "$catName - $($optInWarnings[$key])" -Level WARNING
+                    $confirm = Read-Host "  Apply this category? [Y/N]"
+                    if ($confirm -ne "Y" -and $confirm -ne "y") {
+                        Write-Log -Message "Skipped $catName" -Level SKIP
+                        continue
+                    }
+                }
+
                 $script:DesiredStateCategory = $catName
                 Write-Progress -Activity "Applying System Tweaks" `
                     -Status "($current/$total) $catName..." `
@@ -106,27 +126,32 @@ function Invoke-UniversalTweaks {
         }
 
         Write-Progress -Completed -Activity "Applying System Tweaks"
-        Save-TweakBackup
-        Save-DesiredState
 
-        Write-Host ""
-        Write-Host "$Green +---------------------------------------------+$Reset"
-        Write-Host "$Green |          Tweaks Applied Successfully         |$Reset"
-        Write-Host "$Green +---------------------------------------------+$Reset"
-        Write-Host "$Reset  Categories applied:"
-        foreach ($cat in $appliedCategories) {
-            if ($categoryNames.ContainsKey($cat)) {
-                Write-Host "$Reset  - $($categoryNames[$cat])"
+        if ($appliedCategories.Count -gt 0) {
+            Write-Host ""
+            Write-Log -Message "Tweaks Applied Successfully" -Level SUCCESS
+            Write-Host "  Categories applied:"
+            foreach ($cat in $appliedCategories) {
+                if ($categoryNames.ContainsKey($cat)) {
+                    Write-Host "  - $($categoryNames[$cat])"
+                }
             }
+            Write-Host ""
+            Write-Host "$Yellow  A system restart is recommended for all changes to take effect.$Reset"
+        } else {
+            Write-Host ""
+            Write-Log -Message "No tweaks were applied." -Level INFO
         }
         Write-Host ""
-        Write-Host "$Yellow  A system restart is recommended for all changes to take effect.$Reset"
+        Write-Host "$Purple Press any key to return to the tweaks menu...$Reset"
+        $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
+    }
+    if ($sessionStarted) {
+        Save-TweakBackup
+        Save-DesiredState
         if ($script:LogFile) {
             Write-Host "$Green  Log saved to: $script:LogFile$Reset"
         }
-        Write-Host ""
-        Write-Host "`n$Purple Press any key to return to the tweaks menu...$Reset"
-        $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
     }
 }
 
@@ -164,22 +189,22 @@ function Invoke-SSDTweaks {
     $hasSSD = Get-PhysicalDisk | Where-Object { $_.MediaType -eq 'SSD' -or $_.BusType -eq 'NVMe' } | Measure-Object | Select-Object -ExpandProperty Count
     if ($hasSSD -gt 0) {
         try {
-            Write-Host "Enable and optimize TRIM for SSD"
-            fsutil behavior set DisableDeleteNotify 0
+            fsutil behavior set DisableDeleteNotify 0 | Out-Null
+            Write-Log -Message "Enabled TRIM for SSD" -Level SUCCESS
         } catch {
             Write-Log -Message "Failed to configure TRIM: $($_.Exception.Message)" -Level ERROR
         }
 
         try {
-            Write-Host "Disable defragmentation for SSDs"
-            Disable-ScheduledTask -TaskName "\Microsoft\Windows\Defrag\ScheduledDefrag"
+            Disable-ScheduledTask -TaskName "\Microsoft\Windows\Defrag\ScheduledDefrag" | Out-Null
+            Write-Log -Message "Disabled defragmentation for SSDs" -Level SUCCESS
         } catch {
             Write-Log -Message "Failed to disable defrag task: $($_.Exception.Message)" -Level ERROR
         }
 
         try {
-            Write-Host "Disable NTFS last access time updates"
-            fsutil behavior set disablelastaccess 1
+            fsutil behavior set disablelastaccess 1 | Out-Null
+            Write-Log -Message "Disabled NTFS last access time updates" -Level SUCCESS
         } catch {
             Write-Log -Message "Failed to configure last access time: $($_.Exception.Message)" -Level ERROR
         }
@@ -261,7 +286,6 @@ function Invoke-BootOptimizationTweaks {
 
 function Invoke-SystemMaintenanceTweaks {
     Write-Host "`nApplying System Maintenance tweaks...`n"
-    Write-Log -Message "WARNING: This disables Windows automatic maintenance, including disk optimization and security scans." -Level WARNING
 
     Set-RegistryValue -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Schedule\Maintenance" -Name "MaintenanceDisabled" -Type "DWord" -Value "1" -Message "Disabled automatic maintenance for better performance"
 
@@ -288,7 +312,7 @@ function Invoke-MemoryTweaks {
 
     $totalRamGB = [math]::Round((Get-CimInstance Win32_ComputerSystem).TotalPhysicalMemory / 1GB, 0)
     if ($totalRamGB -lt 16) {
-        Write-Log -Message "WARNING: Your system has ${totalRamGB}GB RAM. DisablePagingExecutive and LargeSystemCache are risky on systems with <16GB and may cause instability under load." -Level WARNING
+        Write-Log -Message "WARNING: Your system has ${totalRamGB}GB RAM. DisablePagingExecutive and LargeSystemCache are risky on systems with less than 16GB and may cause instability under load." -Level WARNING
     }
 
     # source - https://github.com/SanGraphic/QuickBoost/blob/main/v2/MemoryTweaks.bat
@@ -299,7 +323,6 @@ function Invoke-MemoryTweaks {
 
 function Invoke-DirectXTweaks {
     Write-Host "`nApplying DirectX tweaks...`n"
-    Write-Log -Message "WARNING: UNSAFE_COMMAND_BUFFER_REUSE may cause GPU artifacts or crashes on some hardware. If you experience graphical glitches, revert this setting." -Level WARNING
 
     # source - https://youtu.be/itTcqcJxtbo
     Set-RegistryValue -Path "HKLM:\SOFTWARE\Microsoft\DirectX" -Name "D3D12_ENABLE_UNSAFE_COMMAND_BUFFER_REUSE" -Type "DWord" -Value "1" -Message "Enabled D3D12 command buffer reuse"

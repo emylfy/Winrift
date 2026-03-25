@@ -7,6 +7,65 @@ and this project uses [Calendar Versioning](https://calver.org/) (YY.M format).
 
 ## [26.3] - 2026-03-25
 
+### March 25 (3) — UI overhaul, inline modules, health score v2, logging, bugfixes
+
+#### UI Redesign
+- Changed `Show-MenuBox` in `Common.ps1` — new rounded Unicode borders (`╭╮╰╯─│`) with dimmed gray frame (`$Dim`, 243), bright purple title, section headers as colored text instead of `├─┤` dividers, top/bottom padding inside box
+- Changed menu item style — replaced `[1]` brackets with `1 ›` arrows across all 20+ PS1 files
+- Changed `Confirm-ExternalTool` — rewritten to use `Show-MenuBox` instead of manual `+---+` / `'` border drawing
+- Added `$Dim` color variable to `Common.ps1` for border rendering
+- Added UTF-8 BOM to all `.ps1` source files for PowerShell 5.1 Unicode compatibility
+- Added `[Console]::OutputEncoding = [System.Text.Encoding]::UTF8` to `Common.ps1`
+- Fixed ANSI-aware padding in `Show-MenuBox` — strips escape codes before calculating padding width so colored items align correctly
+
+#### Inline Module Execution
+- Changed `Winrift.ps1` — admin modules (Benchmark, Tweaks, Security, Drivers, ISO) now run inline via dot-source instead of `Start-AdminProcess`; reduces 7+ terminal tabs to 1 main window
+- Changed `Tweaks.ps1` — renamed `Show-MainMenu` to `Show-TweaksMenu` to avoid name conflict with Winrift; removed `Assert-AdminOrElevate`
+- Changed `SecurityMenu.ps1` — removed redundant `AdminLaunch.ps1` dot-source; DefendNot/RemoveWindowsAI/PrivacySexy still launch as separate processes (web script isolation)
+- Changed `ISOBuilder.ps1` — removed `Assert-AdminOrElevate`; conditional `Common.ps1` load for inline compatibility
+- Changed `Benchmark.ps1` — removed standalone guard; always runs entry function
+- Customize and App Bundles remain as separate user-space processes (no admin)
+
+#### Health Score v2
+- Added delta comparison — loads previous score from `~/Winrift/health/`, shows `(+17)` / `(-5)` next to each category and composite score
+- Added drift summary — quick scan of `desired_state.json`, shows "60/63 tweaks holding (95%)" with drift count and fix hint
+- Added actionable recommendations — categories below 60 score show specific action (e.g. "Apply Network tweaks", "Run Security & Privacy from main menu")
+- Fixed Recall detection — now checks if Recall feature actually exists on the system (WindowsAI registry key or Recall AppX package) before penalizing; no more false "Recall active" on systems without Recall
+- Fixed health score detail padding — pads detail text (including colored delta) by visible length so right border aligns
+
+#### Session Management
+- Changed restore point to once-per-session — `$script:RestorePointCreated` flag in `Common.ps1` prevents duplicate restore points; `-WarningAction SilentlyContinue` suppresses Windows 1440-minute warning
+- Changed tweak backup to accumulate — `Start-TweakSession` no longer clears entry lists; `Save-TweakBackup`/`Save-DesiredState` called once on exit from `Invoke-UniversalTweaks` instead of per-action
+- Changed `Invoke-UniversalTweaks` — session init (restore point + start session) moved outside loop, save moved after loop exit; shows "No tweaks were applied" when all categories skipped
+
+#### Tweaks UX
+- Changed tweak categories menu — opt-in categories (`System Maintenance`, `DirectX Enhancements`) moved to separate "Advanced" section with divider; renumbered 10-13
+- Added Y/N confirmation with impact warning before applying opt-in categories
+- Changed category selection input — accepts spaces, commas, or mix (`1 3 5`, `1,3,5`, `1, 3 5`)
+- Removed duplicate warnings from `Invoke-SystemMaintenanceTweaks` and `Invoke-DirectXTweaks` (now shown in pre-apply prompt)
+- Fixed `<16GB` parse error — replaced with `less than 16GB` (PS 5.1 reserved operator)
+- Fixed `|` pipe parse error in success box — replaced manual `|` border with `Write-Log -Level SUCCESS`
+
+#### Logging
+- Added `Initialize-Logging` to DefendNot, RemoveWindowsAI, PrivacySexy, ExternalLauncher, WinScript, Organizer, Benchmark (standalone)
+- Fixed `ISOBuilder.ps1` — added `-ModuleName "isobuilder"` to `Initialize-Logging`
+
+#### Bugfixes
+- Fixed `Show-MenuBox` section header padding — was 1 character short causing misaligned right border
+- Fixed duplicate "Report saved" messages in `Benchmark.ps1` — removed `Write-Host "Saved to:"` and `return $filePath` from `Save-Snapshot`/`Save-TweakBackup`/`Export-BenchmarkReport`
+- Fixed "View Last Report" — shows user-friendly messages when Before/After snapshots missing instead of internal error
+- Fixed `Customize.Apps.ps1` — restored `$Matches[1]`/`$Matches[2]` broken by batch `[N]` → `N ›` replacement
+- Fixed SSD tweaks raw output — `fsutil`/`Disable-ScheduledTask` output piped to `Out-Null`, `Write-Host` replaced with `Write-Log`
+- Fixed Power Management raw output — `powercfg` output piped to `Out-Null`
+- Fixed drift detection — removed `Wait-ForUser` from "No drift detected" path to avoid double prompt
+- Fixed DefendNot — checks `Invoke-Tool` return value; shows Tamper Protection hint on failure
+- Fixed PrivacySexy — removed duplicate `[R] Review project source` from menu (already in confirmation dialog)
+- Fixed SecurityMenu — removed `-NoExit` from `Start-AdminProcess` calls (was leaving PS prompt open)
+- Fixed PC Manager install — soft fallback to Microsoft Store on `0x80004004` error
+- Changed `Install-WingetPackage` — added `--silent` + `--disable-interactivity` for clean output; added `-ShowProgress` switch for large packages (used by UniGetUI)
+
+## [26.3] - 2026-03-25
+
 ### March 25 (2) — Health Score, drift detection, desired state tracking, pipeline fixes
 
 - Added `modules/system/HealthScore.ps1` — composite 0-100 system health score across 7 categories (Latency, Memory, Process Bloat, Startup, Privacy, Storage, Network) with weighted scoring, threshold-band interpolation, visual bar display, and JSON persistence to `~/Winrift/health/`

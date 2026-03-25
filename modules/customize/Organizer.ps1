@@ -1,4 +1,5 @@
-. "$PSScriptRoot\..\..\scripts\Common.ps1"
+﻿. "$PSScriptRoot\..\..\scripts\Common.ps1"
+Initialize-Logging -ModuleName "organizer"
 
 $Host.UI.RawUI.WindowTitle = "Organizer"
 

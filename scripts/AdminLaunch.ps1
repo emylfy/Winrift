@@ -1,4 +1,4 @@
-function Start-UserProcess {
+﻿function Start-UserProcess {
     param (
         [Parameter(Mandatory = $true)]
         [string]$ScriptPath,

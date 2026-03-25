@@ -1,4 +1,4 @@
-. "$PSScriptRoot\..\..\scripts\Common.ps1"
+﻿. "$PSScriptRoot\..\..\scripts\Common.ps1"
 
 Initialize-Logging -ModuleName "drivers"
 
@@ -22,21 +22,21 @@ function Show-DeviceMenu {
     while ($true) {
         Clear-Host
         Show-MenuBox -Title "Select your manufacturer" -Items @(
-            "[1]  Nvidia App",
-            "[2]  AMD Drivers",
-            "[3]  Intel Driver & Support Assistant (auto-install)",
+            "1 › Nvidia App",
+            "2 › AMD Drivers",
+            "3 › Intel Driver & Support Assistant (auto-install)",
             "---",
-            "[4]  HP",
-            "[5]  Lenovo",
-            "[6]  Asus",
-            "[7]  Acer",
-            "[8]  MSI",
-            "[9]  Huawei",
-            "[10] Xiaomi",
-            "[11] DELL/Alienware",
-            "[12] Gigabyte",
+            "4 › HP",
+            "5 › Lenovo",
+            "6 › Asus",
+            "7 › Acer",
+            "8 › MSI",
+            "9 › Huawei",
+            "10 › Xiaomi",
+            "11 › DELL/Alienware",
+            "12 › Gigabyte",
             "---",
-            "[Enter] Back to Menu"
+            "Enter › Back to Menu"
         )
 
         $choice = Read-Host ">"
@@ -68,10 +68,10 @@ function Install-IntelDSA {
 
 function Show-LenovoMenu {
     Invoke-MenuLoop -Title "Lenovo Driver Options" -Items @(
-        "[1] Install Lenovo Vantage",
-        "[2] Open Lenovo Driver Page",
+        "1 › Install Lenovo Vantage",
+        "2 › Open Lenovo Driver Page",
         "---",
-        "[3] Back to Manufacturer Selection"
+        "3 › Back to Manufacturer Selection"
     ) -Actions @{
         "1" = {
             $installed = Install-WingetPackage "9WZDNCRFJ4MV" "Lenovo Vantage"

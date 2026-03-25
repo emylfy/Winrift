@@ -1,4 +1,5 @@
-. "$PSScriptRoot\..\..\scripts\Common.ps1"
+﻿. "$PSScriptRoot\..\..\scripts\Common.ps1"
+Initialize-Logging -ModuleName "removewindowsai"
 $Host.UI.RawUI.WindowTitle = "RemoveWindowsAI - Remove Windows AI Features"
 
 $tool = Get-ToolConfig "removewindowsai"
@@ -11,7 +12,7 @@ Show-MenuBox -Title "RemoveWindowsAI - Remove Copilot & Recall" -Items @(
     "URL:    $($tool.url)",
     "Source: $($tool.docs)",
     "---",
-    "[Y] Run  [N] Cancel  [R] Review source"
+    "Y › Run  N › Cancel  R › Review source"
 )
 
 while ($true) {

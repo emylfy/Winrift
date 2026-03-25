@@ -1,4 +1,4 @@
-function Set-ShortDateHours {
+﻿function Set-ShortDateHours {
     Clear-Host
     Write-Log -Message "Setting short date and hours format..." -Level INFO
     Set-RegistryValue -Path "HKCU:\Control Panel\International" -Name "sShortDate" -Type String -Value "MMM dd yyyy" -Message "Short date format set to MMM dd yyyy"

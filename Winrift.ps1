@@ -1,4 +1,4 @@
-. "$PSScriptRoot\scripts\Common.ps1"
+﻿. "$PSScriptRoot\scripts\Common.ps1"
 
 # Load version from version.json
 $versionFile = Join-Path $PSScriptRoot "config\version.json"
@@ -44,16 +44,16 @@ function Show-MainMenu {
     :outerLoop while ($true) {
         Clear-Host
         Show-MenuBox -Title "Winrift v$script:AppVersion - Break through default Windows" -Items @(
-            "[1]  Benchmark - Measure system performance",
-            "[2]  System Tweaks - Optimization & power management",
-            "[3]  Security & Privacy - Defender, Copilot, privacy",
-            "[4]  Drivers - NVIDIA, AMD, Intel, OEM",
-            "[5]  Customize - Desktop, terminal, themes",
-            "[6]  App Bundles - Install app collections",
-            "[7]  ISO Builder - Embed answer file into Windows ISO",
+            "1 › Benchmark - Measure system performance",
+            "2 › System Tweaks - Optimization & power management",
+            "3 › Security & Privacy - Defender, Copilot, privacy",
+            "4 › Drivers - NVIDIA, AMD, Intel, OEM",
+            "5 › Customize - Desktop, terminal, themes",
+            "6 › App Bundles - Install app collections",
+            "7 › ISO Builder - Embed answer file into Windows ISO",
             "--- Explore & Learn ---",
-            "[8]  Community Tools",
-            "[9]  Docs & Guides"
+            "8 › Community Tools",
+            "9 › Docs & Guides"
         )
 
         $choice = Read-Host ">"
@@ -71,7 +71,8 @@ function Show-MainMenu {
             if ($choice -in @("5", "6")) {
                 Start-UserProcess -ScriptPath $targetScript
             } else {
-                Start-AdminProcess -ScriptPath $targetScript
+                . $targetScript
+                $Host.UI.RawUI.WindowTitle = "Winrift v$script:AppVersion"
             }
             continue outerLoop
         }
@@ -81,12 +82,12 @@ function Show-MainMenu {
             :communityLoop while ($true) {
                 Clear-Host
                 Show-MenuBox -Title "Community Tools" -Items @(
-                    "[1]  WinUtil - Tweaks, Apps & Fixes",
-                    "[2]  Sparkle - Optimize & Debloat",
-                    "[3]  GTweak - Debloat & Tweak",
-                    "[4]  WinScript - Custom Script Builder",
+                    "1 › WinUtil - Tweaks, Apps & Fixes",
+                    "2 › Sparkle - Optimize & Debloat",
+                    "3 › GTweak - Debloat & Tweak",
+                    "4 › WinScript - Custom Script Builder",
                     "--- Third-party tools fetched from the web ---",
-                    "[5]  Back to main menu"
+                    "5 › Back to main menu"
                 )
 
                 $communityChoice = Read-Host ">"
@@ -102,7 +103,8 @@ function Show-MainMenu {
                 }
 
                 if ($communityScripts.ContainsKey($communityChoice)) {
-                    Start-AdminProcess -ScriptPath $communityScripts[$communityChoice]
+                    . $communityScripts[$communityChoice]
+                    $Host.UI.RawUI.WindowTitle = "Winrift v$script:AppVersion"
                     break communityLoop
                 }
             }
@@ -114,12 +116,12 @@ function Show-MainMenu {
             :docsLoop while ($true) {
                 Clear-Host
                 Show-MenuBox -Title "Docs & Guides" -Items @(
-                    "[1]  Tweaks Guide - What each tweak does",
-                    "[2]  Answer File Guide - Windows installation",
-                    "[3]  Benchmark Guide - Methodology & results",
-                    "[4]  Wiki - Full documentation",
+                    "1 › Tweaks Guide - What each tweak does",
+                    "2 › Answer File Guide - Windows installation",
+                    "3 › Benchmark Guide - Methodology & results",
+                    "4 › Wiki - Full documentation",
                     "---",
-                    "[5]  Back to main menu"
+                    "5 › Back to main menu"
                 )
 
                 $docsChoice = Read-Host ">"

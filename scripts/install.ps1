@@ -1,4 +1,4 @@
-$Host.UI.RawUI.WindowTitle = "Winrift - Installer"
+﻿$Host.UI.RawUI.WindowTitle = "Winrift - Installer"
 
 $startMenuPath = [System.Environment]::GetFolderPath('Programs')
 $shortcutPath = Join-Path -Path $startMenuPath -ChildPath "Winrift.lnk"

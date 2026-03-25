@@ -1,4 +1,4 @@
-. "$PSScriptRoot\..\..\scripts\Common.ps1"
+﻿. "$PSScriptRoot\..\..\scripts\Common.ps1"
 
 # {4d36e968-e325-11ce-bfc1-08002be10318} = Display Adapters device class GUID
 $DISPLAY_ADAPTER_CLASS = "HKLM:\SYSTEM\CurrentControlSet\Control\Class\{4d36e968-e325-11ce-bfc1-08002be10318}"
@@ -13,13 +13,14 @@ function Get-DisplayAdapterIndices {
 
 function Show-GPUMenu {
     Invoke-MenuLoop -Title "GPU-Specific Tweaks" -Items @(
-        "[1] NVIDIA",
-        "[2] AMD",
-        "[3] Both (Hybrid Laptop)",
+        "1 › NVIDIA",
+        "2 › AMD",
+        "3 › Both (Hybrid Laptop)",
         "---",
-        "[4] Back to menu"
+        "4 › Back to menu"
     ) -Actions @{
         "1" = {
+            New-SafeRestorePoint
             Start-TweakSession
             $script:DesiredStateCategory = "NVIDIA GPU"
             $null = Invoke-NvidiaTweaks
@@ -27,6 +28,7 @@ function Show-GPUMenu {
             Save-DesiredState
         }
         "2" = {
+            New-SafeRestorePoint
             Start-TweakSession
             $script:DesiredStateCategory = "AMD GPU"
             $null = Invoke-AMDTweaks
@@ -34,6 +36,7 @@ function Show-GPUMenu {
             Save-DesiredState
         }
         "3" = {
+            New-SafeRestorePoint
             Start-TweakSession
             $script:DesiredStateCategory = "NVIDIA GPU"
             $null = Invoke-NvidiaTweaks -NoExit

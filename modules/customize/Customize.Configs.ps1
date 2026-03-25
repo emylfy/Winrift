@@ -1,4 +1,4 @@
-function Copy-ConfigFiles {
+﻿function Copy-ConfigFiles {
     param (
         [string]$SourceDir,
         [string[]]$FileNames,
@@ -75,10 +75,10 @@ function Set-OtherVSCodeConfig {
 function Set-WinTermConfig {
     Clear-Host
     Show-MenuBox -Title "Windows Terminal Config" -Items @(
-        "[1] Install font + apply config",
-        "[2] Install font only",
-        "[3] Apply config only (font already installed)",
-        "[4] Cancel"
+        "1 › Install font + apply config",
+        "2 › Install font only",
+        "3 › Apply config only (font already installed)",
+        "4 › Cancel"
     )
 
     $choice = Read-Host ">"
@@ -94,9 +94,9 @@ function Set-WinTermConfig {
     if ($installFont) {
         Clear-Host
         Show-MenuBox -Title "Font Installation" -Items @(
-            "[1] FiraCode Nerd Font (download in browser)",
-            "[2] Maple Mono NF (install via scoop)",
-            "[3] Cancel"
+            "1 › FiraCode Nerd Font (download in browser)",
+            "2 › Maple Mono NF (install via scoop)",
+            "3 › Cancel"
         )
 
         $fontChoice = Read-Host ">"
@@ -212,9 +212,9 @@ function Set-OhMyPoshConfig {
         Show-MenuBox -Title "Oh My Posh" -Items @(
             "Oh My Posh is not installed.",
             "---",
-            "[1] Install Oh My Posh (winget)",
-            "[2] Skip install and apply config only",
-            "[3] Cancel"
+            "1 › Install Oh My Posh (winget)",
+            "2 › Skip install and apply config only",
+            "3 › Cancel"
         )
 
         $choice = Read-Host ">"
@@ -251,8 +251,8 @@ function Install-Starship {
         Show-MenuBox -Title "Starship Prompt" -Items @(
             "Cross-platform shell prompt (Rust-based)",
             "---",
-            "[1] Install Starship (winget)",
-            "[2] Cancel"
+            "1 › Install Starship (winget)",
+            "2 › Cancel"
         )
 
         $choice = Read-Host ">"
@@ -287,9 +287,9 @@ function Set-FastFetchConfig {
         Show-MenuBox -Title "FastFetch" -Items @(
             "FastFetch is not installed.",
             "---",
-            "[1] Install FastFetch (winget)",
-            "[2] Skip install and apply config only",
-            "[3] Cancel"
+            "1 › Install FastFetch (winget)",
+            "2 › Skip install and apply config only",
+            "3 › Cancel"
         )
 
         $choice = Read-Host ">"
@@ -357,13 +357,13 @@ function Restore-ConfigBackup {
         $bakInfo = Get-Item $found[$i].Path
         $size = '{0:N1} KB' -f ($bakInfo.Length / 1KB)
         $date = $bakInfo.LastWriteTime.ToString('yyyy-MM-dd HH:mm')
-        $menuItems += "[$($i + 1)] $($found[$i].Name)  ($date, $size)"
+        $menuItems += "$($i + 1) › $($found[$i].Name)  ($date, $size)"
     }
     $allIdx = $found.Count + 1
     $cancelIdx = $found.Count + 2
     $menuItems += "---"
-    $menuItems += "[$allIdx] Restore all"
-    $menuItems += "[$cancelIdx] Cancel"
+    $menuItems += "$allIdx › Restore all"
+    $menuItems += "$cancelIdx › Cancel"
 
     Show-MenuBox -Title "Restore Config Backups" -Items $menuItems
     $choice = Read-Host ">"

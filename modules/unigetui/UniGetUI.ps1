@@ -1,4 +1,4 @@
-. "$PSScriptRoot\..\..\scripts\Common.ps1"
+﻿. "$PSScriptRoot\..\..\scripts\Common.ps1"
 
 Initialize-Logging -ModuleName "unigetui"
 
@@ -9,8 +9,8 @@ function Show-InstallPrompt {
         "discover, install, and update apps using winget,",
         "Chocolatey, and other sources.",
         "---",
-        "[1] Install UniGetUI",
-        "[2] Back to menu"
+        "1 › Install UniGetUI",
+        "2 › Back to menu"
     )
 
     $choice = Read-Host "Select an option"
@@ -26,7 +26,7 @@ function Install-UniGetUI {
     Clear-Host
     Write-Log -Message "Checking UniGetUI installation..." -Level INFO
 
-    $installed = Install-WingetPackage "Devolutions.UniGetUI" "UniGetUI"
+    $installed = Install-WingetPackage "Devolutions.UniGetUI" "UniGetUI" -ShowProgress
 
     if ($installed) {
         Write-Log -Message "Launching UniGetUI..." -Level INFO
@@ -42,15 +42,15 @@ function Show-AppCategoryMenu {
     while ($true) {
         Clear-Host
         Show-MenuBox -Title "App Categories" -Items @(
-            "[1] Development",
-            "[2] Web Browsers",
-            "[3] Utilities",
-            "[4] Productivity",
-            "[5] Creative & Media",
-            "[6] Gaming",
-            "[7] Communications",
+            "1 › Development",
+            "2 › Web Browsers",
+            "3 › Utilities",
+            "4 › Productivity",
+            "5 › Creative & Media",
+            "6 › Gaming",
+            "7 › Communications",
             "---",
-            "[8] Back to menu"
+            "8 › Back to menu"
         )
 
         $choice = Read-Host "Select a category"

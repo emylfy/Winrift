@@ -1,4 +1,5 @@
-. "$PSScriptRoot\..\..\scripts\Common.ps1"
+﻿. "$PSScriptRoot\..\..\scripts\Common.ps1"
+Initialize-Logging -ModuleName "defendnot"
 $Host.UI.RawUI.WindowTitle = "DefendNot - Disable Windows Defender"
 
 $tool = Get-ToolConfig "defendnot"
@@ -15,7 +16,7 @@ Show-MenuBox -Title "DefendNot - Disable Windows Defender" -Items @(
     "URL:    $($tool.url)",
     "Source: $($tool.docs)",
     "---",
-    "[Y] Run  [N] Cancel  [R] Review source"
+    "Y › Run  N › Cancel  R › Review source"
 )
 
 while ($true) {
@@ -50,7 +51,12 @@ while ($true) {
                 }
             }
 
-            $null = Invoke-Tool "defendnot" -SkipConfirm
+            $result = Invoke-Tool "defendnot" -SkipConfirm
+            if (-not $result) {
+                Write-Host ""
+                Write-Log -Message "Disable Tamper Protection before running DefendNot:" -Level WARNING
+                Write-Host "  Windows Security > Virus & threat protection > Manage settings > Tamper Protection: $Yellow Off$Reset"
+            }
             Read-Host "Press Enter to continue"
             return
         }

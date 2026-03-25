@@ -1,4 +1,4 @@
-$Host.UI.RawUI.WindowTitle = "Launcher"
+﻿$Host.UI.RawUI.WindowTitle = "Launcher"
 
 $tempPath = "$env:TEMP\winrift"
 $zipPath = "$tempPath\winrift.zip"

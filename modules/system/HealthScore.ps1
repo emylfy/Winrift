@@ -1,4 +1,4 @@
-if (-not (Get-Command Write-Log -ErrorAction SilentlyContinue)) {
+﻿if (-not (Get-Command Write-Log -ErrorAction SilentlyContinue)) {
     . "$PSScriptRoot\..\..\scripts\Common.ps1"
 }
 # Get-PerformanceSnapshot is provided by Benchmark.ps1 which dot-sources this file
@@ -190,7 +190,7 @@ function Get-PrivacyScore {
     if ($p.telemetryLevel -ne 0)   { $score -= 25; $issues += "telemetry active" }
     if ($p.diagnosticData -ne 0)   { $score -= 15 }
     if ($p.copilotPresent)         { $score -= 20; $issues += "Copilot present" }
-    if (-not $p.recallDisabled)    { $score -= 15; $issues += "Recall active" }
+    if ($p.recallPresent -and -not $p.recallDisabled) { $score -= 15; $issues += "Recall active" }
     if ($p.activityHistory -ne 0)  { $score -= 10 }
     if ($p.advertisingId -ne 0)    { $score -= 15 }
 
@@ -281,10 +281,18 @@ function Get-SystemHealthData {
         $copilotPresent = ($null -ne (Get-AppxPackage -Name '*Copilot*' -ErrorAction SilentlyContinue))
     } catch {}
 
-    $recallDisabled = $false
+    $recallPresent = $false
+    $recallDisabled = $true
     try {
-        $val = (Get-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsAI" -Name "DisableAIDataAnalysis" -ErrorAction SilentlyContinue).DisableAIDataAnalysis
-        if ($val -eq 1) { $recallDisabled = $true }
+        # Check if Recall feature exists (Win11 24H2+ with compatible hardware)
+        $aiKey = Get-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsAI" -ErrorAction SilentlyContinue
+        $recallPkg = Get-AppxPackage -Name '*Recall*' -ErrorAction SilentlyContinue
+        if ($null -ne $aiKey -or $null -ne $recallPkg) {
+            $recallPresent = $true
+            $recallDisabled = $false
+            $val = $aiKey.DisableAIDataAnalysis
+            if ($val -eq 1) { $recallDisabled = $true }
+        }
     } catch {}
 
     $activityHistory = 1
@@ -355,6 +363,7 @@ function Get-SystemHealthData {
             telemetryLevel  = $telemetryLevel
             diagnosticData  = $diagnosticData
             copilotPresent  = $copilotPresent
+            recallPresent   = $recallPresent
             recallDisabled  = $recallDisabled
             activityHistory = $activityHistory
             advertisingId   = $advertisingId
@@ -412,28 +421,140 @@ function Get-CompositeScore {
     return [int][math]::Round($weightedSum / $totalWeight)
 }
 
+# --- Delta ---
+
+function Get-PreviousScore {
+    if (-not (Test-Path $script:HealthDir)) { return $null }
+    $last = Get-ChildItem -Path $script:HealthDir -Filter "score_*.json" -ErrorAction SilentlyContinue |
+        Sort-Object LastWriteTime -Descending | Select-Object -First 1
+    if (-not $last) { return $null }
+    try {
+        return Get-Content $last.FullName -Raw | ConvertFrom-Json
+    } catch { return $null }
+}
+
+function Format-Delta {
+    param([int]$Current, [int]$Previous)
+    $diff = $Current - $Previous
+    if ($diff -gt 0) { return "$Green+$diff$Reset" }
+    elseif ($diff -lt 0) { return "$Red$diff$Reset" }
+    else { return "" }
+}
+
+# --- Drift Summary ---
+
+function Get-DriftSummary {
+    $stateFile = Join-Path $env:USERPROFILE "Winrift\tweaks\desired_state.json"
+    if (-not (Test-Path $stateFile)) { return $null }
+    try {
+        $state = Get-Content $stateFile -Raw | ConvertFrom-Json
+        if (-not $state.entries) { return $null }
+        $total = $state.entries.Count
+        $ok = 0
+        $drifted = 0
+        foreach ($entry in $state.entries) {
+            try {
+                $prop = Get-ItemProperty -Path $entry.Path -Name $entry.Name -ErrorAction SilentlyContinue
+                if ($null -ne $prop -and [string]$prop.($entry.Name) -eq [string]$entry.Value) {
+                    $ok++
+                } else {
+                    $drifted++
+                }
+            } catch { $drifted++ }
+        }
+        return @{ total = $total; ok = $ok; drifted = $drifted }
+    } catch { return $null }
+}
+
+# --- Recommendations ---
+
+function Get-Recommendations {
+    param([array]$CategoryScores)
+    $recs = @()
+    foreach ($cat in $CategoryScores) {
+        if ($cat.score -lt 60) {
+            $action = switch ($cat.name) {
+                "Latency"       { "Apply System Latency tweaks" }
+                "Memory"        { "Apply Memory Optimization tweaks" }
+                "Process Bloat" { "Close background apps or debloat" }
+                "Startup"       { "Reduce startup apps in Task Manager" }
+                "Privacy"       { "Run Security & Privacy from main menu" }
+                "Storage"       { "Apply SSD/NVMe tweaks" }
+                "Network"       { "Apply Network tweaks" }
+                default         { $null }
+            }
+            if ($action) { $recs += "  $($cat.name): $action" }
+        }
+    }
+    return $recs
+}
+
 # --- Display ---
 
 function Show-HealthScoreReport {
     param(
         [int]$CompositeScore,
-        [array]$CategoryScores
+        [array]$CategoryScores,
+        $PreviousData,
+        $DriftSummary
     )
 
-    $items = @(
-        "",
-        "  Winrift System Score: $CompositeScore/100",
-        ""
-    )
+    # Build previous scores lookup
+    $prevScores = @{}
+    $prevComposite = $null
+    if ($PreviousData) {
+        $prevComposite = $PreviousData.compositeScore
+        foreach ($pc in $PreviousData.categories) {
+            $prevScores[$pc.name] = $pc.score
+        }
+    }
 
+    $items = @()
+
+    # Composite score with delta
+    $scoreText = "  Winrift System Score: $CompositeScore/100"
+    if ($null -ne $prevComposite) {
+        $delta = Format-Delta -Current $CompositeScore -Previous $prevComposite
+        if ($delta) { $scoreText += "  ($delta)" }
+    }
+    $items += $scoreText
+    $items += ""
+
+    # Category rows with delta
     foreach ($cat in $CategoryScores) {
         $bar = Format-ScoreBar -Score $cat.score
         $color = if ($cat.score -ge 80) { $Green } elseif ($cat.score -ge 50) { $Yellow } else { $Red }
         $scorePad = "$($cat.score)".PadLeft(3)
         $namePad = $cat.name.PadRight(15)
-        $items += "  $namePad $scorePad/100  $color$bar$Reset  $($cat.detail)"
+        $detailText = $cat.detail
+        if ($prevScores.ContainsKey($cat.name)) {
+            $delta = Format-Delta -Current $cat.score -Previous $prevScores[$cat.name]
+            if ($delta) { $detailText += " ($delta)" }
+        }
+        # Pad detail to fixed width so right border aligns
+        $plainDetail = $detailText -replace '\x1b\[[0-9;]*m', ''
+        $detailPadded = $detailText + (" " * [math]::Max(0, 30 - $plainDetail.Length))
+        $items += "  $namePad $scorePad/100  $color$bar$Reset  $detailPadded"
     }
-    $items += ""
+
+    # Drift summary
+    if ($DriftSummary) {
+        $items += ""
+        $driftPct = [math]::Round(($DriftSummary.ok / $DriftSummary.total) * 100)
+        $driftColor = if ($driftPct -eq 100) { $Green } elseif ($driftPct -ge 80) { $Yellow } else { $Red }
+        $items += "  $driftColor$($DriftSummary.ok)/$($DriftSummary.total) tweaks holding$Reset ($driftPct%)"
+        if ($DriftSummary.drifted -gt 0) {
+            $items += "  $Yellow$($DriftSummary.drifted) drifted - run Drift Detection [6] to fix$Reset"
+        }
+    }
+
+    # Recommendations
+    $recs = Get-Recommendations -CategoryScores $CategoryScores
+    if ($recs.Count -gt 0) {
+        $items += ""
+        $items += "  ${Purple}Recommendations:$Reset"
+        $items += $recs
+    }
 
     Show-MenuBox -Title "System Health Score" -Items $items -Width 66
 }
@@ -444,8 +565,7 @@ function Save-HealthScore {
     param(
         [int]$CompositeScore,
         [array]$CategoryScores,
-        [hashtable]$RawMetrics,
-        [hashtable]$RawHealthData
+        [hashtable]$RawMetrics
     )
 
     [System.IO.Directory]::CreateDirectory($script:HealthDir) | Out-Null
@@ -474,6 +594,9 @@ function Invoke-HealthScore {
     Write-Log -Message "Running System Health Score scan..." -Level INFO
     Write-Host ""
 
+    # Load previous score for delta comparison
+    $previousData = Get-PreviousScore
+
     # Quick performance sampling (3 samples, 2s)
     $snapshot = Get-PerformanceSnapshot -Samples 3 -IntervalSeconds 2
     $metrics = $snapshot.metrics
@@ -482,15 +605,20 @@ function Invoke-HealthScore {
     Write-Log -Message "Checking system configuration..." -Level INFO
     $healthData = Get-SystemHealthData
 
+    # Drift check
+    Write-Log -Message "Checking tweak drift..." -Level INFO
+    $driftSummary = Get-DriftSummary
+
     # Score
     $categoryScores = Get-CategoryScores -Metrics $metrics -HealthData $healthData
     $compositeScore = Get-CompositeScore -CategoryScores $categoryScores
 
     # Display
-    Show-HealthScoreReport -CompositeScore $compositeScore -CategoryScores $categoryScores
+    Show-HealthScoreReport -CompositeScore $compositeScore -CategoryScores $categoryScores `
+        -PreviousData $previousData -DriftSummary $driftSummary
 
     # Save
-    Save-HealthScore -CompositeScore $compositeScore -CategoryScores $categoryScores -RawMetrics $metrics -RawHealthData $healthData
+    Save-HealthScore -CompositeScore $compositeScore -CategoryScores $categoryScores -RawMetrics $metrics
 
     Wait-ForUser
 }
