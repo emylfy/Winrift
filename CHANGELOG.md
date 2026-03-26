@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project uses [Calendar Versioning](https://calver.org/) (YY.M.patch format).
 
+## [26.3.17] - 2026-03-26
+
+### README rewrite
+
+- Rewrote README — centered layout, badges, anchor nav, collapsible feature sections with tables
+- Consolidated compatibility table, updated footer
+- Updated version test to accept `YY.M.patch` format
+
 ## [26.3.16] - 2026-03-26
 
 ### Menu polish, README cleanup, health score fix

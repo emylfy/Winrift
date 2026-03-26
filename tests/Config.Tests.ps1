@@ -16,8 +16,8 @@ Describe 'version.json' {
         { $content | ConvertFrom-Json } | Should -Not -Throw
     }
 
-    It 'has a version property matching YY.M format' {
-        $json.version | Should -Match '^\d+\.\d+$'
+    It 'has a version property matching YY.M.patch format' {
+        $json.version | Should -Match '^\d+\.\d+(\.\d+)?$'
     }
 
     It 'has a channel property' {
