@@ -81,7 +81,7 @@ function Set-WinTermConfig {
         "4 › Cancel"
     )
 
-    $choice = Read-Host ">"
+    $choice =  Read-Host " "
 
     $installFont = $choice -in @("1", "2")
     $applyConfig = $choice -in @("1", "3")
@@ -99,7 +99,7 @@ function Set-WinTermConfig {
             "3 › Cancel"
         )
 
-        $fontChoice = Read-Host ">"
+        $fontChoice =  Read-Host " "
 
         switch ($fontChoice) {
             "1" {
@@ -217,7 +217,7 @@ function Set-OhMyPoshConfig {
             "3 › Cancel"
         )
 
-        $choice = Read-Host ">"
+        $choice =  Read-Host " "
 
         switch ($choice) {
             "1" {
@@ -255,7 +255,7 @@ function Install-Starship {
             "2 › Cancel"
         )
 
-        $choice = Read-Host ">"
+        $choice =  Read-Host " "
 
         switch ($choice) {
             "1" {
@@ -292,7 +292,7 @@ function Set-FastFetchConfig {
             "3 › Cancel"
         )
 
-        $choice = Read-Host ">"
+        $choice =  Read-Host " "
 
         switch ($choice) {
             "1" {
@@ -312,9 +312,9 @@ function Set-FastFetchConfig {
     }
 
     Copy-ConfigFiles -SourceDir "$PSScriptRoot\config\cli" `
-                     -FileNames @("cat.txt", "fastfetch.jsonc") `
+                     -FileNames @("fastfetch.txt", "fastfetch.jsonc") `
                      -TargetDir "$env:USERPROFILE\.config\fastfetch" `
-                     -TargetFileNames @("cat.txt", "config.jsonc") `
+                     -TargetFileNames @("fastfetch.txt", "config.jsonc") `
                      -ConfigName "FastFetch"
     Wait-ForUser
 }
@@ -366,7 +366,7 @@ function Restore-ConfigBackup {
     $menuItems += "$cancelIdx › Cancel"
 
     Show-MenuBox -Title "Restore Config Backups" -Items $menuItems
-    $choice = Read-Host ">"
+    $choice =  Read-Host " "
 
     if ($choice -eq "$cancelIdx" -or $choice -eq "") { return }
 

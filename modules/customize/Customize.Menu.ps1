@@ -61,7 +61,7 @@ function Show-AppsMenu {
         "2 › Rectify11 - Windows 11 UI fixes",
         "3 › Spotify Tools",
         "4 › Steam Millennium + Theme",
-        "--- Third-party tools fetched from the web ---",
+        "---",
         "5 › Back"
     ) -Actions @{
         "1" = { Show-VSCodeConfigMenu }
@@ -87,7 +87,7 @@ function Show-VSCodeConfigMenu {
         "---",
         "8 › Back"
     )
-    $choice = Read-Host ">"
+    $choice =  Read-Host " "
     switch ($choice) {
         "1" { Set-VSCodeConfig "$env:USERPROFILE\AppData\Roaming\Code\User" }
         "2" { Set-VSCodeConfig "$env:USERPROFILE\AppData\Roaming\Cursor\User" }
@@ -103,7 +103,7 @@ function Show-SpotifyToolsMenu {
     Invoke-MenuLoop -Title "Spotify Tools" -Items @(
         "1 › Install SpotX",
         "2 › Install Spicetify",
-        "--- Third-party scripts fetched from the web ---",
+        "---",
         "3 › Back"
     ) -Actions @{
         "1" = { Install-SpotX }

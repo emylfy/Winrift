@@ -10,7 +10,7 @@
         "4 › Cancel"
     )
 
-    $choice = Read-Host ">"
+    $choice =  Read-Host " "
 
     switch ($choice) {
         "1" {
@@ -59,7 +59,7 @@ function Install-StatusBar {
         "3 › Cancel"
     )
 
-    $choice = Read-Host ">"
+    $choice =  Read-Host " "
 
     switch ($choice) {
         "1" {
@@ -103,7 +103,7 @@ function Open-WallpaperBrowser {
         "4 › Cancel"
     )
 
-    $choice = Read-Host ">"
+    $choice =  Read-Host " "
 
     switch ($choice) {
         "1" { Start-Process "https://github.com/catppuccin/wallpapers" }

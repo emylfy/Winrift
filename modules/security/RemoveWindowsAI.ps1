@@ -16,7 +16,7 @@ Show-MenuBox -Title "RemoveWindowsAI - Remove Copilot & Recall" -Items @(
 )
 
 while ($true) {
-    $choice = Read-Host ">"
+    $choice =  Read-Host " "
     switch ($choice.ToUpper()) {
         "Y" {
             $tempScript = Join-Path $env:TEMP "RemoveWindowsAI.ps1"

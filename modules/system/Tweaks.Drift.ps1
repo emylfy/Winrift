@@ -239,7 +239,7 @@ function Show-DriftMenu {
             if ($drifted -and $drifted.Count -gt 0) {
                 Write-Host ""
                 Write-Host "  [Y] Reapply all drifted values   [N] Return to menu"
-                $choice = Read-Host ">"
+                $choice =  Read-Host " "
                 if ($choice -eq "Y" -or $choice -eq "y") {
                     Invoke-DriftReapply -DriftedEntries $drifted
                 }
@@ -259,7 +259,7 @@ function Show-DriftMenu {
                 Write-Host ""
                 Write-Host "  This will delete the desired state file."
                 Write-Host "  [Y] Confirm   [N] Cancel"
-                $choice = Read-Host ">"
+                $choice =  Read-Host " "
                 if ($choice -eq "Y" -or $choice -eq "y") {
                     Remove-Item $script:DesiredStateFile -Force
                     Write-Log -Message "Desired state cleared." -Level SUCCESS

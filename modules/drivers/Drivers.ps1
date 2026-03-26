@@ -39,7 +39,7 @@ function Show-DeviceMenu {
             "Enter › Back to Menu"
         )
 
-        $choice = Read-Host ">"
+        $choice =  Read-Host " "
 
         if ($choice -eq "") {
             return

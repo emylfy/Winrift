@@ -11,7 +11,7 @@ function Invoke-PowerMenu {
         "1 › Apply Power Management Tweaks",
         "2 › Back to menu"
     )
-    $choice = Read-Host ">"
+    $choice =  Read-Host " "
     if ($choice -eq "1") {
         New-SafeRestorePoint
         Start-TweakSession

@@ -5,7 +5,8 @@ Assert-AdminOrElevate
 $versionFile = Join-Path $PSScriptRoot "config\version.json"
 if (Test-Path $versionFile) {
     $versionInfo = Get-Content $versionFile -Raw | ConvertFrom-Json
-    $script:AppVersion = $versionInfo.version
+    $full = $versionInfo.version
+    $script:AppVersion = ($full -split '\.')[0..1] -join '.'
 } else {
     $script:AppVersion = "unknown"
 }
@@ -20,8 +21,8 @@ function Show-MainMenu {
         "2" = "$PSScriptRoot\modules\system\Tweaks.ps1"
         "3" = "$PSScriptRoot\modules\security\SecurityMenu.ps1"
         "4" = "$PSScriptRoot\modules\drivers\Drivers.ps1"
-        "5" = "$PSScriptRoot\modules\customize\Customize.ps1"
-        "6" = "$PSScriptRoot\modules\unigetui\UniGetUI.ps1"
+        "5" = "$PSScriptRoot\modules\unigetui\UniGetUI.ps1"
+        "6" = "$PSScriptRoot\modules\customize\Customize.ps1"
         "7" = "$PSScriptRoot\modules\iso\ISOBuilder.ps1"
     }
 
@@ -44,20 +45,20 @@ function Show-MainMenu {
 
     :outerLoop while ($true) {
         Clear-Host
-        Show-MenuBox -Title "Winrift v$script:AppVersion - Break through default Windows" -Items @(
+        Show-MenuBox -Title "Winrift v$script:AppVersion" -Items @(
             "1 › Benchmark - Measure system performance",
             "2 › System Tweaks - Optimization & power management",
             "3 › Security & Privacy - Defender, Copilot, privacy",
             "4 › Drivers - NVIDIA, AMD, Intel, OEM",
-            "5 › Customize - Desktop, terminal, themes",
-            "6 › App Bundles - Install app collections",
+            "5 › App Bundles - Install app collections",
+            "6 › Customize - Desktop, terminal, themes",
             "7 › ISO Builder - Embed answer file into Windows ISO",
-            "--- Explore & Learn ---",
+            "---",
             "8 › Community Tools",
             "9 › Docs & Guides"
         )
 
-        $choice = Read-Host ">"
+        $choice =  Read-Host " "
 
         # Direct launch items
         if ($scriptPaths.ContainsKey($choice)) {
@@ -87,11 +88,11 @@ function Show-MainMenu {
                     "2 › Sparkle - Optimize & Debloat",
                     "3 › GTweak - Debloat & Tweak",
                     "4 › WinScript - Custom Script Builder",
-                    "--- Third-party tools fetched from the web ---",
+                    "---",
                     "5 › Back to main menu"
                 )
 
-                $communityChoice = Read-Host ">"
+                $communityChoice =  Read-Host " "
 
                 if ($communityChoice -eq "5" -or $communityChoice -eq "") {
                     break communityLoop
@@ -125,7 +126,7 @@ function Show-MainMenu {
                     "5 › Back to main menu"
                 )
 
-                $docsChoice = Read-Host ">"
+                $docsChoice =  Read-Host " "
 
                 if ($docsChoice -eq "5" -or $docsChoice -eq "") {
                     break docsLoop

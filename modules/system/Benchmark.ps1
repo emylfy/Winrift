@@ -328,7 +328,7 @@ function Show-BenchmarkMenu {
         "4 › System Health Score",
         "---",
         "5 › Back"
-    ) -Prompt "Enter your choice (1-5)" -Actions @{
+    ) -Actions @{
         "1" = { Invoke-Benchmark -Phase Before }
         "2" = { Invoke-Benchmark -Phase After }
         "3" = { Invoke-Benchmark -Phase Compare }

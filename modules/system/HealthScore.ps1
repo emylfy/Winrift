@@ -531,10 +531,7 @@ function Show-HealthScoreReport {
             $delta = Format-Delta -Current $cat.score -Previous $prevScores[$cat.name]
             if ($delta) { $detailText += " ($delta)" }
         }
-        # Pad detail to fixed width so right border aligns
-        $plainDetail = $detailText -replace '\x1b\[[0-9;]*m', ''
-        $detailPadded = $detailText + (" " * [math]::Max(0, 30 - $plainDetail.Length))
-        $items += "  $namePad $scorePad/100  $color$bar$Reset  $detailPadded"
+        $items += "  $namePad $scorePad/100  $color$bar$Reset  $detailText"
     }
 
     # Drift summary

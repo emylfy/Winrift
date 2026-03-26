@@ -1,9 +1,9 @@
-<h1>Winrift <img src="https://raw.githubusercontent.com/emylfy/winrift/refs/heads/main/media/icon.ico" width="24px" alt="Winrift icon"></h1>
+# Winrift
 
 **Break through default Windows.** Measure every tweak, prove every change — 13 system metrics, before and after.
 
 <p align="center">
-	<img src="media/logo.png" alt="Winrift — Windows 11 optimization and benchmarking tool" width="70%">
+	<img src="media/screenshot-main.png" alt="Winrift main menu" width="80%">
 </p>
 
 <div align="center">
@@ -23,12 +23,6 @@
 </p>
 
 > **No other tool covers this complete pipeline:** Measure → Optimize → Verify → Customize
-
-<!-- TODO: record demo.gif with ShareX or Windows Terminal screen capture
-<p align="center">
-	<img src="media/demo.gif" alt="Winrift demo — launching benchmarks, applying tweaks, viewing results" width="80%">
-</p>
--->
 
 ---
 
@@ -61,63 +55,42 @@ Other tools apply tweaks and hope for the best. Winrift measures 13 system metri
 
 > Typical results on clean Windows 11 24H2 (your numbers will vary):
 
-| Metric | Before | After | Change |
-| :--- | ---: | ---: | ---: |
-| CPU idle load | 3.2% | 1.1% | -66% |
-| RAM usage | 2,800 MB | 2,100 MB | -25% |
-| Running processes | 142 | 98 | -31% |
-| Running services | 187 | 151 | -19% |
-| DPC rate | 48 /s | 22 /s | -54% |
-| Context switches | 12,400 /s | 8,600 /s | -31% |
+| Running processes |       142 |       98 |   -31% |
 
 <sub>Full methodology and metric explanations: <a href="docs/tests.md">Testing & Benchmarks Guide</a></sub>
-
-<!-- TODO: screenshot-benchmark.png — capture the benchmark report output at 1920x1080
-<p align="center">
-	<img src="media/screenshot-benchmark.png" alt="Winrift benchmark comparison report showing before and after metrics" width="70%">
-</p>
--->
 
 ---
 
 ## Features
 
-<!-- TODO: capture screenshots at 1920x1080
 <p align="center">
-	<img src="media/screenshot-main.png" alt="Winrift main menu" width="45%">&nbsp;&nbsp;
-	<img src="media/screenshot-tweaks.png" alt="Winrift system tweaks menu" width="45%">
+	<img src="media/screenshot-features.png" alt="Winrift features">
 </p>
-<p align="center">
-	<img src="media/screenshot-ricing.png" alt="Winrift desktop ricing" width="45%">&nbsp;&nbsp;
-	<img src="media/screenshot-security.png" alt="Winrift security tools" width="45%">
-</p>
--->
 
-| Feature | What it does |
-| :--- | :--- |
-| **[Benchmark](docs/tests.md)** | Measure 13 system metrics (CPU, RAM, DPC rate, disk latency, context switches...) before and after tweaks |
-| **[Health Score](docs/health_score.md)** | Composite 0–100 system health rating across 7 weighted categories (latency, privacy, memory, network, process bloat, startup, storage) with delta tracking and recommendations |
-| **[System Tweaks](docs/tweaks_guide.md)** | 13 optimization categories — latency, input, SSD/NVMe, GPU scheduling, network, CPU, power, responsiveness, boot, UI, memory, maintenance, DirectX |
-| **[Drift Detection](docs/drift_detection.md)** | Monitors whether Windows Updates revert applied tweaks; auto-check via scheduled task; one-click reapply |
-| **GPU Tweaks** | NVIDIA and AMD-specific optimizations with automatic device detection; hybrid GPU support |
-| **Security & Privacy** | Disable Defender ([DefendNot](https://github.com/es3n1n/defendnot)), remove Copilot/Recall ([RemoveWindowsAI](https://github.com/zoicware/RemoveWindowsAI)), privacy hardening ([privacy.sexy](https://github.com/undergroundwires/privacy.sexy)) |
-| **Drivers** | NVIDIA, AMD, Intel DSA auto-install + 9 OEM manufacturers: HP, Lenovo, ASUS, Acer, MSI, Dell, Huawei, Xiaomi, Gigabyte |
-| **[Customize](modules/customize/README.md)** | Desktop environment ([GlazeWM](https://github.com/glzr-io/glazewm), [Zebar](https://github.com/glzr-io/zebar), [Flow Launcher](https://github.com/Flow-Launcher/Flow.Launcher), [Windhawk](https://windhawk.net/), [Rainmeter](https://www.rainmeter.net/)), terminal & shell configs, editor configs, app themes (Spotify, Steam, browser), Windows look & feel |
-| **App Bundles** | 7 curated winget collections via [UniGetUI](https://github.com/marticliment/UniGetUI) — Development, Browsers, Utilities, Productivity, Creative & Media, Gaming, Communications |
-| **[ISO Builder](docs/autounattend_guide.md)** | Embed an answer file into a Windows 11 ISO — automate clean installs with bloatware removal, telemetry disabled, and Winrift ready on first login |
-| **[Answer File](docs/autounattend_guide.md)** | Automated Windows 11 install — removes 25 bloatware apps, disables telemetry, cleans taskbar, bypasses TPM/Secure Boot checks |
+| Feature                                        | What it does                                                                                          |
+| :--------------------------------------------- | :---------------------------------------------------------------------------------------------------- |
+| **[Benchmark](docs/tests.md)**                 | Measure 13 system metrics before and after tweaks                                                     |
+| **[Health Score](docs/health_score.md)**       | 0-100 system rating across 7 categories with delta tracking and recommendations                       |
+| **[System Tweaks](docs/tweaks_guide.md)**      | 13 optimization categories — latency, input, SSD, GPU, network, CPU, power, boot, UI, memory, DirectX |
+| **[Drift Detection](docs/drift_detection.md)** | Monitors whether Windows Updates revert tweaks; auto-check; one-click reapply                         |
+| **GPU Tweaks**                                 | NVIDIA and AMD optimizations with automatic device detection                                          |
+| **Security & Privacy**                         | Disable Defender, remove Copilot/Recall, privacy hardening                                            |
+| **Drivers**                                    | NVIDIA, AMD, Intel DSA + 9 OEM manufacturers                                                          |
+| **[Customize](modules/customize/README.md)**   | Desktop environment, terminal configs, editor configs, app themes                                     |
+| **App Bundles**                                | 7 winget collections via [UniGetUI](https://github.com/marticliment/UniGetUI)                         |
+| **[ISO Builder](docs/autounattend_guide.md)**  | Embed answer file into Windows 11 ISO for automated clean installs                                    |
 
 <details>
-<summary><strong>Community Tools</strong> — integrated third-party launchers</summary>
+<summary><strong>Community Tools</strong></summary>
 
 <br>
 
-| Tool | Description |
-| :--- | :--- |
-| [WinUtil](https://github.com/ChrisTitusTech/winutil) | Install programs, apply tweaks, fixes and updates |
-| [WinScript](https://github.com/flick9000/winscript) | Build custom Windows setup scripts |
-| [Sparkle](https://github.com/Parcoil/Sparkle) | Optimize and debloat Windows |
-| [GTweak](https://github.com/Greedeks/GTweak) | GUI tweaking tool and debloater |
+| Tool                                                 | Description                     |
+| :--------------------------------------------------- | :------------------------------ |
+| [WinUtil](https://github.com/ChrisTitusTech/winutil) | Tweaks, apps, fixes and updates |
+| [WinScript](https://github.com/flick9000/winscript)  | Custom Windows setup scripts    |
+| [Sparkle](https://github.com/Parcoil/Sparkle)        | Optimize and debloat            |
+| [GTweak](https://github.com/Greedeks/GTweak)         | GUI tweaking and debloater      |
 
 </details>
 
@@ -139,13 +112,13 @@ Other tools apply tweaks and hope for the best. Winrift measures 13 system metri
 
 ## Compatibility
 
-| Windows Version | Status |
-| :---: | :---: |
-| Windows 11 25H2 | Supported |
-| Windows 11 24H2 | Fully tested |
-| Windows 11 23H2 | Supported |
-| Windows 11 22H2 | Should work |
-| Windows 10 | Not supported |
+| Windows Version |    Status     |
+| :-------------: | :-----------: |
+| Windows 11 25H2 |   Supported   |
+| Windows 11 24H2 | Fully tested  |
+| Windows 11 23H2 |   Supported   |
+| Windows 11 22H2 |  Should work  |
+|   Windows 10    | Not supported |
 
 **Requirements:** PowerShell 5.1+ (included with Windows 11), Administrator privileges, Internet connection.
 
@@ -153,13 +126,13 @@ Other tools apply tweaks and hope for the best. Winrift measures 13 system metri
 
 ## Troubleshooting
 
-| Problem | Solution |
-| :--- | :--- |
-| Scripts disabled | `Set-ExecutionPolicy RemoteSigned -Scope CurrentUser` |
-| Module not found | Re-run the install command for the latest version |
-| Registry errors | Check `%USERPROFILE%\Winrift\logs\` for the session log |
-| Tweak broke something | Open Winrift → System Tweaks → Restore Backup, or boot from a restore point |
-| UniGetUI fails | `winget source reset --force` in admin PowerShell |
+| Problem               | Solution                                                     |
+| :-------------------- | :----------------------------------------------------------- |
+| Scripts disabled      | `Set-ExecutionPolicy RemoteSigned -Scope CurrentUser`        |
+| Module not found      | Re-run the install command for the latest version            |
+| Registry errors       | Check `%USERPROFILE%\Winrift\logs\` for the session log      |
+| Tweak broke something | System Tweaks → Restore Backup, or boot from a restore point |
+| UniGetUI fails        | `winget source reset --force` in admin PowerShell            |
 
 ---
 

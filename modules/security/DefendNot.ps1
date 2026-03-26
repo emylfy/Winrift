@@ -20,7 +20,7 @@ Show-MenuBox -Title "DefendNot - Disable Windows Defender" -Items @(
 )
 
 while ($true) {
-    $choice = Read-Host ">"
+    $choice =  Read-Host " "
     switch ($choice.ToUpper()) {
         "Y" {
             $defendnotPath = "$env:ProgramFiles\defendnot"

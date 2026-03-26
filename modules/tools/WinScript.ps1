@@ -10,7 +10,7 @@ function Show-WinScriptMenu {
         "R › Review project source",
         "---",
         "3 › Back to menu"
-    ) -Prompt "Select an option" -Actions @{
+    ) -Actions @{
         "1" = { Start-Process $tool.docs }
         "2" = {
             $null = Invoke-Tool "winscript"

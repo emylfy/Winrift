@@ -54,6 +54,7 @@
 				"face": "FiraCode Nerd Font"
 			},
 			"opacity": 100,
+			"scrollbarState": "hidden",
 			"useAcrylic": true
 		},
 		"list": [

@@ -5,6 +5,29 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project uses [Calendar Versioning](https://calver.org/) (YY.M.patch format).
 
+## [26.3.16] - 2026-03-26
+
+### Menu polish, README cleanup, health score fix
+
+- Changed main menu order — App Bundles (5) before Customize (6), workflow order
+- Changed System Tweaks menu — reordered: actions (1-4), then Drift Detection (5) + Restore (6), then Back (7); added separators between groups
+- Changed all `Read-Host ">"` prompts to `Read-Host " "` (clean cursor, no symbol) across all modules
+- Changed `Invoke-MenuLoop` default prompt from `>` to ` `
+- Removed custom prompts from Tweaks, Benchmark, WinScript menus
+- Removed "Explore & Learn" section header from main menu (plain divider)
+- Removed "Third-party tools/scripts fetched from the web" labels from Community Tools, Apps, Spotify, Security menus
+- Removed Security menu "Third-party" header moved to top (removed entirely)
+- Removed `Write-Progress` blue bar — replaced with `[N/total]` text counter in tweak loop; removed "Applying X tweaks..." headers from all tweak functions
+- Added `$ProgressPreference = 'SilentlyContinue'` to Common.ps1 globally
+- Changed `Invoke-Tool` — skips `[SUCCESS]` message for `browser` type tools
+- Removed `Install-MacOSCursor` function and menu item (broken .inf install)
+- Changed `logo.png` → `screenshot-main.png`; added `screenshot-features.png` for Features section
+- Changed README — removed Windows icon from title, removed slogan from menu title, cleaned table padding, single features screenshot, 80% hero image
+- Changed `cat.txt` → `fastfetch.txt` with Windows logo ASCII art; updated references in fastfetch.jsonc and Customize.Configs.ps1
+- Added `scrollbarState: hidden` to Windows Terminal defaults in terminal.json
+- Changed version display in menu — shows `v26.3` (major.minor only), patch stays in version.json
+- Fixed health score detail padding — removed manual 30-char pad, let Show-MenuBox handle alignment
+
 ## [26.3.15] - 2026-03-25
 
 ### Customize reorganization, admin elevation, versioning, polish

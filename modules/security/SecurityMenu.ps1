@@ -9,7 +9,7 @@ function Show-SecurityMenu {
         "1 › DefendNot - Disable Windows Defender",
         "2 › RemoveWindowsAI - Remove Copilot & Recall",
         "3 › Privacy.sexy - Enforce privacy and security",
-        "--- Third-party scripts fetched from the web ---",
+        "---",
         "4 › Back to menu"
     ) -Actions @{
         "1" = { Start-AdminProcess -ScriptPath "$menuRoot\DefendNot.ps1" }

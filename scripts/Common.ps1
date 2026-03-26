@@ -156,7 +156,7 @@ function Invoke-MenuLoop {
         [string]$Title,
         [string[]]$Items,
         [hashtable]$Actions,
-        [string]$Prompt = ">",
+        [string]$Prompt = " ",
         [string]$ExitKey = $null,
         [scriptblock]$OnExit = $null
     )
@@ -322,7 +322,7 @@ function Restore-TweakBackup {
     $menuItems += "$cancelIdx › Cancel"
 
     Show-MenuBox -Title "Restore Tweak Backup" -Items $menuItems
-    $choice = Read-Host ">"
+    $choice =  Read-Host " "
 
     $idx = 0
     if (-not ([int]::TryParse($choice, [ref]$idx)) -or $idx -lt 1 -or $idx -gt $backups.Count -or $idx -eq $cancelIdx) { return }
@@ -431,7 +431,7 @@ function Confirm-ExternalTool {
     Write-Host ""
 
     while ($true) {
-        $response = Read-Host " Your choice"
+        $response = Read-Host " "
         switch ($response.ToUpper()) {
             "Y" { return $true }
             "N" { return $false }
