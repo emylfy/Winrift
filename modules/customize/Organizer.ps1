@@ -120,15 +120,17 @@ foreach ($targetDir in $targetPaths) {
             Write-Log -Message "  - $($_.Name)" -Level INFO
         }
 
-        do {
-            $response = Read-Host "`nMove $($files.Count) files from '$folderName'? (Y/N/Q)"
-            $response = $response.Trim().ToUpper()
-            if ($response -eq 'Q') {
-                Write-Log -Message "Operation cancelled by user." -Level WARNING
-                exit
-            }
-        } until ($response -match '^[YN]$')
-
+        $response = Show-InteractiveMenu -Title "Move files" -HideKeys -Items @(
+            "Move $($files.Count) files from '$folderName'?",
+            "---",
+            "Y › Move",
+            "N › Skip folder",
+            "Q › Quit organizer"
+        )
+        if ($null -eq $response -or $response -eq 'Q') {
+            Write-Log -Message "Operation cancelled by user." -Level WARNING
+            exit
+        }
         if ($response -eq 'N') {
             Write-Log -Message "Skipping folder: $folderName" -Level SKIP
             continue

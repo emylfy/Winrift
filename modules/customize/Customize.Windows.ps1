@@ -1,5 +1,12 @@
 ﻿function Set-ShortDateHours {
     Clear-Host
+    $confirm = Show-InteractiveMenu -Title "Set Date & Time Format" -HideKeys -Items @(
+        "Sets short date to 'MMM dd yyyy' and time to 'HH:mm'.",
+        "---",
+        "Y › Apply",
+        "N › Cancel"
+    )
+    if ($confirm -ne "Y") { return }
     Write-Log -Message "Setting short date and hours format..." -Level INFO
     Set-RegistryValue -Path "HKCU:\Control Panel\International" -Name "sShortDate" -Type String -Value "MMM dd yyyy" -Message "Short date format set to MMM dd yyyy"
     Set-RegistryValue -Path "HKCU:\Control Panel\International" -Name "sShortTime" -Type String -Value "HH:mm" -Message "Short time format set to HH:mm"
@@ -33,8 +40,13 @@ function Disable-QuickAccess {
 
         Write-Log -Message "Explorer needs to restart to apply changes." -Level WARNING
         Write-Log -Message "Save any open file operations before continuing." -Level WARNING
-        $confirm = Read-Host "Restart Explorer now? (Y/N)"
-        if ($confirm -eq 'y') {
+        $confirm = Show-InteractiveMenu -Title "Restart Explorer" -HideKeys -Items @(
+            "Restart Explorer now to apply changes?",
+            "---",
+            "Y › Restart Explorer",
+            "N › Skip"
+        )
+        if ($confirm -eq 'Y') {
             Stop-Process -Name explorer -Force
             # Wait for Explorer to fully terminate, then ensure it restarts
             $timeout = 0
@@ -64,11 +76,12 @@ function Disable-QuickAccess {
 function Expand-StartFolders {
     Clear-Host
     $organizerPath = Join-Path -Path $PSScriptRoot -ChildPath "Organizer.ps1"
-    if (Test-Path $organizerPath) {
-        . "$PSScriptRoot\..\..\scripts\AdminLaunch.ps1"
-        Start-AdminProcess -ScriptPath $organizerPath
-    } else {
+    if (-not (Test-Path $organizerPath)) {
         Write-Log -Message "Organizer.ps1 not found at: $organizerPath" -Level ERROR
         Wait-ForUser
+        return
     }
+    # Use powershell.exe -Verb RunAs directly — bypasses Windows Terminal
+    # so the admin token is always correctly applied to the PowerShell process.
+    Start-Process powershell.exe -ArgumentList "-ExecutionPolicy Bypass -File `"$organizerPath`"" -Verb RunAs
 }

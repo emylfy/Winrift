@@ -1,10 +1,38 @@
-﻿function Show-CustomizeMenu {
+﻿. "$PSScriptRoot\..\..\scripts\Common.ps1"
+$Host.UI.RawUI.WindowTitle = "Winrift - Customize"
+
+Initialize-Logging -ModuleName "customize"
+
+# Load sub-modules
+. "$PSScriptRoot\Customize.Desktop.ps1"
+. "$PSScriptRoot\Customize.Apps.ps1"
+. "$PSScriptRoot\Customize.Configs.ps1"
+. "$PSScriptRoot\Customize.Windows.ps1"
+. "$PSScriptRoot\Customize.Profile.ps1"
+
+function Show-ProfileBackupsMenu {
+    Invoke-MenuLoop -Title "Profile & Backups" -Items @(
+        "1 › Restore Config Backups",
+        "---",
+        "2 › Export Profile",
+        "3 › Import Profile",
+        "---",
+        "4 › Back"
+    ) -Actions @{
+        "1" = { Restore-ConfigBackup }
+        "2" = { Export-WinriftProfile }
+        "3" = { Import-WinriftProfile }
+    } -ExitKey "4"
+}
+
+function Show-CustomizeMenu {
     Invoke-MenuLoop -Title "Customize" -Items @(
         "1 › Desktop - GlazeWM, status bar, launcher",
         "2 › Terminal - WT config, PS profile, prompts",
         "3 › Apps - Themes, editors, Spotify",
         "4 › Windows - Date format, Start Menu, misc",
-        "5 › Restore Config Backups",
+        "---",
+        "5 › Profile & Backups",
         "---",
         "6 › Back to Winrift"
     ) -Actions @{
@@ -12,7 +40,7 @@
         "2" = { Show-TerminalMenu }
         "3" = { Show-AppsMenu }
         "4" = { Show-WindowsMenu }
-        "5" = { Restore-ConfigBackup }
+        "5" = { Show-ProfileBackupsMenu }
     } -ExitKey "6"
 }
 
@@ -38,6 +66,8 @@ function Show-DesktopMenu {
 
 function Show-TerminalMenu {
     Invoke-MenuLoop -Title "Terminal" -Items @(
+        "0 › Full Shell Setup - Install & configure everything",
+        "---",
         "1 › Windows Terminal config + Nerd Font",
         "2 › PowerShell Profile + Terminal-Icons",
         "3 › Oh My Posh - Shell prompt theme",
@@ -46,6 +76,7 @@ function Show-TerminalMenu {
         "---",
         "6 › Back"
     ) -Actions @{
+        "0" = { Invoke-ShellSetup }
         "1" = { Set-WinTermConfig }
         "2" = { Set-PwshConfig }
         "3" = { Set-OhMyPoshConfig }
@@ -72,11 +103,10 @@ function Show-AppsMenu {
 }
 
 function Show-VSCodeConfigMenu {
-    Show-MenuBox -Title "Import VSCode Config" -Items @(
+    $choice = Show-InteractiveMenu -Title "Import VSCode Config" -Items @(
         "Applies Winrift settings.json to your editor.",
         "Preview: github.com/emylfy/winrift/tree/main/modules/customize/config/vscode",
-        "",
-        "Select target editor:",
+        "---",
         "1 › Visual Studio Code",
         "2 › Cursor",
         "3 › Windsurf",
@@ -87,7 +117,6 @@ function Show-VSCodeConfigMenu {
         "---",
         "8 › Back"
     )
-    $choice =  Read-Host " "
     switch ($choice) {
         "1" { Set-VSCodeConfig "$env:USERPROFILE\AppData\Roaming\Code\User" }
         "2" { Set-VSCodeConfig "$env:USERPROFILE\AppData\Roaming\Cursor\User" }
@@ -123,4 +152,11 @@ function Show-WindowsMenu {
         "2" = { Disable-QuickAccess }
         "3" = { Expand-StartFolders }
     } -ExitKey "4"
+}
+
+# Entry point
+try {
+    Show-CustomizeMenu
+} finally {
+    Stop-Transcript -ErrorAction SilentlyContinue
 }

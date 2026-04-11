@@ -57,6 +57,30 @@ function Set-VSCodeConfig {
                      -FileNames $files `
                      -TargetDir $targetPath `
                      -ConfigName "VSCode"
+
+    # Offer to install extensions
+    $extFile = Join-Path $PSScriptRoot "config\vscode\extensions.txt"
+    if (Test-Path $extFile) {
+        $editorCli = $null
+        foreach ($cmd in @("code", "cursor", "windsurf", "codium")) {
+            if (Get-Command $cmd -ErrorAction SilentlyContinue) { $editorCli = $cmd; break }
+        }
+        if ($editorCli) {
+            $ans = Show-InteractiveMenu -Title "Install extensions via $editorCli?" -HideKeys -Items @(
+                "Y › Yes",
+                "N › No"
+            )
+            if ($ans -eq "Y") {
+                $extensions = Get-Content $extFile | Where-Object { $_.Trim() -ne "" }
+                foreach ($ext in $extensions) {
+                    Write-Host -NoNewline "  $Dim$ext$Reset..."
+                    & $editorCli --install-extension $ext --force 2>&1 | Out-Null
+                    Write-Host " $Green ok$Reset"
+                }
+                Write-Log -Message "Extensions installed ($($extensions.Count) total)." -Level SUCCESS
+            }
+        }
+    }
     Wait-ForUser
 }
 
@@ -73,15 +97,12 @@ function Set-OtherVSCodeConfig {
 }
 
 function Set-WinTermConfig {
-    Clear-Host
-    Show-MenuBox -Title "Windows Terminal Config" -Items @(
+    $choice = Show-InteractiveMenu -Title "Windows Terminal Config" -Items @(
         "1 › Install font + apply config",
         "2 › Install font only",
         "3 › Apply config only (font already installed)",
         "4 › Cancel"
     )
-
-    $choice =  Read-Host " "
 
     $installFont = $choice -in @("1", "2")
     $applyConfig = $choice -in @("1", "3")
@@ -92,14 +113,11 @@ function Set-WinTermConfig {
     $fontInstalled = $false
 
     if ($installFont) {
-        Clear-Host
-        Show-MenuBox -Title "Font Installation" -Items @(
+        $fontChoice = Show-InteractiveMenu -Title "Font Installation" -Items @(
             "1 › FiraCode Nerd Font (download in browser)",
             "2 › Maple Mono NF (install via scoop)",
             "3 › Cancel"
         )
-
-        $fontChoice =  Read-Host " "
 
         switch ($fontChoice) {
             "1" {
@@ -208,16 +226,13 @@ function Set-PwshConfig {
 
 function Set-OhMyPoshConfig {
     if (-not (Get-Command oh-my-posh -ErrorAction SilentlyContinue)) {
-        Clear-Host
-        Show-MenuBox -Title "Oh My Posh" -Items @(
+        $choice = Show-InteractiveMenu -Title "Oh My Posh" -Items @(
             "Oh My Posh is not installed.",
             "---",
             "1 › Install Oh My Posh (winget)",
             "2 › Skip install and apply config only",
             "3 › Cancel"
         )
-
-        $choice =  Read-Host " "
 
         switch ($choice) {
             "1" {
@@ -244,18 +259,16 @@ function Set-OhMyPoshConfig {
 }
 
 function Install-Starship {
-    Clear-Host
     if (Get-Command starship -ErrorAction SilentlyContinue) {
+        Clear-Host
         Write-Log -Message "Starship is already installed." -Level INFO
     } else {
-        Show-MenuBox -Title "Starship Prompt" -Items @(
+        $choice = Show-InteractiveMenu -Title "Starship Prompt" -Items @(
             "Cross-platform shell prompt (Rust-based)",
             "---",
             "1 › Install Starship (winget)",
             "2 › Cancel"
         )
-
-        $choice =  Read-Host " "
 
         switch ($choice) {
             "1" {
@@ -283,16 +296,13 @@ function Install-Starship {
 
 function Set-FastFetchConfig {
     if (-not (Get-Command fastfetch -ErrorAction SilentlyContinue)) {
-        Clear-Host
-        Show-MenuBox -Title "FastFetch" -Items @(
+        $choice = Show-InteractiveMenu -Title "FastFetch" -Items @(
             "FastFetch is not installed.",
             "---",
             "1 › Install FastFetch (winget)",
             "2 › Skip install and apply config only",
             "3 › Cancel"
         )
-
-        $choice =  Read-Host " "
 
         switch ($choice) {
             "1" {
@@ -316,6 +326,46 @@ function Set-FastFetchConfig {
                      -TargetDir "$env:USERPROFILE\.config\fastfetch" `
                      -TargetFileNames @("fastfetch.txt", "config.jsonc") `
                      -ConfigName "FastFetch"
+    Wait-ForUser
+}
+
+function Invoke-ShellSetup {
+    # Full shell setup in one pass: Terminal → Font → PS Profile → Prompt → FastFetch
+    Clear-Host
+    Write-Host ""
+    Write-Log -Message "Starting Full Shell Setup..." -Level INFO
+    Write-Host ""
+
+    # 1. Windows Terminal
+    if (-not (Get-Command wt.exe -ErrorAction SilentlyContinue)) {
+        Write-Log -Message "Installing Windows Terminal..." -Level INFO
+        Install-WingetPackage -PackageId "Microsoft.WindowsTerminal" -Name "Windows Terminal"
+    } else {
+        Write-Log -Message "Windows Terminal already installed." -Level SKIP
+    }
+
+    # 2. WT config + Nerd Font
+    Set-WinTermConfig
+
+    # 3. PowerShell Profile + Terminal-Icons
+    Set-PwshConfig
+
+    # 4. Prompt theme
+    $prompt = Show-InteractiveMenu -Title "Shell Prompt Theme" -Items @(
+        "1 › Oh My Posh - Feature-rich, highly customizable",
+        "2 › Starship   - Fast, minimal, cross-platform",
+        "3 › Skip"
+    )
+    switch ($prompt) {
+        "1" { Set-OhMyPoshConfig }
+        "2" { Install-Starship }
+    }
+
+    # 5. FastFetch
+    Set-FastFetchConfig
+
+    Write-Host ""
+    Write-Log -Message "Full Shell Setup complete." -Level SUCCESS
     Wait-ForUser
 }
 
@@ -365,10 +415,9 @@ function Restore-ConfigBackup {
     $menuItems += "$allIdx › Restore all"
     $menuItems += "$cancelIdx › Cancel"
 
-    Show-MenuBox -Title "Restore Config Backups" -Items $menuItems
-    $choice =  Read-Host " "
+    $choice = Show-InteractiveMenu -Title "Restore Config Backups" -Items $menuItems
 
-    if ($choice -eq "$cancelIdx" -or $choice -eq "") { return }
+    if ($null -eq $choice -or $choice -eq "$cancelIdx") { return }
 
     $toRestore = @()
     if ($choice -eq "$allIdx") {

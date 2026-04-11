@@ -1,6 +1,5 @@
 ﻿function Install-GlazeWM {
-    Clear-Host
-    Show-MenuBox -Title "GlazeWM - Tiling Window Manager" -Items @(
+    $choice = Show-InteractiveMenu -Title "GlazeWM - Tiling Window Manager" -Items @(
         "i3-inspired tiling window manager for Windows.",
         "Manages window layout with keyboard shortcuts.",
         "---",
@@ -9,8 +8,6 @@
         "3 › Apply config only (already installed)",
         "4 › Cancel"
     )
-
-    $choice =  Read-Host " "
 
     switch ($choice) {
         "1" {
@@ -50,16 +47,13 @@ function Copy-GlazeWMConfig {
 }
 
 function Install-StatusBar {
-    Clear-Host
-    Show-MenuBox -Title "Status Bar" -Items @(
+    $choice = Show-InteractiveMenu -Title "Status Bar" -Items @(
         "Add a customizable status bar to your desktop.",
         "---",
         "1 › Zebar (Rust-based, pairs with GlazeWM)",
         "2 › YASB (Python/Qt6, Polybar for Windows)",
         "3 › Cancel"
     )
-
-    $choice =  Read-Host " "
 
     switch ($choice) {
         "1" {
@@ -95,15 +89,12 @@ function Install-Rainmeter {
 }
 
 function Open-WallpaperBrowser {
-    Clear-Host
-    Show-MenuBox -Title "Wallpaper" -Items @(
+    $choice = Show-InteractiveMenu -Title "Wallpaper" -Items @(
         "1 › Open Catppuccin wallpapers (GitHub)",
         "2 › Open Gruvbox wallpapers (GitHub)",
         "3 › Open wallhaven.cc (browse wallpapers)",
         "4 › Cancel"
     )
-
-    $choice =  Read-Host " "
 
     switch ($choice) {
         "1" { Start-Process "https://github.com/catppuccin/wallpapers" }

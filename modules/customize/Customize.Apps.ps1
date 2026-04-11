@@ -22,14 +22,14 @@ function Install-SteamMillennium {
         return
     }
 
-    Clear-Host
-    Show-MenuBox -Title "Space Theme Installation" -Items @(
-        "Would you like to install Space Theme for Steam?",
-        "Y › Yes   N › No"
+    $installChoice = Show-InteractiveMenu -Title "Space Theme Installation" -HideKeys -Items @(
+        "Install Space Theme for Steam?",
+        "---",
+        "Y › Yes",
+        "N › No"
     )
-    $installChoice = Read-Host "Install Space Theme? (Y/N)"
 
-    if ($installChoice -eq 'y') {
+    if ($installChoice -eq 'Y') {
         $null = Invoke-Tool "spacetheme"
     }
     Wait-ForUser

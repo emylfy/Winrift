@@ -1,0 +1,16 @@
+aaron-bond.better-comments
+alefragnani.project-manager
+alexdauenhauer.catppuccin-noctis-icons
+anthropic.claude-code
+coderabbit.coderabbit-vscode
+davidbwaters.macos-modern-theme
+esbenp.prettier-vscode
+kamikillerto.vscode-colorize
+kisstkondoros.vscode-gutter-preview
+mvllow.rose-pine
+noahraskin.electronic-dawn-theme
+richardluo.frosted-glass-theme
+streetsidesoftware.code-spell-checker
+subframe7536.custom-ui-style
+usernamehw.errorlens
+yoavbls.pretty-ts-errors
