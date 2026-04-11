@@ -1,5 +1,4 @@
-﻿. "$PSScriptRoot\..\..\scripts\Common.ps1"
-# https://github.com/AlchemyTweaks/Verified-Tweaks
+﻿# https://github.com/AlchemyTweaks/Verified-Tweaks
 # https://github.com/SanGraphic/QuickBoost
 # https://github.com/UnLovedCookie/CoutX
 # https://github.com/Snowfliger/SyncOS
@@ -25,34 +24,204 @@ $LOW_LEVEL_HOOKS_TIMEOUT_MS = "1000"
 $MENU_SHOW_DELAY_MS         = "0"
 $WAIT_KILL_SVC_TIMEOUT_MS   = "2000"
 
+function Invoke-TweakWizard {
+    param(
+        [hashtable]$TweakMap,
+        [hashtable]$CategoryNames,
+        [ref]$SessionStarted
+    )
+
+    $wizardCategories = @("1","2","3","4","5","6","7","8","9","10","11")
+    $categoryDescriptions = @{
+        "1"  = "Interrupt steering, timer serialization"
+        "2"  = "Mouse/keyboard buffer sizes, accessibility shortcuts"
+        "3"  = "TRIM, disable defrag and prefetch (SSD/NVMe)"
+        "4"  = "Hardware-Accelerated GPU Scheduling (HAGS)"
+        "5"  = "Disable network throttling for maximum throughput"
+        "6"  = "MMCSS lazy mode timeout, multimedia CPU scheduling"
+        "7"  = "Disable power throttling and energy estimation"
+        "8"  = "Process priority separation, IRQ priorities"
+        "9"  = "Startup delay removal, desktop switch latency"
+        "10" = "App/service termination timeouts, menu delay"
+        "11" = "Large system cache, disable page combining (16 GB+ recommended)"
+    }
+
+    $selections = @{}
+    $step  = 0
+    $total = $wizardCategories.Count
+
+    while ($step -lt $total) {
+        $key     = $wizardCategories[$step]
+        $catName = $CategoryNames[$key]
+        $catDesc = $categoryDescriptions[$key]
+
+        $dots = @()
+        for ($i = 0; $i -lt $total; $i++) {
+            if ($i -lt $step) {
+                $dk    = $wizardCategories[$i]
+                $dots += if ($selections[$dk]) { "$Green●$Reset" } else { "$Dim○$Reset" }
+            } elseif ($i -eq $step) {
+                $dots += "$Cyan●$Reset"
+            } else {
+                $dots += "$Dim·$Reset"
+            }
+        }
+        $progressLine = $dots -join " "
+
+        $stateHint = if ($selections.ContainsKey($key)) {
+            if ($selections[$key]) { "  $Green✓ selected$Reset" } else { "  $Dim– skipped$Reset" }
+        } else { "" }
+
+        Clear-Host
+        Write-Host ""
+        Write-Host "  $progressLine"
+        Write-Host ""
+        Write-Host "  $Cyan[$($step + 1)/$total]$Reset  $catName$stateHint"
+        Write-Host "  $Dim$catDesc$Reset"
+        Write-Host ""
+        Write-Host "  $Green[Y]$Reset Apply    $Dim[N]$Reset Skip    $Yellow[B]$Reset Back    $Dim[Esc]$Reset Exit wizard"
+        Write-Host ""
+
+        $keyInfo = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
+        $char    = $keyInfo.Character.ToString().ToUpper()
+        $vk      = [int]$keyInfo.VirtualKeyCode
+
+        if ($vk -eq 27) { return }
+
+        switch ($char) {
+            "Y" { $selections[$key] = $true;  $step++ }
+            "N" { $selections[$key] = $false; $step++ }
+            "B" { if ($step -gt 0) { $step-- } }
+        }
+    }
+
+    $selectedKeys = @($wizardCategories | Where-Object { $selections[$_] -eq $true })
+    if ($selectedKeys.Count -eq 0) {
+        Clear-Host
+        Write-Log -Message "No categories selected." -Level INFO
+        Wait-ForUser
+        return
+    }
+
+    $script:CollectMode = $true
+    foreach ($k in $selectedKeys) {
+        if ($TweakMap.ContainsKey($k)) {
+            $script:DesiredStateCategory = $CategoryNames[$k]
+            & $TweakMap[$k]
+        }
+    }
+    $script:CollectMode = $false
+
+    if (-not (Show-AuditTable)) {
+        Clear-AuditQueue
+        return
+    }
+
+    if (-not $SessionStarted.Value) {
+        New-SafeRestorePoint
+        Start-TweakSession
+        $SessionStarted.Value = $true
+    }
+
+    Invoke-AuditedApply
+
+    Write-Host ""
+    Write-Host "$Yellow  A system restart is recommended for all changes to take effect.$Reset"
+    Write-Host ""
+    Write-Host "$Cyan Press any key to return to the tweaks menu...$Reset"
+    $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
+}
+
 function Invoke-UniversalTweaks {
+    $tweakMap = @{
+        "1"  = { Invoke-SystemLatencyTweaks }
+        "2"  = { Invoke-InputDeviceTweaks }
+        "3"  = { Invoke-SSDTweaks }
+        "4"  = { Invoke-GPUTweaks }
+        "5"  = { Invoke-NetworkTweaks }
+        "6"  = { Invoke-CPUTweaks }
+        "7"  = { Invoke-PowerTweaks }
+        "8"  = { Invoke-SystemResponsivenessTweaks }
+        "9"  = { Invoke-BootOptimizationTweaks }
+        "10" = { Invoke-UIResponsivenessTweaks }
+        "11" = { Invoke-MemoryTweaks }
+        "12" = { Invoke-SystemMaintenanceTweaks }
+        "13" = { Invoke-DirectXTweaks }
+    }
+
+    $categoryNames = @{
+        "1" = "System Latency"; "2" = "Input Device Optimization"; "3" = "SSD/NVMe Performance"
+        "4" = "GPU Hardware Scheduling"; "5" = "Network Optimization"; "6" = "CPU Performance"
+        "7" = "Power Management"; "8" = "System Responsiveness"; "9" = "Boot Optimization"
+        "10" = "UI Responsiveness"; "11" = "Memory Optimization"
+        "12" = "System Maintenance"; "13" = "DirectX Enhancements"
+    }
+
     $sessionStarted = $false
     while ($true) {
-        Clear-Host
-        Show-MenuBox -Title "Select tweak categories to apply" -Items @(
-            "1 › System Latency",
-            "2 › Input Device Optimization",
-            "3 › SSD/NVMe Performance",
-            "4 › GPU Hardware Scheduling",
-            "5 › Network Optimization",
-            "6 › CPU Performance",
-            "7 › Power Management",
-            "8 › System Responsiveness",
-            "9 › Boot Optimization",
-            "10 › UI Responsiveness",
-            "11 › Memory Optimization",
-            "--- Advanced (opt-in, not included in Apply ALL) ---",
-            "12 › System Maintenance",
-            "13 › DirectX Enhancements",
+        $mode = Show-InteractiveMenu -Title "Universal Tweaks" -Items @(
+            "1 › Pick categories (arrows + space)",
+            "2 › Apply ALL safe tweaks (1-11)",
+            "3 › Step-by-step wizard",
             "---",
-            "A › Apply ALL safe tweaks",
-            "B › Back to menu"
+            "4 › Back to menu"
         )
 
-        Write-Host ""
-        $selection = Read-Host " Select categories (e.g. 1 3 5 or A for all)"
+        if ($null -eq $mode -or $mode -eq "4") { break }
 
-        if ($selection -eq "B" -or $selection -eq "b") { break }
+        if ($mode -eq "3") {
+            Invoke-TweakWizard -TweakMap $tweakMap -CategoryNames $categoryNames -SessionStarted ([ref]$sessionStarted)
+            continue
+        }
+
+        $selectedKeys = @()
+        if ($mode -eq "2") {
+            $confirm = Show-InteractiveMenu -Title "Apply ALL Safe Tweaks" -HideKeys -Items @(
+                "Applies 11 tweak categories to your system.",
+                "A restore point will be created before changes.",
+                "---",
+                "Y › Continue",
+                "N › Cancel"
+            )
+            if ($confirm -ne "Y") { continue }
+            $selectedKeys = @("1","2","3","4","5","6","7","8","9","10","11")
+        } else {
+            $picks = Show-MultiSelect -NoBox -Title "Select tweak categories" -Items @(
+                "1 › System Latency",
+                "2 › Input Device Optimization",
+                "3 › SSD/NVMe Performance",
+                "4 › GPU Hardware Scheduling",
+                "5 › Network Optimization",
+                "6 › CPU Performance",
+                "7 › Power Management",
+                "8 › System Responsiveness",
+                "9 › Boot Optimization",
+                "10 › UI Responsiveness",
+                "11 › Memory Optimization",
+                "--- Advanced (opt-in, not in Apply ALL) ---",
+                "12 › System Maintenance~Disables auto-maintenance including disk optimization and security scans.",
+                "13 › DirectX Enhancements~UNSAFE_COMMAND_BUFFER_REUSE may cause GPU artifacts on some hardware."
+            )
+            if (-not $picks -or $picks.Count -eq 0) { continue }
+            $selectedKeys = @($picks)
+        }
+
+        # Collect phase — run all tweak functions in collect mode so
+        # Set-RegistryValue queues entries instead of writing to registry
+        $script:CollectMode = $true
+        foreach ($key in $selectedKeys) {
+            if ($tweakMap.ContainsKey($key)) {
+                $script:DesiredStateCategory = $categoryNames[$key]
+                & $tweakMap[$key]
+            }
+        }
+        $script:CollectMode = $false
+
+        # Show preview table — apply only if user confirms
+        if (-not (Show-AuditTable)) {
+            Clear-AuditQueue
+            continue
+        }
 
         if (-not $sessionStarted) {
             New-SafeRestorePoint
@@ -60,86 +229,12 @@ function Invoke-UniversalTweaks {
             $sessionStarted = $true
         }
 
-        $tweakMap = @{
-            "1"  = { Invoke-SystemLatencyTweaks }
-            "2"  = { Invoke-InputDeviceTweaks }
-            "3"  = { Invoke-SSDTweaks }
-            "4"  = { Invoke-GPUTweaks }
-            "5"  = { Invoke-NetworkTweaks }
-            "6"  = { Invoke-CPUTweaks }
-            "7"  = { Invoke-PowerTweaks }
-            "8"  = { Invoke-SystemResponsivenessTweaks }
-            "9"  = { Invoke-BootOptimizationTweaks }
-            "10" = { Invoke-UIResponsivenessTweaks }
-            "11" = { Invoke-MemoryTweaks }
-            "12" = { Invoke-SystemMaintenanceTweaks }
-            "13" = { Invoke-DirectXTweaks }
-        }
+        Invoke-AuditedApply
 
-        $categoryNames = @{
-            "1" = "System Latency"; "2" = "Input Device Optimization"; "3" = "SSD/NVMe Performance"
-            "4" = "GPU Hardware Scheduling"; "5" = "Network Optimization"; "6" = "CPU Performance"
-            "7" = "Power Management"; "8" = "System Responsiveness"; "9" = "Boot Optimization"
-            "10" = "UI Responsiveness"; "11" = "Memory Optimization"
-            "12" = "System Maintenance"; "13" = "DirectX Enhancements"
-        }
-
-        $optInWarnings = @{
-            "12" = "This disables Windows automatic maintenance, including disk optimization and security scans."
-            "13" = "UNSAFE_COMMAND_BUFFER_REUSE may cause GPU artifacts or crashes on some hardware."
-        }
-
-        if ($selection -eq "A" -or $selection -eq "a") {
-            $selectedKeys = @("1","2","3","4","5","6","7","8","9","10","11")
-        } else {
-            $selectedKeys = $selection -split '[,\s]+' | Where-Object { $_ -ne '' }
-        }
-
-        $appliedCategories = @()
-        $total = ($selectedKeys | Where-Object { $tweakMap.ContainsKey($_) }).Count
-        $current = 0
-
-        foreach ($key in $selectedKeys) {
-            if ($tweakMap.ContainsKey($key)) {
-                $current++
-                $catName = $categoryNames[$key]
-
-                if ($optInWarnings.ContainsKey($key)) {
-                    Write-Host ""
-                    Write-Log -Message "$catName - $($optInWarnings[$key])" -Level WARNING
-                    $confirm = Read-Host "  Apply this category? [Y/N]"
-                    if ($confirm -ne "Y" -and $confirm -ne "y") {
-                        Write-Log -Message "Skipped $catName" -Level SKIP
-                        continue
-                    }
-                }
-
-                $script:DesiredStateCategory = $catName
-                Write-Host "`n$Dim[$current/$total]$Reset $catName"
-                & $tweakMap[$key]
-                $appliedCategories += $key
-            } else {
-                Write-Log -Message "Unknown option: $key" -Level SKIP
-            }
-        }
-
-        if ($appliedCategories.Count -gt 0) {
-            Write-Host ""
-            Write-Log -Message "Tweaks Applied Successfully" -Level SUCCESS
-            Write-Host "  Categories applied:"
-            foreach ($cat in $appliedCategories) {
-                if ($categoryNames.ContainsKey($cat)) {
-                    Write-Host "  - $($categoryNames[$cat])"
-                }
-            }
-            Write-Host ""
-            Write-Host "$Yellow  A system restart is recommended for all changes to take effect.$Reset"
-        } else {
-            Write-Host ""
-            Write-Log -Message "No tweaks were applied." -Level INFO
-        }
         Write-Host ""
-        Write-Host "$Purple Press any key to return to the tweaks menu...$Reset"
+        Write-Host "$Yellow  A system restart is recommended for all changes to take effect.$Reset"
+        Write-Host ""
+        Write-Host "$Cyan Press any key to return to the tweaks menu...$Reset"
         $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
     }
     if ($sessionStarted) {

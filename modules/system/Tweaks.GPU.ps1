@@ -1,6 +1,4 @@
-﻿. "$PSScriptRoot\..\..\scripts\Common.ps1"
-
-# {4d36e968-e325-11ce-bfc1-08002be10318} = Display Adapters device class GUID
+﻿# {4d36e968-e325-11ce-bfc1-08002be10318} = Display Adapters device class GUID
 $DISPLAY_ADAPTER_CLASS = "HKLM:\SYSTEM\CurrentControlSet\Control\Class\{4d36e968-e325-11ce-bfc1-08002be10318}"
 
 function Get-DisplayAdapterIndices {
@@ -45,7 +43,7 @@ function Show-GPUMenu {
             Save-TweakBackup
             Save-DesiredState
             Write-Host ""
-            Write-Host "$Purple Press any key to return to the GPU menu...$Reset"
+            Write-Host "$Cyan Press any key to return to the GPU menu...$Reset"
             $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
         }
     } -ExitKey "4"
@@ -69,7 +67,7 @@ function Invoke-NvidiaTweaks {
     if (-not $nvidiaFound) {
         Write-Log -Message "No NVIDIA GPU found in display adapter registry. Skipping NVIDIA tweaks." -Level WARNING
         if (-not $NoExit) {
-            Write-Host "`n$Purple Press any key to return to the GPU menu...$Reset"
+            Write-Host "`n$Cyan Press any key to return to the GPU menu...$Reset"
             $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
         }
         return $false
@@ -83,7 +81,7 @@ function Invoke-NvidiaTweaks {
 
     if (-not $NoExit) {
         Write-Host ""
-        Write-Host "$Purple Press any key to return to the GPU menu...$Reset"
+        Write-Host "$Cyan Press any key to return to the GPU menu...$Reset"
         $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
     }
     return $true
@@ -107,7 +105,7 @@ function Invoke-AMDTweaks {
     if (-not $amdPath) {
         Write-Log -Message "No AMD GPU found in display adapter registry. Skipping AMD tweaks." -Level WARNING
         if (-not $NoExit) {
-            Write-Host "`n$Purple Press any key to return to the GPU menu...$Reset"
+            Write-Host "`n$Cyan Press any key to return to the GPU menu...$Reset"
             $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
         }
         return $false
@@ -146,7 +144,7 @@ function Invoke-AMDTweaks {
 
     if (-not $NoExit) {
         Write-Host ""
-        Write-Host "$Purple Press any key to return to the GPU menu...$Reset"
+        Write-Host "$Cyan Press any key to return to the GPU menu...$Reset"
         $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
     }
     return $true

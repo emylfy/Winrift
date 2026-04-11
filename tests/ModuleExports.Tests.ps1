@@ -1,4 +1,4 @@
-BeforeDiscovery {
+﻿BeforeDiscovery {
     $repoRoot = Split-Path $PSScriptRoot -Parent
     $scripts = @(
         @{
@@ -6,7 +6,7 @@ BeforeDiscovery {
             ExpectedFunctions = @(
                 'Show-CustomizeMenu', 'Show-DesktopMenu', 'Show-TerminalMenu',
                 'Show-AppsMenu', 'Show-VSCodeConfigMenu', 'Show-SpotifyToolsMenu',
-                'Show-WindowsMenu'
+                'Show-WindowsMenu', 'Show-ProfileBackupsMenu'
             )
         }
         @{
@@ -48,14 +48,30 @@ BeforeDiscovery {
             )
         }
         @{
-            File = 'modules/system/HealthScore.ps1'
+            File = 'modules/system/Audit.Probes.ps1'
             ExpectedFunctions = @(
-                'Get-ThresholdScore', 'Format-ScoreBar',
-                'Get-LatencyScore', 'Get-MemoryScore', 'Get-ProcessBloatScore',
-                'Get-StartupScore', 'Get-PrivacyScore', 'Get-StorageScore', 'Get-NetworkScore',
-                'Get-SystemHealthData', 'Get-CategoryScores', 'Get-CompositeScore',
-                'Show-HealthScoreReport',
-                'Save-HealthScore', 'Invoke-HealthScore'
+                'Test-RegistryValueEquals', 'Test-RegistryValueNotEquals',
+                'Test-RegistryValueGreaterThan', 'Test-RegistryValueLessThan',
+                'Test-RegistryValueExists', 'Test-ServiceRunning',
+                'Test-ServiceStartupAuto', 'Test-AppxPackageInstalled',
+                'Test-FsutilBehavior', 'Test-ActivePowerPlanNot',
+                'Test-ProcessRSSExceeds', 'Test-MMAgentFeature',
+                'Test-DnsServersFromList', 'Get-RegistryRunCount'
+            )
+        }
+        @{
+            File = 'modules/system/Audit.Engine.ps1'
+            ExpectedFunctions = @(
+                'Get-AuditFindingsPath', 'Read-AuditFindings',
+                'Invoke-AuditProbe', 'Invoke-Audit', 'Format-AuditFinding'
+            )
+        }
+        @{
+            File = 'modules/system/Audit.Menu.ps1'
+            ExpectedFunctions = @(
+                'Format-AuditSummary', 'Format-FindingShort',
+                'Show-AuditFindingDetail', 'Invoke-AuditApply',
+                'Invoke-ApplyAllCritical', 'Show-AuditWizard'
             )
         }
     )
@@ -93,6 +109,7 @@ Describe 'Common.ps1 exports' {
     It 'defines function <_>' -ForEach @(
         'Write-Log', 'Wait-ForUser', 'Show-MenuBox',
         'Assert-AdminOrElevate', 'Initialize-Logging', 'Invoke-MenuLoop',
+        'Show-InteractiveMenu', 'Show-MultiSelect',
         'Set-RegistryValue', 'Get-ToolConfig', 'Invoke-SecureScript',
         'Invoke-SecureDownload', 'Confirm-ExternalTool', 'Invoke-Tool',
         'Assert-WingetAvailable', 'Install-WingetPackage', 'Invoke-NativeCommand',

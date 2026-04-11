@@ -1,13 +1,9 @@
-﻿if (-not (Get-Command Write-Log -ErrorAction SilentlyContinue)) {
-    . "$PSScriptRoot\..\..\scripts\Common.ps1"
-}
+﻿. "$PSScriptRoot\..\..\scripts\Common.ps1"
 
 $script:BenchmarkRoot = $env:USERPROFILE
 if (-not $script:BenchmarkRoot) { $script:BenchmarkRoot = $env:HOME }
 if (-not $script:BenchmarkRoot) { $script:BenchmarkRoot = [System.IO.Path]::GetTempPath() }
 $script:BenchmarkDir = Join-Path $script:BenchmarkRoot "Winrift\benchmarks"
-
-. "$PSScriptRoot\HealthScore.ps1"
 
 function Get-PerformanceSnapshot {
     param(
@@ -293,7 +289,7 @@ function Invoke-Benchmark {
             Write-Host ""
             Write-Log -Message "Baseline recorded. Now apply tweaks, reboot, then run Benchmark (After)." -Level INFO
             Write-Host ""
-            Read-Host "  Press Enter to continue"
+            Wait-ForUser
         }
         'After' {
             Write-Log -Message "Starting AFTER benchmark..." -Level INFO
@@ -305,7 +301,7 @@ function Invoke-Benchmark {
             if ($comparison) {
                 Export-BenchmarkReport -Comparison $comparison | Out-Null
                 Write-Host ""
-                Read-Host "  Press Enter to continue"
+                Wait-ForUser
             }
         }
         'Compare' {
@@ -313,7 +309,7 @@ function Invoke-Benchmark {
             if ($comparison) {
                 Export-BenchmarkReport -Comparison $comparison | Out-Null
                 Write-Host ""
-                Read-Host "  Press Enter to continue"
+                Wait-ForUser
             }
         }
     }
@@ -325,15 +321,13 @@ function Show-BenchmarkMenu {
         "1 › Run Benchmark (Before tweaks)",
         "2 › Run Benchmark (After tweaks)",
         "3 › View Last Report",
-        "4 › System Health Score",
         "---",
-        "5 › Back"
+        "4 › Back"
     ) -Actions @{
         "1" = { Invoke-Benchmark -Phase Before }
         "2" = { Invoke-Benchmark -Phase After }
         "3" = { Invoke-Benchmark -Phase Compare }
-        "4" = { Invoke-HealthScore }
-    } -ExitKey "5"
+    } -ExitKey "4"
 }
 
 # Entry point — skipped when dot-sourced from tests

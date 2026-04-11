@@ -1,9 +1,7 @@
-﻿. "$PSScriptRoot\..\..\scripts\Common.ps1"
-# https://github.com/ancel1x/Ancels-Performance-Batch
+﻿# https://github.com/ancel1x/Ancels-Performance-Batch
 
 function Invoke-PowerMenu {
-    Clear-Host
-    Show-MenuBox -Title "Power Management" -Items @(
+    $choice = Show-InteractiveMenu -Title "Power Management" -Items @(
         "For desktops and laptops on AC power.",
         "Disables Connected Standby, CPU idle states,",
         "and PCIe ASPM. Skip if on battery.",
@@ -11,7 +9,6 @@ function Invoke-PowerMenu {
         "1 › Apply Power Management Tweaks",
         "2 › Back to menu"
     )
-    $choice =  Read-Host " "
     if ($choice -eq "1") {
         New-SafeRestorePoint
         Start-TweakSession
@@ -22,7 +19,7 @@ function Invoke-PowerMenu {
         Write-Host ""
         Write-Host "$Green Power Management tweaks applied successfully.$Reset"
         Write-Host "$Yellow A system restart is recommended for all changes to take effect.$Reset"
-        Write-Host "`n$Purple Press any key to return...$Reset"
+        Write-Host "`n$Cyan Press any key to return...$Reset"
         $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
     }
 }

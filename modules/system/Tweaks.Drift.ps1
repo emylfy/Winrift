@@ -237,10 +237,13 @@ function Show-DriftMenu {
         "1" = {
             $drifted = Show-DriftReport
             if ($drifted -and $drifted.Count -gt 0) {
-                Write-Host ""
-                Write-Host "  [Y] Reapply all drifted values   [N] Return to menu"
-                $choice =  Read-Host " "
-                if ($choice -eq "Y" -or $choice -eq "y") {
+                $choice = Show-InteractiveMenu -Title "Drifted values found" -HideKeys -Items @(
+                    "$($drifted.Count) drifted value(s) detected.",
+                    "---",
+                    "Y › Reapply all",
+                    "N › Return to menu"
+                )
+                if ($choice -eq "Y") {
                     Invoke-DriftReapply -DriftedEntries $drifted
                 }
                 Wait-ForUser
@@ -256,11 +259,13 @@ function Show-DriftMenu {
         }
         "3" = {
             if (Test-Path $script:DesiredStateFile) {
-                Write-Host ""
-                Write-Host "  This will delete the desired state file."
-                Write-Host "  [Y] Confirm   [N] Cancel"
-                $choice =  Read-Host " "
-                if ($choice -eq "Y" -or $choice -eq "y") {
+                $choice = Show-InteractiveMenu -Title "Clear desired state" -HideKeys -Items @(
+                    "This will delete the desired state file.",
+                    "---",
+                    "Y › Confirm",
+                    "N › Cancel"
+                )
+                if ($choice -eq "Y") {
                     Remove-Item $script:DesiredStateFile -Force
                     Write-Log -Message "Desired state cleared." -Level SUCCESS
                 }

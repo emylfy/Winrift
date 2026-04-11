@@ -1,6 +1,4 @@
-﻿. "$PSScriptRoot\..\..\scripts\Common.ps1"
-
-$PC_MANAGER_AUMID = "Microsoft.MicrosoftPCManager_8wekyb3d8bbwe!App"
+﻿$PC_MANAGER_AUMID = "Microsoft.MicrosoftPCManager_8wekyb3d8bbwe!App"
 $PC_MANAGER_STORE = "ms-windows-store://pdp?hl=en-us&gl=us&ocid=pdpshare&referrer=storeforweb&productid=9pm860492szd&storecid=storeweb-pdp-open-cta"
 
 function Clear-SystemSpace {
@@ -19,7 +17,7 @@ function Clear-SystemSpace {
                 -Arguments @("/Online", "/Set-ReservedStorageState", "/State:Disabled") `
                 -SuccessMessage "Reserved Storage disabled." `
                 -ErrorMessage "Failed to disable Reserved Storage"
-            Read-Host "Press Enter to continue"
+            Wait-ForUser
         }
         "2" = {
             Write-Log -Message "Cleaning up WinSxS (this may take several minutes)..." -Level INFO
@@ -27,7 +25,7 @@ function Clear-SystemSpace {
                 -Arguments @("/Online", "/Cleanup-Image", "/StartComponentCleanup", "/ResetBase", "/RestoreHealth") `
                 -SuccessMessage "WinSxS cleanup complete." `
                 -ErrorMessage "WinSxS cleanup encountered issues"
-            Read-Host "Press Enter to continue"
+            Wait-ForUser
         }
         "3" = {
             $installed = Install-WingetPackage "9PM860492SZD" "PC Manager" -Source "msstore"
