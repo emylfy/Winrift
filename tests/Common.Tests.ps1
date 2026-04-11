@@ -1,10 +1,13 @@
-BeforeAll {
+﻿BeforeAll {
     . (Join-Path (Join-Path (Split-Path $PSScriptRoot -Parent) 'scripts') 'Common.ps1')
 }
 
 Describe 'Color variables' {
     It '<name> is defined and non-empty' -ForEach @(
-        @{ name = 'Purple' }
+        @{ name = 'Cyan' }
+        @{ name = 'Ice' }
+        @{ name = 'Bold' }
+        @{ name = 'Dim' }
         @{ name = 'Reset' }
         @{ name = 'Red' }
         @{ name = 'Green' }
@@ -14,7 +17,7 @@ Describe 'Color variables' {
     }
 
     It 'color variables contain ANSI escape sequences' {
-        $Purple | Should -Match '\x1b\[38;5;'
+        $Cyan | Should -Match '\x1b\['
         $Reset | Should -Match '\x1b\[0m'
     }
 }

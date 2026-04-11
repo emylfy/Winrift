@@ -1,4 +1,5 @@
 BeforeAll {
+    $env:WINRIFT_NO_SPINNER = "1"  # spinner uses a child runspace where Pester mocks aren't visible
     . (Join-Path (Join-Path (Split-Path $PSScriptRoot -Parent) 'scripts') 'Common.ps1')
 }
 
