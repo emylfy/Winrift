@@ -146,7 +146,7 @@ Complete environment setup from one menu. Runs without admin.
 
 **Terminal** — Full Shell Setup (single-pass) · Windows Terminal config · Nerd Fonts · Oh My Posh / Starship · FastFetch · PowerShell profile
 
-**Editors** — Config import for VSCode · Cursor · AIDE · Windsurf · VSCodium · Trae · extension install via CLI
+**Editors** — Config import for 5 VSCode-based editors · extension install via CLI
 
 **Themes** — Rectify11 · SpotX · Spicetify · Steam Millennium
 

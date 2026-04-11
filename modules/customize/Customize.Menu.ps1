@@ -111,20 +111,18 @@ function Show-VSCodeConfigMenu {
         "2 › Cursor",
         "3 › Windsurf",
         "4 › VSCodium",
-        "5 › Aide",
-        "6 › Trae",
-        "7 › Other (enter path)",
+        "5 › Trae",
+        "6 › Other (enter path)",
         "---",
-        "8 › Back"
+        "7 › Back"
     )
     switch ($choice) {
         "1" { Set-VSCodeConfig "$env:USERPROFILE\AppData\Roaming\Code\User" }
         "2" { Set-VSCodeConfig "$env:USERPROFILE\AppData\Roaming\Cursor\User" }
         "3" { Set-VSCodeConfig "$env:USERPROFILE\AppData\Roaming\Windsurf\User" }
         "4" { Set-VSCodeConfig "$env:USERPROFILE\AppData\Roaming\VSCodium\User" -IncludeProductJson }
-        "5" { Set-VSCodeConfig "$env:USERPROFILE\AppData\Roaming\Aide\User" }
-        "6" { Set-VSCodeConfig "$env:USERPROFILE\AppData\Roaming\Trae\User" }
-        "7" { Set-OtherVSCodeConfig }
+        "5" { Set-VSCodeConfig "$env:USERPROFILE\AppData\Roaming\Trae\User" }
+        "6" { Set-OtherVSCodeConfig }
     }
 }
 

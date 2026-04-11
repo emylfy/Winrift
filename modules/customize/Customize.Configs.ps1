@@ -373,7 +373,7 @@ function Restore-ConfigBackup {
     Clear-Host
 
     $docsDir = [Environment]::GetFolderPath('MyDocuments')
-    $editorNames = @("Code", "Aide", "Cursor", "Windsurf", "VSCodium", "Trae")
+    $editorNames = @("Code", "Cursor", "Windsurf", "VSCodium", "Trae")
 
     $locations = @(
         @{ Name = "Windows Terminal"; Path = "$env:USERPROFILE\AppData\Local\Packages\Microsoft.WindowsTerminal_8wekyb3d8bbwe\LocalState\settings.json.bak" }

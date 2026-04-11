@@ -24,7 +24,7 @@
     }
 
     $docsDir = [Environment]::GetFolderPath('MyDocuments')
-    $editorNames = @("Code", "Cursor", "Windsurf", "VSCodium", "Aide", "Trae")
+    $editorNames = @("Code", "Cursor", "Windsurf", "VSCodium", "Trae")
 
     foreach ($key in $selected) {
         switch ($key) {
