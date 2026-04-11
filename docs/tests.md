@@ -37,7 +37,7 @@ From the main menu, select **Benchmark** to access:
 | 1 | Run Benchmark (Before tweaks) |
 | 2 | Run Benchmark (After tweaks) |
 | 3 | View Last Report |
-| 4 | [System Health Score](health_score.md) — composite 0–100 rating across 7 categories |
+| 4 | System Health Score — composite 0–100 rating across 7 categories |
 | 5 | Back |
 
 **Recommended workflow:** Before → Apply tweaks → Reboot → After → Compare → Health Score.
@@ -109,7 +109,7 @@ The benchmark menu includes a **System Health Score** (option 4) that rates your
 
 It reuses `Get-PerformanceSnapshot` with reduced sampling (3 samples at 2-second intervals) and adds configuration checks (privacy registry keys, storage settings, network state).
 
-Full documentation: [Health Score Guide](health_score.md)
+Full documentation is embedded in the Benchmark module (`modules/system/Benchmark.ps1`).
 
 ## Pester Tests
 

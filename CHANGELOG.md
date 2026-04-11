@@ -5,6 +5,70 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project uses [Calendar Versioning](https://calver.org/) (YY.M.patch format).
 
+## [26.4.0] - 2026-04-11
+
+### System Audit
+
+- Added `modules/system/Audit.Engine.ps1` — probe runner, findings store, `Invoke-Audit`, `Format-AuditFinding`
+- Added `modules/system/Audit.Probes.ps1` — 14 probe functions: registry value checks, service state, power plan, DNS servers, fsutil behavior, process RSS, MMAgent features, run count
+- Added `modules/system/Audit.Menu.ps1` — findings list with severity badges, per-finding detail view, `Invoke-ApplyAllCritical` (`c` shortcut), `Show-AuditWizard` guided fix flow
+- Added `config/audit_findings.json` — findings definitions with severity, category, description, fix steps
+- Added System Audit as option 1 in main menu
+
+### Universal Tweaks
+
+- Added step-by-step Tweak Wizard — `Invoke-TweakWizard` steps through 11 safe categories one at a time; progress dots (`● ○ ·`), Y/N/B/Esc navigation, CollectMode → audit table → apply
+- Added audit table preview before applying any tweak selection — `CollectMode` routes `Set-RegistryValue` calls to `Add-AuditEntry`; user confirms before registry is touched
+- Added `label~warning` inline warnings — `~` separator in item text renders yellow warning line when item is highlighted; used for System Maintenance and DirectX opt-in tweaks
+- Added Y/N confirmation before Apply ALL safe tweaks
+
+### App Bundles
+
+- Replaced mandatory UniGetUI dependency with native winget package selector — no need to install UniGetUI to browse and install packages
+- Added per-category package selector with installed/broken markers — one `winget list` pass per open, `(installed)` and `[broken]` annotations
+- Added "Search all packages" — aggregates all `.ubundle` files into single multi-select with category headers
+- Added UniGetUI bundle opening — if UniGetUI is installed, menu item "8" shows bundle picker and opens selected `.ubundle` via `UniGetUI.exe --import-bundle`
+- Changed UniGetUI install to silent mode — removed `-ShowProgress`, winget runs in background with Winrift spinner (fixes `-\|/` frames on separate lines)
+- Fixed `True` leak — `$null =` on `Install-WingetPackage` calls in package selector loops
+- Fixed UTF-8 BOM missing on `UniGetUI.ps1` — `›` was rendering as `â€º` on PowerShell 5.1
+
+### Security / DNS Benchmark
+
+- Reworked DNS benchmark apply prompt — inline `ReadKey` Y/N/Esc after results, no `Clear-Host`; pressing N prints ranked list below results and prompts for number selection without disturbing benchmark output
+
+### Customize
+
+- Added Full Shell Setup (`0 › Full Shell Setup` in Terminal menu) — single-pass: WT install check → WT config + font → PS profile → prompt picker (OhMyPosh/Starship) → FastFetch
+- Added Profile & Backups submenu — `Restore-ConfigBackup` (lists .bak files with date/size, restore one or all), `Export-WinriftProfile`, `Import-WinriftProfile`
+- Added VSCode extension install — `config/vscode/extensions.txt`; after settings import, offers to install extensions via detected editor CLI
+- Added `Customize.Profile.ps1` — profile export/import functions
+- Fixed Organize Start Menu elevation — `Expand-StartFolders` now uses `Start-Process powershell.exe -Verb RunAs` directly; bypasses Windows Terminal token inheritance issue that caused admin check loop
+- Added Y/N confirmation before applying date/time format changes
+
+### Common / TUI
+
+- Added timestamped file logging — `Initialize-Logging -ModuleName` creates `~/Winrift/logs/<module>_<timestamp>_<pid>.log`; `Write-Log` appends to it automatically
+- Added `$env:WINRIFT_NO_CONFIRM` — when set to `1`, `Show-InteractiveMenu` auto-returns `Y` for menus containing a `Y ›` item; enables scripted/unattended runs
+- Added `Invoke-WithSpinner` — runs scriptblock in background `[PowerShell]` runspace with animated braille spinner in foreground; used for winget list checks and package installs
+- Added audit queue — `Add-AuditEntry`, `Show-AuditTable`, `Invoke-AuditedApply`, `Clear-AuditQueue` in `Common.ps1`
+- Fixed `HideKeys` padding — right border now aligns with non-selectable info lines; padding was calculated against full `"X › label"` string but rendered text was just `"label"`
+
+### Self-Update
+
+- Changed self-update to zip download — `Invoke-SelfUpdate` downloads `main.zip` from GitHub, extracts, copies files to `$script:Root` (skipping `logs/`), restarts; no git required
+- Removed startup `[STARTUP]` status lines from `Winrift.ps1`
+
+### Removed
+
+- Removed `modules/system/HealthScore.ps1` and menu item — replaced by System Audit
+- Removed `modules/customize/Customize.ps1` — replaced by split module files
+- Removed `tests/HealthScore.Tests.ps1`
+
+### Fixes & Tests
+
+- Fixed dead `health_score.md` links in `docs/tests.md`
+- Added `Show-ProfileBackupsMenu` to `ModuleExports.Tests.ps1` expected function list
+
 ## [26.3.17] - 2026-03-26
 
 ### README rewrite

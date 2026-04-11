@@ -16,8 +16,8 @@
 <h6 align="center">
   <a href="#quick-start">Quick Start</a> ·
   <a href="#features">Features</a> ·
+  <a href="#system-audit">System Audit</a> ·
   <a href="#benchmark">Benchmark</a> ·
-  <a href="#health-score">Health Score</a> ·
   <a href="#compatibility">Compatibility</a>
 </h6>
 
@@ -30,7 +30,7 @@
 Open PowerShell as admin — <kbd>Win</kbd> + <kbd>X</kbd> → Terminal Admin:
 
 ```powershell
-irm https://raw.githubusercontent.com/emylfy/winrift/main/scripts/launch.ps1 | iex
+Set-ExecutionPolicy Bypass -Scope Process -Force; irm https://raw.githubusercontent.com/emylfy/winrift/main/scripts/launch.ps1 | iex
 ```
 
 > [!NOTE]
@@ -42,7 +42,7 @@ irm https://raw.githubusercontent.com/emylfy/winrift/main/scripts/launch.ps1 | i
 <br>
 
 ```powershell
-irm https://raw.githubusercontent.com/emylfy/winrift/main/scripts/install.ps1 | iex
+Set-ExecutionPolicy Bypass -Scope Process -Force; irm https://raw.githubusercontent.com/emylfy/winrift/main/scripts/install.ps1 | iex
 ```
 
 </details>
@@ -62,7 +62,7 @@ irm https://raw.githubusercontent.com/emylfy/winrift/main/scripts/install.ps1 | 
 |     | Feature                                        | What it does                                                                   |
 | :-- | :--------------------------------------------- | :----------------------------------------------------------------------------- |
 | 📊  | [**Benchmark**](docs/tests.md)                 | 13 metrics before & after, Markdown reports                                    |
-| 🩺  | [**Health Score**](docs/health_score.md)       | 0–100 rating, delta tracking, recommendations                                  |
+| 🩺  | **System Audit**                               | Concrete findings + cost estimates + one-click fixes                           |
 | ⚙️  | [**System Tweaks**](docs/tweaks_guide.md)      | 13 categories — latency, SSD, GPU, network, power, memory, DirectX             |
 | 🔄  | [**Drift Detection**](docs/drift_detection.md) | Catches Windows Update reverting your tweaks; one-click reapply                |
 | 🛡️  | **Security & Privacy**                         | Defender, Copilot/Recall removal, privacy hardening                            |
@@ -219,26 +219,22 @@ Other tools apply tweaks and hope for the best. Winrift measures 13 system metri
 
 ---
 
-<a id="health-score"></a>
+<a id="system-audit"></a>
 
-## 🩺 Health Score
+## 🩺 System Audit
 
-Composite **0–100 rating** across 7 weighted categories with delta tracking — see how your system improves over time.
+Scans your system against ~22 known issues across 6 categories and shows **what's wrong, why it matters, and how to fix it**. Each finding has a real fix linked to a Winrift module — no scores, no graded reports, just actionable items.
 
-| Category          | Weight | Checks                                       |
-| :---------------- | :----: | :------------------------------------------- |
-| **Latency**       |  20%   | DPC rate, context switches, interrupts       |
-| **Privacy**       |  20%   | Telemetry, diagnostics, Copilot, ad tracking |
-| **Memory**        |  15%   | RAM usage, committed ratio, page faults      |
-| **Network**       |  15%   | Throttling, Nagle algorithm, TCP tuning      |
-| **Process Bloat** |  10%   | Running processes and services count         |
-| **Startup**       |  10%   | Startup apps and scheduled tasks             |
-| **Storage**       |  10%   | SSD/NVMe optimization, TRIM, prefetcher      |
+| Category        | What it checks                                                            |
+| :-------------- | :------------------------------------------------------------------------ |
+| **Privacy**     | Telemetry level, DiagTrack, Copilot, Recall, OneDrive, Ad ID, Activity history |
+| **Performance** | Power throttling, HAGS, network throttling, MMCSS, energy estimation     |
+| **Memory**      | SysMain on SSD, large system cache, paging executive                     |
+| **Storage**    | TRIM, NTFS last-access, 8.3 names, prefetcher                            |
+| **Startup**     | HKLM/HKCU Run keys for unwanted autostart entries                        |
+| **Network**     | Nagle algorithm, throttling index                                        |
 
-> [!TIP]
-> Low-scoring categories get automatic recommendations. Run it before and after tweaks to track your improvement.
-
-<sub>Scoring methodology → <a href="docs/health_score.md">Health Score Guide</a></sub>
+Each finding marks its cost honestly: **measured** (real RAM right now), **estimated** (cited average with `~`), or **qualitative** (on/off, no number). Apply individually or `[A]` to bulk-apply all critical issues that don't require a reboot.
 
 ---
 

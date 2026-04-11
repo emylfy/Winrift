@@ -13,7 +13,7 @@ function Show-PrivacySexyMenu {
         "1" = { Start-Process $tool.docs }
         "2" = {
             $null = Invoke-Tool "privacysexy" -OnSuccess { param($path) Start-Process cmd -ArgumentList "/c `"$path`"" -Wait }
-            Read-Host "Press Enter to continue"
+            Wait-ForUser
         }
     } -ExitKey "3"
 }

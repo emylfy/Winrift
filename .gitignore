@@ -29,6 +29,9 @@ tmp/
 *.bak
 *.orig
 
+# Local files
+TODO.md
+
 # PowerShell module output
 *.psm1.bak
 

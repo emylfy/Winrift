@@ -14,7 +14,7 @@ function Show-WinScriptMenu {
         "1" = { Start-Process $tool.docs }
         "2" = {
             $null = Invoke-Tool "winscript"
-            Read-Host "Press Enter to continue"
+            Wait-ForUser
         }
         "R" = { Start-Process $tool.docs }
     } -ExitKey "3"

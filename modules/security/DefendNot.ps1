@@ -1,74 +1,39 @@
-﻿. "$PSScriptRoot\..\..\scripts\Common.ps1"
+. "$PSScriptRoot\..\..\scripts\Common.ps1"
 Initialize-Logging -ModuleName "defendnot"
 $Host.UI.RawUI.WindowTitle = "DefendNot - Disable Windows Defender"
 
-$tool = Get-ToolConfig "defendnot"
+$result = Invoke-Tool "defendnot" -PreRun {
+    $defendnotPath = "$env:ProgramFiles\defendnot"
 
-Clear-Host
-Show-MenuBox -Title "DefendNot - Disable Windows Defender" -Items @(
-    "This will fetch and run a script from the web",
-    "to disable Defender via the WSC API.",
-    "",
-    "Before running, real-time protection and",
-    "Defender exclusion will be set automatically.",
-    "You may need to disable Tamper Protection first.",
-    "",
-    "URL:    $($tool.url)",
-    "Source: $($tool.docs)",
-    "---",
-    "Y › Run  N › Cancel  R › Review source"
-)
+    try {
+        Add-MpPreference -ExclusionPath $defendnotPath -ErrorAction Stop
+        Write-Log -Message "Added Defender exclusion for $defendnotPath" -Level SUCCESS
+    } catch {
+        Write-Log -Message "Could not add exclusion: $($_.Exception.Message)" -Level WARNING
+    }
 
-while ($true) {
-    $choice =  Read-Host " "
-    switch ($choice.ToUpper()) {
-        "Y" {
-            $defendnotPath = "$env:ProgramFiles\defendnot"
+    try {
+        Set-MpPreference -DisableRealtimeMonitoring $true -ErrorAction Stop
+        Write-Log -Message "Real-time protection disabled temporarily." -Level SUCCESS
+    } catch {
+        Write-Log -Message "Could not disable real-time protection." -Level WARNING
+        Write-Log -Message "If Tamper Protection is on, disable it manually:" -Level WARNING
+        Write-Log -Message "Windows Security > Virus & threat protection > Manage settings > Tamper Protection: Off" -Level WARNING
+    }
 
-            try {
-                Add-MpPreference -ExclusionPath $defendnotPath -ErrorAction Stop
-                Write-Log -Message "Added Defender exclusion for $defendnotPath" -Level SUCCESS
-            } catch {
-                Write-Log -Message "Could not add exclusion: $($_.Exception.Message)" -Level WARNING
-            }
-
-            try {
-                Set-MpPreference -DisableRealtimeMonitoring $true -ErrorAction Stop
-                Write-Log -Message "Real-time protection disabled temporarily." -Level SUCCESS
-            } catch {
-                Write-Log -Message "Could not disable real-time protection." -Level WARNING
-                Write-Log -Message "If Tamper Protection is on, disable it manually:" -Level WARNING
-                Write-Log -Message "Windows Security > Virus & threat protection > Manage settings > Tamper Protection: Off" -Level WARNING
-            }
-
-            # Remove previous installation to avoid ExtractToDirectory conflict
-            if (Test-Path $defendnotPath) {
-                try {
-                    Remove-Item $defendnotPath -Recurse -Force -ErrorAction Stop
-                    Write-Log -Message "Removed previous installation." -Level INFO
-                } catch {
-                    Write-Log -Message "Could not remove $defendnotPath -- files may be locked." -Level WARNING
-                }
-            }
-
-            $result = Invoke-Tool "defendnot" -SkipConfirm
-            if (-not $result) {
-                Write-Host ""
-                Write-Log -Message "Disable Tamper Protection before running DefendNot:" -Level WARNING
-                Write-Host "  Windows Security > Virus & threat protection > Manage settings > Tamper Protection: $Yellow Off$Reset"
-            }
-            Read-Host "Press Enter to continue"
-            return
+    if (Test-Path $defendnotPath) {
+        try {
+            Remove-Item $defendnotPath -Recurse -Force -ErrorAction Stop
+            Write-Log -Message "Removed previous installation." -Level INFO
+        } catch {
+            Write-Log -Message "Could not remove $defendnotPath -- files may be locked." -Level WARNING
         }
-        "N" {
-            return
-        }
-        "R" {
-            if ($tool.docs) {
-                Start-Process $tool.docs
-                Write-Host "$Green  Opened project source in browser.$Reset"
-            }
-        }
-        default { Write-Host "  Please enter Y, N, or R." }
     }
 }
+
+if (-not $result) {
+    Write-Host ""
+    Write-Log -Message "Disable Tamper Protection before running DefendNot:" -Level WARNING
+    Write-Host "  Windows Security > Virus & threat protection > Manage settings > Tamper Protection: $Yellow Off$Reset"
+}
+Wait-ForUser

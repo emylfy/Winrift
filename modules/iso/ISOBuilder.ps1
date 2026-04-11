@@ -1,7 +1,5 @@
 ﻿$scriptRoot = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
-if (-not (Get-Command Write-Log -ErrorAction SilentlyContinue)) {
-    . "$scriptRoot\scripts\Common.ps1"
-}
+. "$scriptRoot\scripts\Common.ps1"
 Initialize-Logging -ModuleName "isobuilder"
 
 $OSCDIMG_URL = "https://msdl.microsoft.com/download/symbols/oscdimg.exe/3D44737265000/oscdimg.exe"
@@ -24,31 +22,25 @@ function Get-OscdimgPath {
     }
 
     # 3. Not found — ask user how to proceed
-    Show-MenuBox -Title "oscdimg.exe not found" -Items @(
+    $response = Show-InteractiveMenu -Title "oscdimg.exe not found" -Items @(
         "oscdimg.exe is required to build bootable ISOs.",
         "It is a Microsoft tool included in the Windows ADK.",
-        "",
-        "Source: msdl.microsoft.com (Microsoft's official Symbol Server)",
+        "---",
+        "Source: msdl.microsoft.com (official Symbol Server)",
         "Same source used by tiny11maker and Windows ADK tools.",
-        "",
+        "---",
         "Y › Download from Microsoft",
         "N › Cancel",
         "A › Open ADK download page (install manually)"
     )
-
-    while ($true) {
-        $response = Read-Host "Your choice"
-        switch ($response.ToUpper()) {
-            "Y" { break }
-            "N" { return $null }
-            "A" {
-                Start-Process $ADK_PAGE
-                Write-Log -Message "Opened ADK download page. Install ADK, then re-run ISO Builder." -Level INFO -LogFile $script:LogFile
-                return $null
-            }
-            default { Write-Host "  Please enter Y, N, or A." }
+    switch ($response) {
+        "Y" {}
+        "A" {
+            Start-Process $ADK_PAGE
+            Write-Log -Message "Opened ADK download page. Install ADK, then re-run ISO Builder." -Level INFO -LogFile $script:LogFile
+            return $null
         }
-        break
+        default { return $null }
     }
 
     # Download
@@ -127,54 +119,47 @@ function Build-WinriftISO {
         Write-Log -Message "Copy complete." -Level SUCCESS -LogFile $script:LogFile
 
         # Choose autounattend.xml
-        $defaultXml = Join-Path $scriptRoot "docs\autounattend.xml"
+        $defaultXml = Join-Path $scriptRoot "config\autounattend.xml"
 
-        Show-MenuBox -Title "Answer File (autounattend.xml)" -Items @(
+        $xmlChoice = Show-InteractiveMenu -Title "Answer File (autounattend.xml)" -Items @(
             "This file automates Windows 11 installation:",
             "  - Removes 25 bloatware apps (Cortana, Teams, News...)",
             "  - Disables telemetry, Copilot, and OneDrive auto-install",
             "  - Cleans taskbar, shows file extensions, opens to This PC",
             "  - Bypasses TPM/SecureBoot/RAM checks",
             "  - Creates Winrift desktop shortcut",
-            "",
+            "---",
             "1 › Use Winrift default answer file",
             "2 › Use your own autounattend.xml",
             "3 › Cancel"
         )
 
         $xmlSource = $null
-        while ($true) {
-            $xmlChoice = Read-Host "Your choice"
-            switch ($xmlChoice) {
-                "1" {
-                    if (-not (Test-Path $defaultXml)) {
-                        Write-Log -Message "Default autounattend.xml not found at $defaultXml" -Level ERROR -LogFile $script:LogFile
-                        Wait-ForUser
-                        return
-                    }
-                    $xmlSource = $defaultXml
-                    Write-Log -Message "Using Winrift default: $defaultXml" -Level INFO -LogFile $script:LogFile
-                    break
+        switch ($xmlChoice) {
+            "1" {
+                if (-not (Test-Path $defaultXml)) {
+                    Write-Log -Message "Default autounattend.xml not found at $defaultXml" -Level ERROR -LogFile $script:LogFile
+                    Wait-ForUser
+                    return
                 }
-                "2" {
-                    Add-Type -AssemblyName System.Windows.Forms
-                    $xmlDialog = New-Object System.Windows.Forms.OpenFileDialog
-                    $xmlDialog.Title = "Select your autounattend.xml"
-                    $xmlDialog.Filter = "XML files (*.xml)|*.xml"
-                    if ($xmlDialog.ShowDialog() -eq "OK") {
-                        $xmlSource = $xmlDialog.FileName
-                        Write-Log -Message "Using custom: $xmlSource" -Level INFO -LogFile $script:LogFile
-                    } else {
-                        Write-Log -Message "No file selected." -Level WARNING -LogFile $script:LogFile
-                        Wait-ForUser
-                        return
-                    }
-                    break
-                }
-                "3" { return }
-                default { Write-Host "  Please enter 1, 2, or 3."; continue }
+                $xmlSource = $defaultXml
+                Write-Log -Message "Using Winrift default: $defaultXml" -Level INFO -LogFile $script:LogFile
             }
-            break
+            "2" {
+                Add-Type -AssemblyName System.Windows.Forms
+                $xmlDialog = New-Object System.Windows.Forms.OpenFileDialog
+                $xmlDialog.Title = "Select your autounattend.xml"
+                $xmlDialog.Filter = "XML files (*.xml)|*.xml"
+                if ($xmlDialog.ShowDialog() -eq "OK") {
+                    $xmlSource = $xmlDialog.FileName
+                    Write-Log -Message "Using custom: $xmlSource" -Level INFO -LogFile $script:LogFile
+                } else {
+                    Write-Log -Message "No file selected." -Level WARNING -LogFile $script:LogFile
+                    Wait-ForUser
+                    return
+                }
+            }
+            default { return }
         }
 
         Copy-Item -Path $xmlSource -Destination "$scratchDir\autounattend.xml" -Force | Out-Null

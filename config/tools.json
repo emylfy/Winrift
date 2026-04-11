@@ -47,6 +47,7 @@
             "name": "RemoveWindowsAI",
             "description": "Remove Copilot, Recall and AI features",
             "type": "irm",
+            "interactive": true,
             "url": "https://raw.githubusercontent.com/zoicware/RemoveWindowsAI/main/RemoveWindowsAi.ps1",
             "docs": "https://github.com/zoicware/RemoveWindowsAI"
         },

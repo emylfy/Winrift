@@ -3,8 +3,6 @@
 Initialize-Logging -ModuleName "drivers"
 
 function Show-DeviceMenu {
-    $Host.UI.RawUI.WindowTitle = "Winrift - Drivers"
-
     $urls = @{
         "1"  = "https://www.nvidia.com/en-us/software/nvidia-app/"
         "2"  = "https://www.amd.com/en/support/download/drivers.html"
@@ -19,41 +17,36 @@ function Show-DeviceMenu {
         "12" = "https://www.gigabyte.com/Support/Consumer/Download"
     }
 
-    while ($true) {
-        Clear-Host
-        Show-MenuBox -Title "Select your manufacturer" -Items @(
-            "1 › Nvidia App",
-            "2 › AMD Drivers",
-            "3 › Intel Driver & Support Assistant (auto-install)",
-            "---",
-            "4 › HP",
-            "5 › Lenovo",
-            "6 › Asus",
-            "7 › Acer",
-            "8 › MSI",
-            "9 › Huawei",
-            "10 › Xiaomi",
-            "11 › DELL/Alienware",
-            "12 › Gigabyte",
-            "---",
-            "Enter › Back to Menu"
-        )
-
-        $choice =  Read-Host " "
-
-        if ($choice -eq "") {
-            return
-        } elseif ($choice -eq "3") {
-            Install-IntelDSA
-        } elseif ($choice -eq "5") {
-            Show-LenovoMenu
-        } elseif ($urls.ContainsKey($choice)) {
-            Start-Process $urls[$choice]
-        } else {
-            Write-Log -Message "Invalid choice. Please try again." -Level ERROR
-            Start-Sleep -Seconds 1
-        }
-    }
+    Invoke-MenuLoop -Title "Drivers" -Items @(
+        "1 › Nvidia App",
+        "2 › AMD Drivers",
+        "3 › Intel Driver & Support Assistant (auto-install)",
+        "---",
+        "4 › HP",
+        "5 › Lenovo",
+        "6 › Asus",
+        "7 › Acer",
+        "8 › MSI",
+        "9 › Huawei",
+        "10 › Xiaomi",
+        "11 › DELL/Alienware",
+        "12 › Gigabyte",
+        "---",
+        "0 › Back to Menu"
+    ) -Actions @{
+        "1"  = { Start-Process $urls["1"]; Start-Sleep -Milliseconds 300 }
+        "2"  = { Start-Process $urls["2"]; Start-Sleep -Milliseconds 300 }
+        "3"  = { Install-IntelDSA }
+        "4"  = { Start-Process $urls["4"]; Start-Sleep -Milliseconds 300 }
+        "5"  = { Show-LenovoMenu }
+        "6"  = { Start-Process $urls["6"]; Start-Sleep -Milliseconds 300 }
+        "7"  = { Start-Process $urls["7"]; Start-Sleep -Milliseconds 300 }
+        "8"  = { Start-Process $urls["8"]; Start-Sleep -Milliseconds 300 }
+        "9"  = { Start-Process $urls["9"]; Start-Sleep -Milliseconds 300 }
+        "10" = { Start-Process $urls["10"]; Start-Sleep -Milliseconds 300 }
+        "11" = { Start-Process $urls["11"]; Start-Sleep -Milliseconds 300 }
+        "12" = { Start-Process $urls["12"]; Start-Sleep -Milliseconds 300 }
+    } -ExitKey "0"
 }
 
 function Install-IntelDSA {
