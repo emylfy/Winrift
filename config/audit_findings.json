@@ -1,0 +1,708 @@
+﻿{
+  "$schema_version": 1,
+  "$comment": "Each finding's detect.probe is dispatched via reflection by Audit.Engine.ps1. found=true means the issue is present. cost.type marks honesty: measured (real RSS now), estimated (cited average), qualitative (on/off).",
+  "findings": [
+
+    {
+      "id": "privacy-telemetry-allowtelemetry",
+      "category": "privacy",
+      "severity": "critical",
+      "title": "Telemetry above Security level",
+      "description": "Windows is sending diagnostic data above the minimum 'Security' level. Includes app usage, browsing history (Edge), and inking/typing data on Enhanced or Full.",
+      "detect": {
+        "probe": "Test-RegistryValueGreaterThan",
+        "args": {
+          "path": "HKLM:\\SOFTWARE\\Policies\\Microsoft\\Windows\\DataCollection",
+          "name": "AllowTelemetry",
+          "threshold": 0,
+          "treat_missing_as": 1
+        }
+      },
+      "cost": { "type": "qualitative" },
+      "remediation": {
+        "description": "Set AllowTelemetry to 0 (Security)",
+        "type": "module",
+        "target": "modules/security/PrivacySexy.ps1",
+        "requires_reboot": false
+      }
+    },
+
+    {
+      "id": "privacy-diagtrack-running",
+      "category": "privacy",
+      "severity": "critical",
+      "title": "DiagTrack (Connected User Experiences and Telemetry) running",
+      "description": "DiagTrack is the service that uploads diagnostic data to Microsoft. Disabling it stops the upload regardless of AllowTelemetry level.",
+      "detect": {
+        "probe": "Test-ServiceRunning",
+        "args": { "name": "DiagTrack" }
+      },
+      "cost": { "type": "estimated", "ram_mb": 30 },
+      "remediation": {
+        "description": "Stop and disable DiagTrack",
+        "type": "inline",
+        "target": "Stop-Service DiagTrack -Force; Set-Service DiagTrack -StartupType Disabled",
+        "requires_reboot": false
+      }
+    },
+
+    {
+      "id": "privacy-copilot-package",
+      "category": "privacy",
+      "severity": "warning",
+      "title": "Copilot package installed",
+      "description": "Microsoft Copilot UWP package is installed and may run in the background.",
+      "detect": {
+        "probe": "Test-AppxPackageInstalled",
+        "args": { "pattern": "Microsoft.Copilot*" }
+      },
+      "cost": { "type": "estimated", "ram_mb": 180 },
+      "remediation": {
+        "description": "Remove Copilot via RemoveWindowsAI tool",
+        "type": "module",
+        "target": "modules/security/RemoveWindowsAI.ps1",
+        "requires_reboot": false
+      }
+    },
+
+    {
+      "id": "privacy-recall-package",
+      "category": "privacy",
+      "severity": "critical",
+      "title": "Recall package installed",
+      "description": "Windows Recall captures periodic screenshots of your activity. Privacy and storage concern.",
+      "detect": {
+        "probe": "Test-AppxPackageInstalled",
+        "args": { "pattern": "*Recall*" }
+      },
+      "cost": { "type": "estimated", "disk_mb": 1500 },
+      "remediation": {
+        "description": "Remove Recall via RemoveWindowsAI tool",
+        "type": "module",
+        "target": "modules/security/RemoveWindowsAI.ps1",
+        "requires_reboot": false
+      }
+    },
+
+    {
+      "id": "privacy-onedrive-autostart",
+      "category": "privacy",
+      "severity": "warning",
+      "title": "OneDrive auto-start enabled",
+      "description": "OneDrive runs at login and consumes RAM/CPU even when not actively syncing.",
+      "detect": {
+        "probe": "Test-RegistryValueExists",
+        "args": {
+          "path": "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Run",
+          "name": "OneDrive"
+        }
+      },
+      "cost": { "type": "estimated", "ram_mb": 120 },
+      "remediation": {
+        "description": "Remove OneDrive Run entry",
+        "type": "registry",
+        "target": "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Run\\OneDrive=DELETE",
+        "requires_reboot": false
+      }
+    },
+
+    {
+      "id": "privacy-advertising-id",
+      "category": "privacy",
+      "severity": "warning",
+      "title": "Advertising ID enabled",
+      "description": "Windows assigns a per-user advertising ID used by apps for cross-app tracking.",
+      "detect": {
+        "probe": "Test-RegistryValueNotEquals",
+        "args": {
+          "path": "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\AdvertisingInfo",
+          "name": "Enabled",
+          "expected": 0,
+          "treat_missing_as": 1
+        }
+      },
+      "cost": { "type": "qualitative" },
+      "remediation": {
+        "description": "Set AdvertisingInfo Enabled=0",
+        "type": "module",
+        "target": "modules/security/PrivacySexy.ps1",
+        "requires_reboot": false
+      }
+    },
+
+    {
+      "id": "privacy-activity-history",
+      "category": "privacy",
+      "severity": "warning",
+      "title": "Activity history sync enabled",
+      "description": "Windows uploads activity history to Microsoft for Timeline cross-device sync.",
+      "detect": {
+        "probe": "Test-RegistryValueNotEquals",
+        "args": {
+          "path": "HKLM:\\SOFTWARE\\Policies\\Microsoft\\Windows\\System",
+          "name": "UploadUserActivities",
+          "expected": 0,
+          "treat_missing_as": 1
+        }
+      },
+      "cost": { "type": "qualitative" },
+      "remediation": {
+        "description": "Set UploadUserActivities=0",
+        "type": "module",
+        "target": "modules/security/PrivacySexy.ps1",
+        "requires_reboot": false
+      }
+    },
+
+    {
+      "id": "performance-power-throttling",
+      "category": "performance",
+      "severity": "warning",
+      "title": "Power throttling enabled",
+      "description": "Windows throttles background apps to save power; on desktops/AC this just reduces performance.",
+      "detect": {
+        "probe": "Test-RegistryValueNotEquals",
+        "args": {
+          "path": "HKLM:\\SYSTEM\\CurrentControlSet\\Control\\Power\\PowerThrottling",
+          "name": "PowerThrottlingOff",
+          "expected": 1,
+          "treat_missing_as": 0
+        }
+      },
+      "cost": { "type": "qualitative" },
+      "remediation": {
+        "description": "Apply Universal Tweaks → Power category",
+        "type": "module",
+        "target": "modules/system/Tweaks.Universal.ps1",
+        "requires_reboot": false
+      }
+    },
+
+    {
+      "id": "performance-hags-disabled",
+      "category": "performance",
+      "severity": "warning",
+      "title": "Hardware-Accelerated GPU Scheduling not configured",
+      "description": "HAGS lets the GPU manage its own memory and reduces DPC latency for some workloads.",
+      "detect": {
+        "probe": "Test-RegistryValueNotEquals",
+        "args": {
+          "path": "HKLM:\\SYSTEM\\CurrentControlSet\\Control\\GraphicsDrivers",
+          "name": "HwSchMode",
+          "expected": 2,
+          "treat_missing_as": 1
+        }
+      },
+      "cost": { "type": "qualitative" },
+      "remediation": {
+        "description": "Apply Universal Tweaks → GPU Hardware Scheduling",
+        "type": "module",
+        "target": "modules/system/Tweaks.Universal.ps1",
+        "requires_reboot": true
+      }
+    },
+
+    {
+      "id": "performance-network-throttling",
+      "category": "performance",
+      "severity": "warning",
+      "title": "Network throttling index not maxed",
+      "description": "NetworkThrottlingIndex limits CPU time for network operations to leave headroom for multimedia. Setting to 0xFFFFFFFF disables it.",
+      "detect": {
+        "probe": "Test-RegistryValueNotEquals",
+        "args": {
+          "path": "HKLM:\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Multimedia\\SystemProfile",
+          "name": "NetworkThrottlingIndex",
+          "expected": 4294967295,
+          "treat_missing_as": 10
+        }
+      },
+      "cost": { "type": "qualitative" },
+      "remediation": {
+        "description": "Apply Universal Tweaks → Network",
+        "type": "module",
+        "target": "modules/system/Tweaks.Universal.ps1",
+        "requires_reboot": false
+      }
+    },
+
+    {
+      "id": "performance-mmcss-disabled",
+      "category": "performance",
+      "severity": "info",
+      "title": "Multimedia Class Scheduler Service not auto-started",
+      "description": "MMCSS prioritizes audio/video threads. Should be Auto for media workloads.",
+      "detect": {
+        "probe": "Test-RegistryValueNotEquals",
+        "args": {
+          "path": "HKLM:\\SYSTEM\\CurrentControlSet\\Services\\MMCSS",
+          "name": "Start",
+          "expected": 2,
+          "treat_missing_as": 4
+        }
+      },
+      "cost": { "type": "qualitative" },
+      "remediation": {
+        "description": "Apply Universal Tweaks → CPU",
+        "type": "module",
+        "target": "modules/system/Tweaks.Universal.ps1",
+        "requires_reboot": true
+      }
+    },
+
+    {
+      "id": "performance-csenabled",
+      "category": "performance",
+      "severity": "info",
+      "title": "Connected Standby enabled",
+      "description": "Connected Standby (Modern Standby) keeps networking on while sleeping. Disable for desktop AC use.",
+      "detect": {
+        "probe": "Test-RegistryValueNotEquals",
+        "args": {
+          "path": "HKLM:\\SYSTEM\\CurrentControlSet\\Control\\Power",
+          "name": "CsEnabled",
+          "expected": 0,
+          "treat_missing_as": 1
+        }
+      },
+      "cost": { "type": "qualitative" },
+      "remediation": {
+        "description": "Apply Power Management tweaks (laptops on battery skip)",
+        "type": "module",
+        "target": "modules/system/Tweaks.Power.ps1",
+        "requires_reboot": true
+      }
+    },
+
+    {
+      "id": "memory-sysmain-running",
+      "category": "memory",
+      "severity": "warning",
+      "title": "SysMain (SuperFetch) running",
+      "description": "SysMain pre-loads frequently used apps into RAM. Designed for HDDs — on SSD/NVMe it consumes RAM and CPU for negligible benefit and increases SSD writes.",
+      "detect": {
+        "probe": "Test-ServiceRunning",
+        "args": { "name": "SysMain" }
+      },
+      "cost": { "type": "estimated", "ram_mb": 150 },
+      "remediation": {
+        "description": "Stop and disable SysMain",
+        "type": "inline",
+        "target": "Stop-Service SysMain -Force; Set-Service SysMain -StartupType Disabled",
+        "requires_reboot": false
+      }
+    },
+
+    {
+      "id": "memory-large-system-cache-off",
+      "category": "memory",
+      "severity": "info",
+      "title": "Large system cache disabled",
+      "description": "Enabling LargeSystemCache lets the kernel cache more file data. Recommended on systems with 16 GB+ RAM.",
+      "detect": {
+        "probe": "Test-RegistryValueNotEquals",
+        "args": {
+          "path": "HKLM:\\SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Memory Management",
+          "name": "LargeSystemCache",
+          "expected": 1,
+          "treat_missing_as": 0
+        }
+      },
+      "cost": { "type": "qualitative" },
+      "remediation": {
+        "description": "Apply Universal Tweaks → Memory",
+        "type": "module",
+        "target": "modules/system/Tweaks.Universal.ps1",
+        "requires_reboot": true
+      }
+    },
+
+    {
+      "id": "memory-paging-executive",
+      "category": "memory",
+      "severity": "info",
+      "title": "Paging executive enabled",
+      "description": "DisablePagingExecutive=0 allows kernel and drivers to be paged out, causing latency spikes. Disable on systems with sufficient RAM.",
+      "detect": {
+        "probe": "Test-RegistryValueNotEquals",
+        "args": {
+          "path": "HKLM:\\SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Memory Management",
+          "name": "DisablePagingExecutive",
+          "expected": 1,
+          "treat_missing_as": 0
+        }
+      },
+      "cost": { "type": "qualitative" },
+      "remediation": {
+        "description": "Apply Universal Tweaks → Memory",
+        "type": "module",
+        "target": "modules/system/Tweaks.Universal.ps1",
+        "requires_reboot": true
+      }
+    },
+
+    {
+      "id": "startup-run-key-onedrive",
+      "category": "startup",
+      "severity": "info",
+      "title": "OneDrive in HKLM Run keys",
+      "description": "Machine-wide OneDrive autostart (vs the per-user one above).",
+      "detect": {
+        "probe": "Test-RegistryValueExists",
+        "args": {
+          "path": "HKLM:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run",
+          "name": "OneDriveSetup"
+        }
+      },
+      "cost": { "type": "qualitative" },
+      "remediation": {
+        "description": "Remove HKLM Run\\OneDriveSetup entry",
+        "type": "registry",
+        "target": "HKLM:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run\\OneDriveSetup=DELETE",
+        "requires_reboot": false
+      }
+    },
+
+    {
+      "id": "storage-trim-disabled",
+      "category": "storage",
+      "severity": "critical",
+      "title": "TRIM disabled on SSD",
+      "description": "Without TRIM, SSDs slow down dramatically over time as the controller can't reclaim deleted blocks. Should be enabled on every SSD system.",
+      "detect": {
+        "probe": "Test-FsutilBehavior",
+        "args": { "key": "DisableDeleteNotify", "expected": 1 }
+      },
+      "cost": { "type": "qualitative" },
+      "remediation": {
+        "description": "Run: fsutil behavior set DisableDeleteNotify NTFS 0",
+        "type": "inline",
+        "target": "fsutil behavior set DisableDeleteNotify NTFS 0",
+        "requires_reboot": false
+      }
+    },
+
+    {
+      "id": "storage-last-access",
+      "category": "storage",
+      "severity": "warning",
+      "title": "NTFS last-access updates not disabled",
+      "description": "Every read on NTFS writes a metadata update. On SSD this is wasted writes and slows tree traversal.",
+      "detect": {
+        "probe": "Test-RegistryValueNotEquals",
+        "args": {
+          "path": "HKLM:\\SYSTEM\\CurrentControlSet\\Control\\FileSystem",
+          "name": "NtfsDisableLastAccessUpdate",
+          "expected": 1,
+          "treat_missing_as": 2
+        }
+      },
+      "cost": { "type": "qualitative" },
+      "remediation": {
+        "description": "Apply Universal Tweaks → SSD/NVMe",
+        "type": "module",
+        "target": "modules/system/Tweaks.Universal.ps1",
+        "requires_reboot": true
+      }
+    },
+
+    {
+      "id": "storage-83-names",
+      "category": "storage",
+      "severity": "info",
+      "title": "8.3 short filenames enabled",
+      "description": "NTFS still creates legacy DOS 8.3 names by default for compatibility. Slows directory operations on volumes with many files.",
+      "detect": {
+        "probe": "Test-RegistryValueNotEquals",
+        "args": {
+          "path": "HKLM:\\SYSTEM\\CurrentControlSet\\Control\\FileSystem",
+          "name": "NtfsDisable8dot3NameCreation",
+          "expected": 1,
+          "treat_missing_as": 2
+        }
+      },
+      "cost": { "type": "qualitative" },
+      "remediation": {
+        "description": "Apply Universal Tweaks → SSD/NVMe",
+        "type": "module",
+        "target": "modules/system/Tweaks.Universal.ps1",
+        "requires_reboot": true
+      }
+    },
+
+    {
+      "id": "storage-prefetcher-enabled",
+      "category": "storage",
+      "severity": "info",
+      "title": "Prefetcher enabled on SSD",
+      "description": "Prefetcher was designed for HDDs to speed up boot. On SSD it provides no benefit and adds writes. Universal Tweaks disables it.",
+      "detect": {
+        "probe": "Test-RegistryValueNotEquals",
+        "args": {
+          "path": "HKLM:\\SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Memory Management\\PrefetchParameters",
+          "name": "EnablePrefetcher",
+          "expected": 0,
+          "treat_missing_as": 3
+        }
+      },
+      "cost": { "type": "qualitative" },
+      "remediation": {
+        "description": "Apply Universal Tweaks → SSD/NVMe",
+        "type": "module",
+        "target": "modules/system/Tweaks.Universal.ps1",
+        "requires_reboot": true
+      }
+    },
+
+    {
+      "id": "network-nodelack-disabled",
+      "category": "network",
+      "severity": "info",
+      "title": "Nagle algorithm enabled (TcpNoDelay not set)",
+      "description": "Nagle batches small packets to reduce overhead. For interactive workloads (gaming, SSH) this adds latency.",
+      "detect": {
+        "probe": "Test-RegistryValueNotEquals",
+        "args": {
+          "path": "HKLM:\\SOFTWARE\\Microsoft\\MSMQ\\Parameters",
+          "name": "TCPNoDelay",
+          "expected": 1,
+          "treat_missing_as": 0
+        }
+      },
+      "cost": { "type": "qualitative" },
+      "remediation": {
+        "description": "Apply Universal Tweaks → Network",
+        "type": "module",
+        "target": "modules/system/Tweaks.Universal.ps1",
+        "requires_reboot": false
+      }
+    },
+
+    {
+      "id": "performance-energy-estimation",
+      "category": "performance",
+      "severity": "info",
+      "title": "Energy estimation enabled",
+      "description": "Energy estimation logs power usage per app — useful for laptops on battery, overhead on desktop AC.",
+      "detect": {
+        "probe": "Test-RegistryValueNotEquals",
+        "args": {
+          "path": "HKLM:\\SYSTEM\\CurrentControlSet\\Control\\Power",
+          "name": "EnergyEstimationEnabled",
+          "expected": 0,
+          "treat_missing_as": 1
+        }
+      },
+      "cost": { "type": "qualitative" },
+      "remediation": {
+        "description": "Apply Universal Tweaks → Power",
+        "type": "module",
+        "target": "modules/system/Tweaks.Universal.ps1",
+        "requires_reboot": false
+      }
+    },
+
+    {
+      "id": "performance-visual-effects",
+      "category": "performance",
+      "severity": "info",
+      "title": "Visual effects not set to 'best performance'",
+      "description": "Windows defaults visual effects to 'let Windows decide' which keeps animations, shadows and transparency. Setting to 'best performance' (VisualFXSetting=2) shaves CPU/GPU on older or low-spec hardware.",
+      "detect": {
+        "probe": "Test-RegistryValueNotEquals",
+        "args": {
+          "path": "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\VisualEffects",
+          "name": "VisualFXSetting",
+          "expected": 2,
+          "treat_missing_as": 0
+        }
+      },
+      "cost": { "type": "qualitative" },
+      "remediation": {
+        "description": "Set VisualFXSetting=2 (best performance)",
+        "type": "registry",
+        "target": "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\VisualEffects\\VisualFXSetting=2",
+        "requires_reboot": false
+      }
+    },
+
+    {
+      "id": "storage-reserved-storage",
+      "category": "storage",
+      "severity": "info",
+      "title": "Reserved Storage enabled",
+      "description": "Windows reserves ~7 GB of disk for update staging. Disabling reclaims the space at the cost of slightly riskier feature updates.",
+      "detect": {
+        "probe": "Test-RegistryValueNotEquals",
+        "args": {
+          "path": "HKLM:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\ReserveManager",
+          "name": "ShippedWithReserves",
+          "expected": 0,
+          "treat_missing_as": 1
+        }
+      },
+      "cost": { "type": "estimated", "disk_mb": 7168 },
+      "remediation": {
+        "description": "Run Tweaks → Cleanup → Disable Reserved Storage",
+        "type": "module",
+        "target": "modules/system/Tweaks.Cleanup.ps1",
+        "requires_reboot": true
+      }
+    },
+
+    {
+      "id": "network-dns-default",
+      "category": "network",
+      "severity": "warning",
+      "title": "DNS resolver is ISP default (slow)",
+      "description": "Your network adapter is using its default DNS server (typically the ISP's). Switching to Cloudflare/Google/Quad9 usually halves DNS resolution latency.",
+      "detect": {
+        "probe": "Test-DnsServersFromList",
+        "args": {
+          "known_good_csv": "1.1.1.1,1.0.0.1,8.8.8.8,8.8.4.4,9.9.9.9,149.112.112.112,45.90.28.0,45.90.30.0,208.67.222.222,208.67.220.220,94.140.14.14,94.140.15.15"
+        }
+      },
+      "cost": { "type": "qualitative" },
+      "remediation": {
+        "description": "Run Security & Privacy → DNS Benchmark and apply fastest provider",
+        "type": "module",
+        "target": "modules/security/SecurityMenu.ps1",
+        "requires_reboot": false
+      }
+    },
+
+    {
+      "id": "privacy-background-apps",
+      "category": "privacy",
+      "severity": "info",
+      "title": "Background apps allowed",
+      "description": "UWP apps can run in the background, consuming CPU/RAM and uploading telemetry. Disabling stops apps from running when not in focus.",
+      "detect": {
+        "probe": "Test-RegistryValueNotEquals",
+        "args": {
+          "path": "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\BackgroundAccessApplications",
+          "name": "GlobalUserDisabled",
+          "expected": 1,
+          "treat_missing_as": 0
+        }
+      },
+      "cost": { "type": "qualitative" },
+      "remediation": {
+        "description": "Set GlobalUserDisabled=1",
+        "type": "registry",
+        "target": "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\BackgroundAccessApplications\\GlobalUserDisabled=1",
+        "requires_reboot": false
+      }
+    },
+
+    {
+      "id": "startup-hkcu-run-bloat",
+      "category": "startup",
+      "severity": "warning",
+      "title": "Many user-level startup entries",
+      "description": "More than 5 entries in HKCU Run key — each adds boot delay and background activity. Review and prune via Task Manager → Startup or registry.",
+      "detect": {
+        "probe": "Get-RegistryRunCount",
+        "args": {
+          "path": "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Run",
+          "threshold": 5
+        }
+      },
+      "cost": { "type": "qualitative" },
+      "remediation": {
+        "description": "Open Task Manager → Startup tab and disable unwanted entries",
+        "type": "inline",
+        "target": "Start-Process taskmgr.exe -ArgumentList '/0','/Startup'",
+        "requires_reboot": false
+      }
+    },
+
+    {
+      "id": "startup-hklm-run-bloat",
+      "category": "startup",
+      "severity": "warning",
+      "title": "Many machine-level startup entries",
+      "description": "More than 8 entries in HKLM Run key — typically OEM bloatware and update checkers. Removes free RAM and boot time.",
+      "detect": {
+        "probe": "Get-RegistryRunCount",
+        "args": {
+          "path": "HKLM:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run",
+          "threshold": 8
+        }
+      },
+      "cost": { "type": "qualitative" },
+      "remediation": {
+        "description": "Open Task Manager → Startup tab and disable unwanted entries",
+        "type": "inline",
+        "target": "Start-Process taskmgr.exe -ArgumentList '/0','/Startup'",
+        "requires_reboot": false
+      }
+    },
+
+    {
+      "id": "memory-copilot-rss",
+      "category": "memory",
+      "severity": "warning",
+      "title": "Copilot is consuming RAM right now",
+      "description": "Copilot's CompanionWorker / SystemAgent processes are resident even when you're not using Copilot. Cost shown is the CURRENT measured working set on this machine.",
+      "detect": {
+        "probe": "Test-ProcessRSSExceeds",
+        "args": {
+          "name_pattern": "CopilotWorker*",
+          "threshold_mb": 50
+        }
+      },
+      "cost": { "type": "estimated", "ram_mb": 0 },
+      "remediation": {
+        "description": "Remove Copilot via RemoveWindowsAI tool",
+        "type": "module",
+        "target": "modules/security/RemoveWindowsAI.ps1",
+        "requires_reboot": false
+      }
+    },
+
+    {
+      "id": "memory-onedrive-rss",
+      "category": "memory",
+      "severity": "warning",
+      "title": "OneDrive is consuming RAM right now",
+      "description": "OneDrive process is resident. Cost shown is the CURRENT measured working set, not an estimate.",
+      "detect": {
+        "probe": "Test-ProcessRSSExceeds",
+        "args": {
+          "name_pattern": "OneDrive*",
+          "threshold_mb": 80
+        }
+      },
+      "cost": { "type": "estimated", "ram_mb": 0 },
+      "remediation": {
+        "description": "Quit OneDrive and disable autostart",
+        "type": "inline",
+        "target": "Get-Process OneDrive -ErrorAction SilentlyContinue | Stop-Process -Force",
+        "requires_reboot": false
+      }
+    },
+
+    {
+      "id": "memory-compression-disabled",
+      "category": "memory",
+      "severity": "info",
+      "title": "Memory compression disabled",
+      "description": "Memory compression reduces page-out by ~40% on most workloads at minor CPU cost. Disabled is unusual; only worth keeping off if you have 64+ GB RAM and need lowest CPU latency.",
+      "detect": {
+        "probe": "Test-MMAgentFeature",
+        "args": {
+          "property": "MemoryCompression",
+          "expected": false
+        }
+      },
+      "cost": { "type": "qualitative" },
+      "remediation": {
+        "description": "Enable-MMAgent -MemoryCompression",
+        "type": "inline",
+        "target": "Enable-MMAgent -MemoryCompression",
+        "requires_reboot": true
+      }
+    }
+  ]
+}
