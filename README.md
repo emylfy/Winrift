@@ -68,7 +68,7 @@ Set-ExecutionPolicy Bypass -Scope Process -Force; irm https://raw.githubusercont
 | 🛡️  | **Security & Privacy**                         | Defender, Copilot/Recall removal, privacy hardening                            |
 | 🖥️  | **Drivers**                                    | NVIDIA · AMD · Intel + 11 OEM manufacturers                                    |
 | 🎨  | [**Customize**](modules/customize/README.md)   | Desktop, terminal, editors, app themes — all without admin                     |
-| 📦  | **App Bundles**                                | 7 curated collections via [UniGetUI](https://github.com/marticliment/UniGetUI) |
+| 📦  | **App Bundles**                                | 7 curated collections — native winget selector, optional UniGetUI              |
 | 💿  | [**ISO Builder**](docs/autounattend_guide.md)  | Embed answer file into Windows 11 ISO for automated install                    |
 
 <br>
@@ -78,7 +78,7 @@ Set-ExecutionPolicy Bypass -Scope Process -Force; irm https://raw.githubusercont
 
 <br>
 
-Every tweak is backed up before applying. Choose individually or apply all.
+Every tweak is backed up before applying. Three modes: pick categories, apply all safe, or step-by-step wizard.
 
 |   # | Category       | Risk | What it does                                     |
 | --: | :------------- | :--: | :----------------------------------------------- |
@@ -144,11 +144,13 @@ Complete environment setup from one menu. Runs without admin.
 
 **Desktop** — [GlazeWM](https://github.com/glzr-io/glazewm) tiling WM · [Zebar](https://github.com/glzr-io/zebar) status bar · [Flow Launcher](https://github.com/Flow-Launcher/Flow.Launcher) · [Windhawk](https://windhawk.net/) · [Rainmeter](https://www.rainmeter.net/)
 
-**Terminal** — Windows Terminal config · Nerd Fonts · Oh My Posh / Starship · FastFetch · PowerShell profile
+**Terminal** — Full Shell Setup (single-pass) · Windows Terminal config · Nerd Fonts · Oh My Posh / Starship · FastFetch · PowerShell profile
 
-**Editors** — Config import for VSCode · Cursor · AIDE · Windsurf · VSCodium · Trae
+**Editors** — Config import for VSCode · Cursor · AIDE · Windsurf · VSCodium · Trae · extension install via CLI
 
 **Themes** — Rectify11 · SpotX · Spicetify · Steam Millennium
+
+**Profile & Backups** — Export / Import Winrift profile · Restore any config backup (.bak)
 
 </details>
 
@@ -174,11 +176,13 @@ Create a bootable Windows 11 ISO with automation baked in:
 
 <br>
 
-Install curated app collections via [UniGetUI](https://github.com/marticliment/UniGetUI):
+7 curated collections installable directly from the menu — no third-party app required:
 
 Development · Browsers · Utilities · Productivity · Creative & Media · Gaming · Communications
 
-Uses winget, Chocolatey, and other package sources.
+- **Native selector** — browse packages per category, see which are already installed or broken, install via winget
+- **Search all** — single multi-select across all 7 bundles at once
+- **UniGetUI integration** — if [UniGetUI](https://github.com/marticliment/UniGetUI) is installed, open any bundle directly in the app for a full GUI experience
 
 </details>
 
