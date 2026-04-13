@@ -39,7 +39,7 @@ function Test-RegistryValueEquals {
     )
     $current = _Get-RegistryValueOrDefault -Path $path -Name $name -Default $treat_missing_as
     $found = ($current -eq $expected)
-    $evidence = if ($null -eq $current) { "$name is not set" } else { "$name = $current (expected != $expected for OK)" }
+    $evidence = if ($null -eq $current) { "$name is not set" } else { "$name = $current (expected $expected)" }
     return @{ found = $found; evidence = $evidence }
 }
 
@@ -75,23 +75,6 @@ function Test-RegistryValueGreaterThan {
     return @{ found = $found; evidence = $evidence }
 }
 
-function Test-RegistryValueLessThan {
-    # found = $true if the value at Path\Name is numerically < Threshold.
-    # Mirror of GreaterThan — use when "value should be at least N".
-    param(
-        [Parameter(Mandatory)][string]$path,
-        [Parameter(Mandatory)][string]$name,
-        [Parameter(Mandatory)][int]$threshold,
-        $treat_missing_as = $null
-    )
-    $current = _Get-RegistryValueOrDefault -Path $path -Name $name -Default $treat_missing_as
-    $numeric = 0
-    $isNumeric = [int]::TryParse([string]$current, [ref]$numeric)
-    $found = ($isNumeric -and $numeric -lt $threshold)
-    $evidence = if ($null -eq $current) { "$name is not set (treated as $treat_missing_as)" } else { "$name = $current (threshold $threshold)" }
-    return @{ found = $found; evidence = $evidence }
-}
-
 function Test-ServiceRunning {
     # found = $true if the service exists and is in the Running state.
     # Use for: "SysMain is running on this SSD system".
@@ -107,23 +90,6 @@ function Test-ServiceRunning {
         $evidence = "$name service not installed"
     }
     return @{ found = $found; evidence = $evidence }
-}
-
-function Test-ServiceStartupAuto {
-    # found = $true if the service is configured to start automatically (Auto/Manual triggers).
-    # Use for: "SysMain set to start at boot even though stopped now".
-    param(
-        [Parameter(Mandatory)][string]$name
-    )
-    try {
-        $svc = Get-CimInstance -ClassName Win32_Service -Filter "Name='$name'" -ErrorAction Stop
-        if (-not $svc) { return @{ found = $false; evidence = "$name not installed" } }
-        $autoModes = @('Auto', 'Automatic', 'Auto Start')
-        $found = ($svc.StartMode -in $autoModes)
-        return @{ found = $found; evidence = "$name startup: $($svc.StartMode)" }
-    } catch {
-        return @{ found = $false; evidence = "$name lookup failed: $($_.Exception.Message)" }
-    }
 }
 
 function Test-AppxPackageInstalled {
@@ -182,28 +148,6 @@ function Test-FsutilBehavior {
         return @{ found = $false; evidence = "fsutil output not parseable: $output" }
     } catch {
         return @{ found = $false; evidence = "fsutil unavailable: $($_.Exception.Message)" }
-    }
-}
-
-function Test-ActivePowerPlanNot {
-    # found = $true if the currently active Windows power plan does NOT match
-    # the expected GUID. Use for: "user is on Balanced, expected High Performance".
-    param(
-        [Parameter(Mandatory)][string]$expected_guid
-    )
-    try {
-        $output = & powercfg /getactivescheme 2>&1
-        if ($LASTEXITCODE -ne 0) {
-            return @{ found = $false; evidence = "powercfg query failed" }
-        }
-        if ($output -match 'GUID: ([0-9a-f-]+)') {
-            $currentGuid = $Matches[1]
-            $found = ($currentGuid -ne $expected_guid)
-            return @{ found = $found; evidence = "active plan: $currentGuid (expected $expected_guid)" }
-        }
-        return @{ found = $false; evidence = "powercfg output not parseable" }
-    } catch {
-        return @{ found = $false; evidence = "powercfg unavailable: $($_.Exception.Message)" }
     }
 }
 

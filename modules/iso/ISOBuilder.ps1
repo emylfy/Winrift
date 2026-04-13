@@ -8,7 +8,12 @@ $ADK_PAGE = "https://learn.microsoft.com/en-us/windows-hardware/get-started/adk-
 function Get-OscdimgPath {
     # 1. Check Windows ADK installation
     if ([Environment]::Is64BitOperatingSystem) { $arch = "amd64" } else { $arch = "x86" }
-    $adkPath = "C:\Program Files (x86)\Windows Kits\10\Assessment and Deployment Kit\Deployment Tools\$arch\Oscdimg\oscdimg.exe"
+    $kitsRoot = (Get-ItemProperty -Path "HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows Kits\Installed Roots" -Name KitsRoot10 -ErrorAction SilentlyContinue).KitsRoot10
+    if ($kitsRoot) {
+        $adkPath = Join-Path $kitsRoot "Assessment and Deployment Kit\Deployment Tools\$arch\Oscdimg\oscdimg.exe"
+    } else {
+        $adkPath = "C:\Program Files (x86)\Windows Kits\10\Assessment and Deployment Kit\Deployment Tools\$arch\Oscdimg\oscdimg.exe"
+    }
     if (Test-Path $adkPath) {
         Write-Log -Message "Using oscdimg.exe from system ADK." -Level INFO -LogFile $script:LogFile
         return $adkPath
@@ -50,7 +55,12 @@ function Get-OscdimgPath {
         if (-not (Test-Path $localPath)) {
             throw "File not found after download"
         }
-        $sizeMB = [math]::Round((Get-Item $localPath).Length / 1KB)
+        $fileSize = (Get-Item $localPath).Length
+        if ($fileSize -lt 10KB) {
+            Remove-Item $localPath -Force -ErrorAction SilentlyContinue
+            throw "Downloaded file is too small ($([math]::Round($fileSize / 1KB)) KB) — likely not a valid binary"
+        }
+        $sizeMB = [math]::Round($fileSize / 1KB)
         Write-Log -Message "Downloaded oscdimg.exe (${sizeMB} KB)" -Level SUCCESS -LogFile $script:LogFile
     }
     catch {
@@ -113,6 +123,14 @@ function Build-WinriftISO {
         $drivePath = "${driveLetter}:\"
         Write-Log -Message "Mounted at $drivePath" -Level SUCCESS -LogFile $script:LogFile
 
+        # Validate this is a Windows installation ISO before copying multi-GB content
+        $hasInstallWim = (Test-Path "${drivePath}sources\install.wim") -or (Test-Path "${drivePath}sources\install.esd")
+        if (-not $hasInstallWim) {
+            Write-Log -Message "The selected ISO does not appear to be a Windows 11 installation ISO (missing sources\install.wim or sources\install.esd). Please select a valid Windows 11 ISO." -Level ERROR -LogFile $script:LogFile
+            Wait-ForUser
+            return
+        }
+
         # Copy ISO contents
         Write-Log -Message "Copying ISO contents (this may take a few minutes)..." -Level INFO -LogFile $script:LogFile
         Copy-Item -Path "$drivePath*" -Destination $scratchDir -Recurse -Force | Out-Null
@@ -160,6 +178,16 @@ function Build-WinriftISO {
                 }
             }
             default { return }
+        }
+
+        # Validate XML well-formedness before copying — a malformed autounattend.xml
+        # produces a working ISO that fails silently at Windows Setup time.
+        try {
+            $null = [xml](Get-Content $xmlSource -Raw -ErrorAction Stop)
+        } catch {
+            Write-Log -Message "autounattend.xml is not valid XML: $($_.Exception.Message)" -Level ERROR -LogFile $script:LogFile
+            Wait-ForUser
+            return
         }
 
         Copy-Item -Path $xmlSource -Destination "$scratchDir\autounattend.xml" -Force | Out-Null
@@ -210,11 +238,12 @@ function Build-WinriftISO {
     Wait-ForUser
 }
 
-# Menu
-Clear-Host
-Invoke-MenuLoop -Title "Winrift ISO Builder" -Items @(
-    "1 › Build ISO - embed autounattend.xml into Windows 11 ISO",
-    "2 › Back"
-) -Actions @{
-    "1" = { Build-WinriftISO }
-} -ExitKey "2"
+if ($MyInvocation.InvocationName -ne '.') {
+    Clear-Host
+    Invoke-MenuLoop -Title "Winrift ISO Builder" -Items @(
+        "1 › Build ISO - embed autounattend.xml into Windows 11 ISO",
+        "2 › Back"
+    ) -Actions @{
+        "1" = { Build-WinriftISO }
+    } -ExitKey "2"
+}

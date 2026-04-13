@@ -104,12 +104,13 @@
             "docs": "https://github.com/ful1e5/apple_cursor"
         },
         {
-            "id": "rectify11",
-            "name": "Rectify11",
-            "description": "Windows 11 UI consistency fixes",
-            "type": "browser",
-            "url": "https://rectify11.net/home",
-            "docs": "https://github.com/Rectify11/Installer"
+            "id": "justthebrowser",
+            "name": "Just the Browser",
+            "description": "Remove AI, telemetry, sponsored content from Chrome/Edge/Firefox",
+            "type": "irm-interactive",
+            "url": "https://raw.githubusercontent.com/corbindavenport/just-the-browser/main/main.ps1",
+            "docs": "https://github.com/corbindavenport/just-the-browser",
+            "sha256_note": "irm-interactive tools run in a separate powershell.exe process; the hash covers only the loader script, not the interactive session it starts. Verify via the docs URL."
         }
     ]
 }

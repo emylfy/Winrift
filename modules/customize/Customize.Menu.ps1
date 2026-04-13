@@ -89,17 +89,15 @@ function Show-AppsMenu {
     Invoke-MenuLoop -Title "Apps" -Items @(
         "1 › Import VSCode config (settings.json)",
         "--- Themes ---",
-        "2 › Rectify11 - Windows 11 UI fixes",
-        "3 › Spotify Tools",
-        "4 › Steam Millennium + Theme",
+        "2 › Spotify Tools",
+        "3 › Steam Millennium + Theme",
         "---",
-        "5 › Back"
+        "4 › Back"
     ) -Actions @{
         "1" = { Show-VSCodeConfigMenu }
-        "2" = { Invoke-Rectify11 }
-        "3" = { Show-SpotifyToolsMenu }
-        "4" = { Install-SteamMillennium }
-    } -ExitKey "5"
+        "2" = { Show-SpotifyToolsMenu }
+        "3" = { Install-SteamMillennium }
+    } -ExitKey "4"
 }
 
 function Show-VSCodeConfigMenu {

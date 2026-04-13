@@ -1,5 +1,6 @@
 BeforeAll {
     . (Join-Path (Split-Path $PSScriptRoot -Parent) 'scripts/Common.ps1')
+    . (Join-Path (Split-Path $PSScriptRoot -Parent) 'modules/system/Tweaks.Drift.ps1')
 }
 
 Describe 'Tweaks.Drift.ps1 function exports' {

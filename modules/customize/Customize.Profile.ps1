@@ -148,8 +148,13 @@ function Import-WinriftProfile {
         return
     }
 
+    $keyToFile = @{}
     $items = @()
-    foreach ($f in $files) { $items += "$($items.Count + 1) › $($f.Name)" }
+    foreach ($f in $files) {
+        $k = ($items.Count + 1).ToString()
+        $items += "$k › $($f.Name)"
+        $keyToFile[$k] = $f
+    }
     $selected = Show-MultiSelect -Title "Import Profile" -Items $items -Defaults ([bool[]](@($true) * $items.Count))
 
     if ($selected.Count -eq 0) { return }
@@ -157,8 +162,8 @@ function Import-WinriftProfile {
     $docsDir = [Environment]::GetFolderPath('MyDocuments')
 
     foreach ($key in $selected) {
-        $idx = [int]$key - 1
-        $file = $files[$idx]
+        $file = $keyToFile[$key]
+        if ($null -eq $file) { continue }
         $src = $file.FullName
 
         switch -Wildcard ($file.Name) {

@@ -87,7 +87,23 @@ function Invoke-DnsBenchmark {
 
     if ($selected) {
         Write-Host ""
-        $adapter = Get-NetAdapter | Where-Object { $_.Status -eq 'Up' -and $_.InterfaceDescription -notmatch 'VPN|Loopback|Virtual' } | Select-Object -First 1
+        $adapters = @(Get-NetAdapter | Where-Object { $_.Status -eq 'Up' -and $_.InterfaceDescription -notmatch 'VPN|Loopback|Virtual' })
+        if ($adapters.Count -gt 1) {
+            $adapterItems = @()
+            for ($i = 0; $i -lt $adapters.Count; $i++) {
+                $a = $adapters[$i]
+                $adapterItems += "$($i + 1) › $($a.Name) — $($a.InterfaceDescription)"
+            }
+            $pick = Show-InteractiveMenu -Title "Select network adapter" -Items $adapterItems
+            $n = 0
+            if ([int]::TryParse($pick, [ref]$n) -and $n -ge 1 -and $n -le $adapters.Count) {
+                $adapter = $adapters[$n - 1]
+            } else {
+                $adapter = $null
+            }
+        } else {
+            $adapter = $adapters | Select-Object -First 1
+        }
         if ($adapter) {
             Set-DnsClientServerAddress -InterfaceIndex $adapter.InterfaceIndex -ServerAddresses @($selected.Primary, $selected.Secondary) -ErrorAction Stop
             Write-Log -Message "DNS set to $($selected.Name) on $($adapter.Name)" -Level SUCCESS
@@ -105,14 +121,18 @@ function Show-SecurityMenu {
         "2 › RemoveWindowsAI - Remove Copilot & Recall",
         "3 › Privacy.sexy - Enforce privacy and security",
         "4 › DNS Benchmark - Test & apply fastest DNS",
+        "5 › Just the Browser - Remove AI & telemetry from browsers",
         "---",
-        "5 › Back to menu"
+        "6 › Back to menu"
     ) -Actions @{
         "1" = { Start-AdminProcess -ScriptPath "$menuRoot\DefendNot.ps1" }
         "2" = { Start-AdminProcess -ScriptPath "$menuRoot\RemoveWindowsAI.ps1" }
         "3" = { Start-AdminProcess -ScriptPath "$menuRoot\PrivacySexy.ps1" }
         "4" = { Invoke-DnsBenchmark }
-    } -ExitKey "5"
+        "5" = { Start-AdminProcess -ScriptPath "$menuRoot\JustTheBrowser.ps1" }
+    } -ExitKey "6"
 }
 
-Show-SecurityMenu
+if ($MyInvocation.InvocationName -ne '.') {
+    Show-SecurityMenu
+}

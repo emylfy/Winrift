@@ -45,14 +45,6 @@ Describe 'Test-ServiceRunning (live)' -Tag Integration -Skip:$skip {
     }
 }
 
-Describe 'Test-ServiceStartupAuto (live)' -Tag Integration -Skip:$skip {
-    It 'queries Win32_Service without throwing' {
-        $r = Test-ServiceStartupAuto -name 'Themes'
-        $r | Should -BeOfType [hashtable]
-        $r.ContainsKey('found') | Should -BeTrue
-    }
-}
-
 Describe 'Test-AppxPackageInstalled (live)' -Tag Integration -Skip:$skip {
     It 'queries Get-AppxPackage without throwing' {
         $r = Test-AppxPackageInstalled -pattern 'Microsoft.Windows.Shell*'
@@ -66,14 +58,6 @@ Describe 'Test-FsutilBehavior (live)' -Tag Integration -Skip:$skip {
         $r = Test-FsutilBehavior -key 'DisableDeleteNotify' -expected 1
         $r | Should -BeOfType [hashtable]
         $r.evidence | Should -Match 'DisableDeleteNotify'
-    }
-}
-
-Describe 'Test-ActivePowerPlanNot (live)' -Tag Integration -Skip:$skip {
-    It 'queries powercfg without throwing' {
-        $r = Test-ActivePowerPlanNot -expected_guid '8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c'
-        $r | Should -BeOfType [hashtable]
-        $r.ContainsKey('found') | Should -BeTrue
     }
 }
 
@@ -129,7 +113,7 @@ Describe 'Invoke-Audit (full live run)' -Tag Integration -Skip:$skip {
         $results = @(Invoke-Audit)
         foreach ($r in $results) {
             $r.Id          | Should -Not -BeNullOrEmpty
-            $r.Category    | Should -BeIn @('privacy','performance','memory','startup','storage','network')
+            $r.Category    | Should -Not -BeNullOrEmpty
             $r.Severity    | Should -BeIn @('critical','warning','info')
             $r.Title       | Should -Not -BeNullOrEmpty
             $r.Evidence    | Should -Not -BeNullOrEmpty

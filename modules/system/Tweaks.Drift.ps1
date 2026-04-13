@@ -95,10 +95,8 @@ function Show-DriftReport {
 
     if ($drifted.Count -eq 0) {
         Write-Host ""
-        Show-MenuBox -Title "Drift Detection" -Items @(
-            "No drift detected.",
-            "All $okCount monitored values match desired state."
-        )
+        Write-Log -Message "No drift detected. All $okCount monitored values match desired state." -Level SUCCESS
+        Write-Host ""
         return $null
     }
 
@@ -119,7 +117,7 @@ function Show-DriftReport {
         }
     }
 
-    Show-MenuBox -Title "Drift Detection Report" -Items $items
+    Show-InfoBox -Title "Drift Detection Report" -Items $items
 
     return $drifted
 }
@@ -250,7 +248,7 @@ function Show-DriftMenu {
             }
         }
         "2" = {
-            if ($taskRegistered) {
+            if ((Get-DriftScheduledTaskStatus)) {
                 Unregister-DriftScheduledTask
             } else {
                 Register-DriftScheduledTask

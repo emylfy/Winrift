@@ -104,3 +104,4 @@ function Open-WallpaperBrowser {
     }
     Wait-ForUser
 }
+

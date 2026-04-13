@@ -241,17 +241,18 @@ function Export-BenchmarkReport {
         [PSCustomObject]@{ Label = $r.Label; Before = $bStr; After = $aStr; Change = $changeStr }
     }
 
-    # Console output via Show-MenuBox
-    $headerLine = "  {0,-24} {1,10} {2,10} {3,10}" -f "Metric", "Before", "After", "Change"
-    $items = @($headerLine, "---")
+    $sep = "$Dim$([char]0x2500 * ($width - 4))$Reset"
+    $items = @(
+        ("{0,-24} {1,10} {2,10} {3,10}" -f "Metric", "Before", "After", "Change"),
+        $sep
+    )
     foreach ($row in $formattedRows) {
-        $items += "  {0,-24} {1,10} {2,10} {3,10}" -f $row.Label, $row.Before, $row.After, $row.Change
+        $items += ("{0,-24} {1,10} {2,10} {3,10}" -f $row.Label, $row.Before, $row.After, $row.Change)
     }
-    $items += "---"
-    $items += "  Before: $($Comparison.BeforeTimestamp)"
-    $items += "  After:  $($Comparison.AfterTimestamp)"
-
-    Show-MenuBox -Title "Winrift Performance Report" -Items $items -Width $width
+    $items += $sep
+    $items += "Before: $($Comparison.BeforeTimestamp)"
+    $items += "After:  $($Comparison.AfterTimestamp)"
+    Show-InfoBox -Title "Winrift Performance Report" -Items $items
 
     # Markdown report
     [System.IO.Directory]::CreateDirectory($script:BenchmarkDir) | Out-Null

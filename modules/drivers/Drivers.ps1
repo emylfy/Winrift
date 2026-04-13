@@ -77,4 +77,6 @@ function Show-LenovoMenu {
     } -ExitKey "3"
 }
 
-Show-DeviceMenu
+if ($MyInvocation.InvocationName -ne '.') {
+    Show-DeviceMenu
+}

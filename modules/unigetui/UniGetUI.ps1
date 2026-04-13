@@ -66,21 +66,8 @@ function Show-NativePackageSelector {
         return
     }
 
-    $installedIds, $brokenIds = Invoke-WithSpinner -Message "Checking installed packages" -ScriptBlock {
-        param($bundleRoot, $bundleName)
-        $bp = Join-Path $bundleRoot "config\bundles\$bundleName.ubundle"
-        $output = & winget list --accept-source-agreements --disable-interactivity 2>&1
-        $inst = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
-        $brk  = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
-        foreach ($line in $output) {
-            if ($line -match '\b([A-Za-z0-9][\w\-.]+\.[A-Za-z0-9][\w\-.]+)\b') {
-                $id = $Matches[1]
-                $null = $inst.Add($id)
-                if ($line -match '\bUnknown\b') { $null = $brk.Add($id) }
-            }
-        }
-        return $inst, $brk
-    } -ArgumentList $root, $BundleName
+    Write-Host "  $Cyan$([char]0x203A)$Reset Checking installed packages..."
+    $installedIds, $brokenIds = Get-InstalledAndBrokenIds
 
     $installedCount = 0
     $items = @()
@@ -149,18 +136,8 @@ function Show-AllPackagesSearch {
     }
 
     # Check installed in one pass
-    $rawList = Invoke-WithSpinner -Message "Checking installed packages" -ScriptBlock {
-        & winget list --accept-source-agreements --disable-interactivity 2>&1
-    }
-    $installedIds = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
-    $brokenIds    = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
-    foreach ($line in $rawList) {
-        if ($line -match '\b([A-Za-z0-9][\w\-.]+\.[A-Za-z0-9][\w\-.]+)\b') {
-            $id = $Matches[1]
-            $null = $installedIds.Add($id)
-            if ($line -match '\bUnknown\b') { $null = $brokenIds.Add($id) }
-        }
-    }
+    Write-Host "  $Cyan$([char]0x203A)$Reset Checking installed packages..."
+    $installedIds, $brokenIds = Get-InstalledAndBrokenIds
 
     # Annotate items with installed/broken markers
     $annotated = [System.Collections.Generic.List[string]]::new()
@@ -168,7 +145,7 @@ function Show-AllPackagesSearch {
         if ($item -match '^---') { $annotated.Add($item); continue }
         if ($item -match '^([^\s›>]+)') {
             $id = $Matches[1]
-            $suffix = if ($brokenIds.Contains($id)) { "  $Red[broken]$Reset" } elseif ($installedIds.Contains($id)) { "  $Dim(installed)$Reset" } else { "" }
+            $suffix = if ($brokenIds -and $brokenIds.Contains($id)) { "  $Red[broken]$Reset" } elseif ($installedIds -and $installedIds.Contains($id)) { "  $Dim(installed)$Reset" } else { "" }
             $annotated.Add("$item$suffix")
         } else {
             $annotated.Add($item)
@@ -286,6 +263,7 @@ function Show-AppCategoryMenu {
     } -ExitKey "9"
 }
 
-$Host.UI.RawUI.WindowTitle = "Winrift - App Bundles"
-
-Show-AppCategoryMenu
+if ($MyInvocation.InvocationName -ne '.') {
+    $Host.UI.RawUI.WindowTitle = "Winrift - App Bundles"
+    Show-AppCategoryMenu
+}

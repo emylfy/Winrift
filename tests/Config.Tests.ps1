@@ -57,7 +57,7 @@ Describe 'tools.json' {
 
     It 'each tool type is irm, download, or browser' {
         foreach ($tool in $json.tools) {
-            $tool.type | Should -BeIn @('irm', 'download', 'browser')
+            $tool.type | Should -BeIn @('irm', 'irm-interactive', 'download', 'browser')
         }
     }
 

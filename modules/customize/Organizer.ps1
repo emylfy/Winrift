@@ -5,7 +5,7 @@ $Host.UI.RawUI.WindowTitle = "Organizer"
 
 $targetPaths = @(
     "$env:USERPROFILE\AppData\Roaming\Microsoft\Windows\Start Menu\Programs",
-    "C:\ProgramData\Microsoft\Windows\Start Menu\Programs"
+    (Join-Path ([Environment]::GetFolderPath('CommonStartMenu')) 'Programs')
 )
 
 $excludeRegex = "^(Windows|Microsoft|Steam|Accessibility|Accessories)$"
@@ -75,8 +75,7 @@ try {
 
         if (Test-Path $backupPath) {
             Write-Log -Message "Backup successful. Size: $('{0:N2} MB' -f ((Get-Item $backupPath).Length/1MB))" -Level SUCCESS
-            Write-Log -Message "Press Enter to continue" -Level INFO
-            $null = Read-Host
+            Wait-ForUser
         }
         else {
             Write-Log -Message "Backup failed! Aborting operation." -Level ERROR

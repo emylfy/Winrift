@@ -62,19 +62,6 @@ Describe 'Test-RegistryValueGreaterThan' {
     }
 }
 
-Describe 'Test-RegistryValueLessThan' {
-    It 'returns found=true when current < threshold' {
-        Mock _Get-RegistryValueOrDefault { 1 }
-        $r = Test-RegistryValueLessThan -path 'HKLM:\foo' -name 'Bar' -threshold 3
-        $r.found | Should -BeTrue
-    }
-    It 'returns found=false when current >= threshold' {
-        Mock _Get-RegistryValueOrDefault { 3 }
-        $r = Test-RegistryValueLessThan -path 'HKLM:\foo' -name 'Bar' -threshold 3
-        $r.found | Should -BeFalse
-    }
-}
-
 Describe 'Test-ServiceRunning' {
     It 'returns found=true when service is Running' {
         Mock Get-Service { [PSCustomObject]@{ Status = 'Running' } }
@@ -148,7 +135,6 @@ Describe 'Probes return shape' {
             { Test-RegistryValueEquals -path 'X' -name 'Y' -expected 0 }
             { Test-RegistryValueNotEquals -path 'X' -name 'Y' -expected 1 }
             { Test-RegistryValueGreaterThan -path 'X' -name 'Y' -threshold -1 }
-            { Test-RegistryValueLessThan -path 'X' -name 'Y' -threshold 100 }
         )
         foreach ($p in $probes) {
             $r = & $p

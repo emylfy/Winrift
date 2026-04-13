@@ -31,7 +31,7 @@ function Invoke-TweakWizard {
         [ref]$SessionStarted
     )
 
-    $wizardCategories = @("1","2","3","4","5","6","7","8","9","10","11")
+    $wizardCategories = @("1","2","3","4","5","6","7","8","9","10","11","12","13")
     $categoryDescriptions = @{
         "1"  = "Interrupt steering, timer serialization"
         "2"  = "Mouse/keyboard buffer sizes, accessibility shortcuts"
@@ -44,6 +44,8 @@ function Invoke-TweakWizard {
         "9"  = "Startup delay removal, desktop switch latency"
         "10" = "App/service termination timeouts, menu delay"
         "11" = "Large system cache, disable page combining (16 GB+ recommended)"
+        "12" = "Disable auto-maintenance, I/O counting, RPC (advanced — disables background maintenance)"
+        "13" = "D3D11/D3D12 multithreading, deferred contexts, command buffer reuse (advanced — may cause GPU artifacts)"
     }
 
     $selections = @{}
@@ -158,6 +160,7 @@ function Invoke-UniversalTweaks {
     }
 
     $sessionStarted = $false
+    try {
     while ($true) {
         $mode = Show-InteractiveMenu -Title "Universal Tweaks" -Items @(
             "1 › Pick categories (arrows + space)",
@@ -223,10 +226,11 @@ function Invoke-UniversalTweaks {
             continue
         }
 
-        if (-not $sessionStarted) {
+        if (-not $sessionStarted -and -not $script:TweakSessionStarted) {
             New-SafeRestorePoint
             Start-TweakSession
             $sessionStarted = $true
+            $script:TweakSessionStarted = $true
         }
 
         Invoke-AuditedApply
@@ -237,11 +241,13 @@ function Invoke-UniversalTweaks {
         Write-Host "$Cyan Press any key to return to the tweaks menu...$Reset"
         $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
     }
-    if ($sessionStarted) {
-        Save-TweakBackup
-        Save-DesiredState
-        if ($script:LogFile) {
-            Write-Host "$Green  Log saved to: $script:LogFile$Reset"
+    } finally {
+        if ($sessionStarted) {
+            Save-TweakBackup
+            Save-DesiredState
+            if ($script:LogFile) {
+                Write-Host "$Green  Log saved to: $script:LogFile$Reset"
+            }
         }
     }
 }
@@ -276,35 +282,39 @@ function Invoke-SSDTweaks {
 
     $hasSSD = Get-PhysicalDisk | Where-Object { $_.MediaType -eq 'SSD' -or $_.BusType -eq 'NVMe' } | Measure-Object | Select-Object -ExpandProperty Count
     if ($hasSSD -gt 0) {
-        try {
-            fsutil behavior set DisableDeleteNotify 0 | Out-Null
-            Write-Log -Message "Enabled TRIM for SSD" -Level SUCCESS
-        } catch {
-            Write-Log -Message "Failed to configure TRIM: $($_.Exception.Message)" -Level ERROR
-        }
+        if (-not $script:CollectMode) {
+            try {
+                fsutil behavior set DisableDeleteNotify 0 | Out-Null
+                Write-Log -Message "Enabled TRIM for SSD" -Level SUCCESS
+            } catch {
+                Write-Log -Message "Failed to configure TRIM: $($_.Exception.Message)" -Level ERROR
+            }
 
-        try {
-            Disable-ScheduledTask -TaskName "\Microsoft\Windows\Defrag\ScheduledDefrag" | Out-Null
-            Write-Log -Message "Disabled defragmentation for SSDs" -Level SUCCESS
-        } catch {
-            Write-Log -Message "Failed to disable defrag task: $($_.Exception.Message)" -Level ERROR
-        }
+            try {
+                Disable-ScheduledTask -TaskName "\Microsoft\Windows\Defrag\ScheduledDefrag" | Out-Null
+                Write-Log -Message "Disabled defragmentation for SSDs" -Level SUCCESS
+            } catch {
+                Write-Log -Message "Failed to disable defrag task: $($_.Exception.Message)" -Level ERROR
+            }
 
-        try {
-            fsutil behavior set disablelastaccess 1 | Out-Null
-            Write-Log -Message "Disabled NTFS last access time updates" -Level SUCCESS
-        } catch {
-            Write-Log -Message "Failed to configure last access time: $($_.Exception.Message)" -Level ERROR
+            try {
+                fsutil behavior set disablelastaccess 1 | Out-Null
+                Write-Log -Message "Disabled NTFS last access time updates" -Level SUCCESS
+            } catch {
+                Write-Log -Message "Failed to configure last access time: $($_.Exception.Message)" -Level ERROR
+            }
         }
 
         Set-RegistryValue -Path "HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem" -Name "NtfsDisable8dot3NameCreation" -Type "DWord" -Value "1" -Message "Disabled legacy 8.3 filename creation for better SSD performance"
 
         # Disable ApplicationPreLaunch & Prefetch - not needed on SSD
-        try {
-            Disable-MMAgent -ApplicationPreLaunch
-            Write-Log -Message "Disabled application pre-launch" -Level SUCCESS
-        } catch {
-            Write-Log -Message "Failed to disable ApplicationPreLaunch: $($_.Exception.Message)" -Level WARNING
+        if (-not $script:CollectMode) {
+            try {
+                Disable-MMAgent -ApplicationPreLaunch
+                Write-Log -Message "Disabled application pre-launch" -Level SUCCESS
+            } catch {
+                Write-Log -Message "Failed to disable ApplicationPreLaunch: $($_.Exception.Message)" -Level WARNING
+            }
         }
 
         Set-RegistryValue -Path "HKLM:\System\CurrentControlSet\Control\Session Manager\Memory Management\PrefetchParameters" -Name "EnablePrefetcher" -Type "DWord" -Value "0" -Message "Disabled prefetcher for better SSD performance"

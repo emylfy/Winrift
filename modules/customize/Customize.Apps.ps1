@@ -1,8 +1,4 @@
-﻿function Invoke-Rectify11 {
-    $null = Invoke-Tool "rectify11"
-}
-
-function Install-SpotX {
+﻿function Install-SpotX {
     Clear-Host
     $null = Invoke-Tool "spotx"
     Wait-ForUser

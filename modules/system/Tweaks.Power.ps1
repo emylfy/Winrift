@@ -10,23 +10,28 @@ function Invoke-PowerMenu {
         "2 › Back to menu"
     )
     if ($choice -eq "1") {
-        New-SafeRestorePoint
-        Start-TweakSession
-        $script:DesiredStateCategory = "Aggressive Power Management"
-        Invoke-AggressivePowerTweaks
-        Save-TweakBackup
-        Save-DesiredState
-        Write-Host ""
-        Write-Host "$Green Power Management tweaks applied successfully.$Reset"
-        Write-Host "$Yellow A system restart is recommended for all changes to take effect.$Reset"
-        Write-Host "`n$Cyan Press any key to return...$Reset"
-        $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
+        $applied = $false
+        try {
+            $applied = Invoke-TweakApply -Category "Aggressive Power Management" -CollectBlock {
+                Invoke-AggressivePowerTweaks
+            } -AfterApply {
+                Invoke-PowerPlanActivation
+            }
+        } finally {
+            if ($applied) {
+                Save-TweakBackup
+                Save-DesiredState
+            }
+        }
+        if ($applied) {
+            Write-Host ""
+            Write-Host "$Yellow  A system restart is recommended for all changes to take effect.$Reset"
+        }
+        Wait-ForUser
     }
 }
 
 function Invoke-AggressivePowerTweaks {
-    Write-Host "`nApplying Aggressive Power Management tweaks...`n"
-
     $chassis = (Get-CimInstance Win32_SystemEnclosure -ErrorAction SilentlyContinue).ChassisTypes
     # ChassisTypes 9,10,14 = Laptop/Notebook/Sub Notebook
     if ($chassis | Where-Object { $_ -in @(9, 10, 14) }) {
@@ -46,7 +51,9 @@ function Invoke-AggressivePowerTweaks {
 
     # PCIe Power Saving (ASPM)
     Set-RegistryValue -Path "HKLM:\SYSTEM\CurrentControlSet\Services\pci\Parameters" -Name "ASPMOptOut" -Type "DWord" -Value "1" -Message "Disabled PCIe ASPM power saving"
+}
 
+function Invoke-PowerPlanActivation {
     # Activate Hidden Ultimate Performance Power Plan
     # e9a42b02-... = built-in Ultimate Performance scheme GUID (hidden by default)
     # eeeeeeee-... = custom GUID for the duplicated plan to avoid conflicts

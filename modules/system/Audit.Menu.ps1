@@ -147,7 +147,22 @@ function Invoke-AuditApply {
                 }
             }
             'inline' {
-                Invoke-Expression $rem.target
+                # Allowlist of permitted inline commands.
+                # audit_findings.json is a local file, but any free-form ScriptBlock::Create
+                # execution is equivalent to Invoke-Expression — validate before running.
+                # Reject chaining operators so a single allowed prefix can't smuggle arbitrary code.
+                if ($rem.target -match '[;|&`]') {
+                    Write-Log -Message "Inline remediation contains prohibited characters (;|&`). Skipping." -Level ERROR
+                    return $false
+                }
+                $allowedPrefixes = @('Stop-Service', 'Set-Service', 'Enable-MMAgent', 'Disable-MMAgent',
+                                     'Get-Process', 'Start-Process', 'fsutil')
+                $firstToken = ($rem.target -split '\s' | Where-Object { $_ -ne '' } | Select-Object -First 1)
+                if ($firstToken -notin $allowedPrefixes) {
+                    Write-Log -Message "Inline remediation '$firstToken' is not in the allowed command list. Skipping." -Level ERROR
+                    return $false
+                }
+                & ([ScriptBlock]::Create($rem.target))
                 Write-Log -Message "Inline fix executed" -Level SUCCESS
             }
             default {
@@ -215,9 +230,12 @@ function Show-AuditWizard {
             Write-Host -NoNewline ("`r" + (" " * 80) + "`r")
             Save-AuditCache -Findings $findings
 
-            # Default: select everything on fresh audit
+            # Default: select only critical findings, fall back to all if none
             $selection = @{}
-            foreach ($f in $findings) { $selection[$f.Id] = $true }
+            $hasCritical = $findings | Where-Object { $_.Severity -eq 'critical' }
+            foreach ($f in $findings) {
+                $selection[$f.Id] = if ($hasCritical) { $f.Severity -eq 'critical' } else { $true }
+            }
             $cursor = 0
             $vpTop = 0
             $needAudit = $false
@@ -238,9 +256,7 @@ function Show-AuditWizard {
         # reflect current selection state, then renders one frame.
         Clear-Host
         $prevLines = 0
-        $savedVisible = try { [Console]::CursorVisible } catch { $true }
-        $savedCtrlC = [Console]::TreatControlCAsInput
-        try { [Console]::CursorVisible = $false } catch {}
+        $_ui = _Enter-RawUI
 
         try {
             while ($true) {
@@ -292,7 +308,7 @@ function Show-AuditWizard {
                 # Read key
                 [Console]::TreatControlCAsInput = $true
                 $k = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
-                [Console]::TreatControlCAsInput = $savedCtrlC
+                [Console]::TreatControlCAsInput = $_ui.CtrlC
                 $vk = $k.VirtualKeyCode
                 $ch = $k.Character
 
@@ -342,10 +358,10 @@ function Show-AuditWizard {
 
                 # 'd' → detail screen for current finding
                 if ($ch -eq 'd' -or $ch -eq 'D') {
-                    try { [Console]::CursorVisible = $true } catch {}
+                    try { [Console]::CursorVisible = $true } catch { $null = $_ }
                     $f = $findingByIdx[$selectIdx[$cursor]]
                     $applied = Show-AuditFindingDetail -Finding $f
-                    try { [Console]::CursorVisible = $false } catch {}
+                    try { [Console]::CursorVisible = $false } catch { $null = $_ }
                     if ($applied) {
                         $needAudit = $true
                         break  # re-audit
@@ -364,17 +380,16 @@ function Show-AuditWizard {
 
                 # 'c' → apply all critical findings
                 if ($ch -eq 'c' -or $ch -eq 'C') {
-                    try { [Console]::CursorVisible = $true } catch {}
+                    try { [Console]::CursorVisible = $true } catch { $null = $_ }
                     Invoke-ApplyAllCritical -Findings $findings
                     Wait-ForUser
-                    try { [Console]::CursorVisible = $false } catch {}
+                    try { [Console]::CursorVisible = $false } catch { $null = $_ }
                     $needAudit = $true
                     break  # re-audit
                 }
             }
         } finally {
-            [Console]::TreatControlCAsInput = $savedCtrlC
-            try { [Console]::CursorVisible = $savedVisible } catch {}
+            _Exit-RawUI $_ui
         }
     }
 }

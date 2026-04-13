@@ -30,6 +30,7 @@
 			"keys": "alt+shift+d"
 		}
 	],
+	"alwaysShowTabs": true,
 	"autoHideWindow": false,
 	"centerOnLaunch": true,
 	"confirmCloseAllTabs": false,
@@ -39,7 +40,7 @@
 	"initialCols": 90,
 	"initialPosition": ",",
 	"initialRows": 20,
-	"launchMode": "focus",
+	"launchMode": "default",
 	"newTabMenu": [
 		{
 			"type": "remainingProfiles"

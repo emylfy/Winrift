@@ -69,28 +69,6 @@ Describe 'Write-Log' {
     }
 }
 
-Describe 'Show-MenuBox' {
-    It 'renders without error' {
-        { Show-MenuBox -Title 'Test' -Items @('Item 1', 'Item 2') 6>&1 | Out-Null } | Should -Not -Throw
-    }
-
-    It 'handles separator items' {
-        { Show-MenuBox -Title 'Test' -Items @('Item 1', '---', 'Item 2') 6>&1 | Out-Null } | Should -Not -Throw
-    }
-
-    It 'handles separator with centered text' {
-        { Show-MenuBox -Title 'Test' -Items @('Item 1', '--- Info text ---', 'Item 2') 6>&1 | Out-Null } | Should -Not -Throw
-    }
-
-    It 'handles empty items array' {
-        { Show-MenuBox -Title 'Empty' -Items @() 6>&1 | Out-Null } | Should -Not -Throw
-    }
-
-    It 'respects explicit Width parameter' {
-        { Show-MenuBox -Title 'T' -Items @('A') -Width 60 6>&1 | Out-Null } | Should -Not -Throw
-    }
-}
-
 Describe 'Confirm-ExternalTool' {
     It 'has mandatory Tool parameter' {
         $cmd = Get-Command Confirm-ExternalTool

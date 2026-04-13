@@ -10,6 +10,8 @@ function Get-DisplayAdapterIndices {
 }
 
 function Show-GPUMenu {
+    $script:GpuSessionStarted = $false
+    try {
     Invoke-MenuLoop -Title "GPU-Specific Tweaks" -Items @(
         "1 › NVIDIA",
         "2 › AMD",
@@ -18,35 +20,34 @@ function Show-GPUMenu {
         "4 › Back to menu"
     ) -Actions @{
         "1" = {
-            New-SafeRestorePoint
-            Start-TweakSession
-            $script:DesiredStateCategory = "NVIDIA GPU"
-            $null = Invoke-NvidiaTweaks
-            Save-TweakBackup
-            Save-DesiredState
+            $null = Invoke-TweakApply -Category "NVIDIA GPU" -CollectBlock { $null = Invoke-NvidiaTweaks } -SessionStarted ([ref]$script:GpuSessionStarted)
         }
         "2" = {
-            New-SafeRestorePoint
-            Start-TweakSession
-            $script:DesiredStateCategory = "AMD GPU"
-            $null = Invoke-AMDTweaks
-            Save-TweakBackup
-            Save-DesiredState
+            $null = Invoke-TweakApply -Category "AMD GPU" -CollectBlock { $null = Invoke-AMDTweaks } -SessionStarted ([ref]$script:GpuSessionStarted)
         }
         "3" = {
-            New-SafeRestorePoint
-            Start-TweakSession
+            # Collect both GPU brands before showing the preview table
+            $script:CollectMode = $true
             $script:DesiredStateCategory = "NVIDIA GPU"
             $null = Invoke-NvidiaTweaks -NoExit
             $script:DesiredStateCategory = "AMD GPU"
             $null = Invoke-AMDTweaks -NoExit
-            Save-TweakBackup
-            Save-DesiredState
-            Write-Host ""
-            Write-Host "$Cyan Press any key to return to the GPU menu...$Reset"
-            $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
+            $script:CollectMode = $false
+            if (Show-AuditTable) {
+                if (-not $script:GpuSessionStarted -and -not $script:TweakSessionStarted) {
+                    New-SafeRestorePoint; Start-TweakSession
+                    $script:GpuSessionStarted = $true; $script:TweakSessionStarted = $true
+                }
+                Invoke-AuditedApply
+            } else { Clear-AuditQueue }
         }
-    } -ExitKey "4"
+    } -ExitKey "4" -OnExit {
+        if ($script:GpuSessionStarted) { Save-TweakBackup; Save-DesiredState }
+        $script:GpuSessionStarted = $false
+    }
+    } finally {
+        if ($script:GpuSessionStarted) { Save-TweakBackup; Save-DesiredState }
+    }
 }
 
 function Invoke-NvidiaTweaks {
@@ -66,10 +67,7 @@ function Invoke-NvidiaTweaks {
     }
     if (-not $nvidiaFound) {
         Write-Log -Message "No NVIDIA GPU found in display adapter registry. Skipping NVIDIA tweaks." -Level WARNING
-        if (-not $NoExit) {
-            Write-Host "`n$Cyan Press any key to return to the GPU menu...$Reset"
-            $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
-        }
+        if (-not $NoExit) { Wait-ForUser }
         return $false
     }
 
@@ -78,12 +76,6 @@ function Invoke-NvidiaTweaks {
     Set-RegistryValue -Path "HKLM:\SYSTEM\CurrentControlSet\Services\nvlddmkm" -Name "RmGpsPsEnablePerCpuCoreDpc" -Type "DWord" -Value "1" -Message "Enabled NVIDIA driver per-CPU core DPC"
     Set-RegistryValue -Path "HKLM:\SYSTEM\CurrentControlSet\Services\nvlddmkm\NVAPI" -Name "RmGpsPsEnablePerCpuCoreDpc" -Type "DWord" -Value "1" -Message "Enabled NVIDIA API per-CPU core DPC"
     Set-RegistryValue -Path "HKLM:\SYSTEM\CurrentControlSet\Services\nvlddmkm\Global\NVTweak" -Name "RmGpsPsEnablePerCpuCoreDpc" -Type "DWord" -Value "1" -Message "Enabled global NVIDIA tweaks for per-CPU core DPC"
-
-    if (-not $NoExit) {
-        Write-Host ""
-        Write-Host "$Cyan Press any key to return to the GPU menu...$Reset"
-        $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
-    }
     return $true
 }
 
@@ -104,10 +96,7 @@ function Invoke-AMDTweaks {
     }
     if (-not $amdPath) {
         Write-Log -Message "No AMD GPU found in display adapter registry. Skipping AMD tweaks." -Level WARNING
-        if (-not $NoExit) {
-            Write-Host "`n$Cyan Press any key to return to the GPU menu...$Reset"
-            $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
-        }
+        if (-not $NoExit) { Wait-ForUser }
         return $false
     }
     Write-Log -Message "Found AMD GPU at $amdPath" -Level INFO
@@ -142,10 +131,5 @@ function Invoke-AMDTweaks {
     Set-RegistryValue -Path $amdPath -Name "BGM_LTRMaxSnoopLatencyValue" -Type "DWord" -Value "1" -Message "Optimized BGM LTR max snoop latency"
     Set-RegistryValue -Path $amdPath -Name "BGM_LTRMaxNoSnoopLatencyValue" -Type "DWord" -Value "1" -Message "Optimized BGM LTR max no snoop latency"
 
-    if (-not $NoExit) {
-        Write-Host ""
-        Write-Host "$Cyan Press any key to return to the GPU menu...$Reset"
-        $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
-    }
     return $true
 }

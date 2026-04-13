@@ -94,7 +94,7 @@ function Invoke-Audit {
     foreach ($finding in $findings) {
         $i++
         if ($OnProgress) {
-            try { & $OnProgress @{ index = $i; total = $total; title = $finding.title } } catch {}
+            try { & $OnProgress @{ index = $i; total = $total; title = $finding.title } } catch { $null = $_ }
         }
 
         $result = Invoke-AuditProbe -Detect $finding.detect
@@ -166,35 +166,3 @@ function Read-AuditCache {
     }
 }
 
-function Format-AuditFinding {
-    # Plain-text rendering of a single finding for the Phase 1 proof-of-concept.
-    # Real UI lives in Audit.Menu.ps1 (Phase 4).
-    param(
-        [Parameter(Mandatory)][PSCustomObject]$Finding
-    )
-    $sevColor = switch ($Finding.Severity) {
-        'critical' { $Red }
-        'warning'  { $Yellow }
-        default    { $Cyan }
-    }
-    Write-Host ""
-    Write-Host "  ${sevColor}[$($Finding.Severity.ToUpper())]${Reset} $($Finding.Title)"
-    Write-Host "  ${Dim}category:${Reset} $($Finding.Category)"
-    Write-Host "  ${Dim}evidence:${Reset} $($Finding.Evidence)"
-    Write-Host "  ${Dim}fix:${Reset}      $($Finding.Remediation.description)"
-}
-
-# Phase 1 entry point — only runs when invoked directly (not when dot-sourced
-# by Audit.Menu.ps1 in later phases or by tests).
-if ($MyInvocation.InvocationName -ne '.') {
-    Write-Host ""
-    Write-Host "  ${Cyan}Running system audit...${Reset}"
-    $results = Invoke-Audit
-    if ($results.Count -eq 0) {
-        Write-Host "  ${Green}No issues found.${Reset}"
-    } else {
-        Write-Host "  Found $($results.Count) issue(s):"
-        foreach ($r in $results) { Format-AuditFinding -Finding $r }
-    }
-    Write-Host ""
-}

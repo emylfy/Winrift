@@ -479,6 +479,54 @@
     },
 
     {
+      "id": "performance-interrupt-steering",
+      "category": "performance",
+      "severity": "warning",
+      "title": "Interrupt steering enabled",
+      "description": "Windows redistributes hardware interrupts across CPU cores to balance load. Disabling it reduces latency by keeping interrupts on a fixed core.",
+      "detect": {
+        "probe": "Test-RegistryValueNotEquals",
+        "args": {
+          "path": "HKLM:\\SYSTEM\\CurrentControlSet\\Control\\Session Manager\\kernel",
+          "name": "InterruptSteeringDisabled",
+          "expected": 1,
+          "treat_missing_as": 0
+        }
+      },
+      "cost": { "type": "qualitative" },
+      "remediation": {
+        "description": "Apply Universal Tweaks → System Latency",
+        "type": "module",
+        "target": "modules/system/Tweaks.Universal.ps1",
+        "requires_reboot": true
+      }
+    },
+
+    {
+      "id": "performance-priority-separation",
+      "category": "performance",
+      "severity": "info",
+      "title": "Win32PrioritySeparation not set for foreground boost",
+      "description": "Win32PrioritySeparation=0x24 gives foreground threads short, variable time slices with a boost — better interactive responsiveness than the default.",
+      "detect": {
+        "probe": "Test-RegistryValueNotEquals",
+        "args": {
+          "path": "HKLM:\\SYSTEM\\CurrentControlSet\\Control\\PriorityControl",
+          "name": "Win32PrioritySeparation",
+          "expected": 36,
+          "treat_missing_as": 2
+        }
+      },
+      "cost": { "type": "qualitative" },
+      "remediation": {
+        "description": "Apply Universal Tweaks → System Responsiveness",
+        "type": "module",
+        "target": "modules/system/Tweaks.Universal.ps1",
+        "requires_reboot": false
+      }
+    },
+
+    {
       "id": "performance-energy-estimation",
       "category": "performance",
       "severity": "info",

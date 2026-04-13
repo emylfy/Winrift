@@ -20,7 +20,7 @@
         @{
             File = 'modules/customize/Customize.Apps.ps1'
             ExpectedFunctions = @(
-                'Invoke-Rectify11', 'Install-SpotX', 'Install-Spicetify',
+                'Install-SpotX', 'Install-Spicetify',
                 'Install-SteamMillennium'
             )
         }
@@ -51,10 +51,10 @@
             File = 'modules/system/Audit.Probes.ps1'
             ExpectedFunctions = @(
                 'Test-RegistryValueEquals', 'Test-RegistryValueNotEquals',
-                'Test-RegistryValueGreaterThan', 'Test-RegistryValueLessThan',
+                'Test-RegistryValueGreaterThan',
                 'Test-RegistryValueExists', 'Test-ServiceRunning',
-                'Test-ServiceStartupAuto', 'Test-AppxPackageInstalled',
-                'Test-FsutilBehavior', 'Test-ActivePowerPlanNot',
+                'Test-AppxPackageInstalled',
+                'Test-FsutilBehavior',
                 'Test-ProcessRSSExceeds', 'Test-MMAgentFeature',
                 'Test-DnsServersFromList', 'Get-RegistryRunCount'
             )
@@ -63,7 +63,8 @@
             File = 'modules/system/Audit.Engine.ps1'
             ExpectedFunctions = @(
                 'Get-AuditFindingsPath', 'Read-AuditFindings',
-                'Invoke-AuditProbe', 'Invoke-Audit', 'Format-AuditFinding'
+                'Invoke-AuditProbe', 'Invoke-Audit',
+                'Get-AuditCachePath', 'Save-AuditCache', 'Read-AuditCache'
             )
         }
         @{
@@ -72,6 +73,14 @@
                 'Format-AuditSummary', 'Format-FindingShort',
                 'Show-AuditFindingDetail', 'Invoke-AuditApply',
                 'Invoke-ApplyAllCritical', 'Show-AuditWizard'
+            )
+        }
+        @{
+            File = 'modules/system/Benchmark.ps1'
+            ExpectedFunctions = @(
+                'Get-PerformanceSnapshot', 'Save-Snapshot',
+                'Compare-Snapshots', 'Export-BenchmarkReport',
+                'Invoke-Benchmark', 'Show-BenchmarkMenu'
             )
         }
     )
@@ -96,19 +105,23 @@ Describe '<File>' -ForEach $scripts {
 
 Describe 'Common.ps1 exports' {
     BeforeAll {
-        $filePath = Join-Path (Split-Path $PSScriptRoot -Parent) 'scripts/Common.ps1'
-        $ast = [System.Management.Automation.Language.Parser]::ParseFile(
-            $filePath, [ref]$null, [ref]$null
-        )
-        $functionDefs = $ast.FindAll(
-            { $args[0] -is [System.Management.Automation.Language.FunctionDefinitionAst] }, $true
-        )
-        $functionNames = $functionDefs | ForEach-Object { $_.Name }
+        $scriptsDir = Join-Path (Split-Path $PSScriptRoot -Parent) 'scripts'
+        $functionNames = @()
+        foreach ($f in @('Common.ps1', 'Common.TUI.ps1', 'Common.Registry.ps1', 'Common.Tools.ps1')) {
+            $filePath = Join-Path $scriptsDir $f
+            $ast = [System.Management.Automation.Language.Parser]::ParseFile(
+                $filePath, [ref]$null, [ref]$null
+            )
+            $functionNames += $ast.FindAll(
+                { $args[0] -is [System.Management.Automation.Language.FunctionDefinitionAst] }, $true
+            ) | ForEach-Object { $_.Name }
+        }
     }
 
     It 'defines function <_>' -ForEach @(
-        'Write-Log', 'Wait-ForUser', 'Show-MenuBox',
-        'Assert-AdminOrElevate', 'Initialize-Logging', 'Invoke-MenuLoop',
+        'Write-Log', 'Wait-ForUser', 'Initialize-Logging',
+        'Initialize-NerdFont',
+        'Invoke-MenuLoop', 'Show-InfoBox',
         'Show-InteractiveMenu', 'Show-MultiSelect',
         'Set-RegistryValue', 'Get-ToolConfig', 'Invoke-SecureScript',
         'Invoke-SecureDownload', 'Confirm-ExternalTool', 'Invoke-Tool',
