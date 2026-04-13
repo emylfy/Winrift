@@ -46,14 +46,3 @@ Desired state file: `%USERPROFILE%\Winrift\tweaks\desired_state.json`
 ```
 
 Entries are upserted — reapplying a tweak updates the existing entry, no duplicates.
-
-## Health Score integration
-
-The System Health Score includes a drift summary:
-
-```
-44/45 tweaks holding (98%)
-1 drifted - run Drift Detection to fix
-```
-
-Quick overview without a full scan.

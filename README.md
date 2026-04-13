@@ -2,7 +2,7 @@
 
 # Winrift
 
-**Benchmark-driven Windows 11 optimization toolkit — tweak, customize**
+**The complete Windows 11 post-install pipeline**
 
 <a href="https://github.com/emylfy/winrift/stargazers"><img src="https://img.shields.io/github/stars/emylfy/winrift?style=for-the-badge&logo=starship&color=C9CBFF&logoColor=C9CBFF&labelColor=302D41" alt="GitHub Stars"></a>&nbsp;&nbsp;
 <a href="https://github.com/emylfy/winrift/blob/main/LICENSE"><img src="https://img.shields.io/github/license/emylfy/winrift?style=for-the-badge&logo=apache&color=CBA6F7&logoColor=CBA6F7&labelColor=302D41&label=License" alt="GitHub License"></a>&nbsp;&nbsp;
@@ -13,19 +13,11 @@
 
 </div>
 
-<h6 align="center">
-  <a href="#quick-start">Quick Start</a> ·
-  <a href="#features">Features</a> ·
-  <a href="#system-audit">System Audit</a> ·
-  <a href="#benchmark">Benchmark</a> ·
-  <a href="#compatibility">Compatibility</a>
-</h6>
-
 ---
 
-<a id="quick-start"></a>
-
 ## ⚡ Quick Start
+
+Not sure where to start? Run **System Audit** first — it scans your setup and shows exactly what's wrong.
 
 Open PowerShell as admin — <kbd>Win</kbd> + <kbd>X</kbd> → Terminal Admin:
 
@@ -39,25 +31,34 @@ Set-ExecutionPolicy Bypass -Scope Process -Force; irm https://raw.githubusercont
 <details>
 <summary><strong>Pin shortcut to Start Menu</strong></summary>
 
-<br>
-
 ```powershell
 Set-ExecutionPolicy Bypass -Scope Process -Force; irm https://raw.githubusercontent.com/emylfy/winrift/main/scripts/install.ps1 | iex
 ```
 
 </details>
 
-> **Security note:** This is a common PowerShell install pattern (similar to `curl | sh`). The full source code is open at [github.com/emylfy/winrift](https://github.com/emylfy/winrift). Most external scripts are verified with SHA256 hashes before execution.
+---
+
+## 📊 Benchmark
+
+Other tools apply tweaks and hope for the best. Winrift measures 13 system metrics before and after — so you see exactly what changed.
+
+> Typical results on clean Windows 11 24H2 (your numbers will vary):
+
+| Metric            |    Before |    After |   Change |
+| :---------------- | --------: | -------: | -------: |
+| CPU idle load     |      3.2% |     1.1% | **−66%** |
+| RAM usage         |  2,800 MB | 2,100 MB | **−25%** |
+| Running processes |       142 |       98 | **−31%** |
+| Running services  |       187 |      151 | **−19%** |
+| DPC rate          |     48 /s |    22 /s | **−54%** |
+| Context switches  | 12,400 /s | 8,600 /s | **−31%** |
+
+<sub>Full methodology: <a href="docs/tests.md">Testing & Benchmarks Guide</a></sub>
 
 ---
 
-<a id="features"></a>
-
 ## 🧩 Features
-
-<p align="center">
-	<img src="media/screenshot-features.png" alt="Winrift features" width="80%">
-</p>
 
 |     | Feature                                        | What it does                                                                   |
 | :-- | :--------------------------------------------- | :----------------------------------------------------------------------------- |
@@ -71,12 +72,8 @@ Set-ExecutionPolicy Bypass -Scope Process -Force; irm https://raw.githubusercont
 | 📦  | **App Bundles**                                | 7 curated collections — native winget selector, optional UniGetUI              |
 | 💿  | [**ISO Builder**](docs/autounattend_guide.md)  | Embed answer file into Windows 11 ISO for automated install                    |
 
-<br>
-
 <details>
 <summary><strong>⚙️ System Tweaks — all 13 categories</strong></summary>
-
-<br>
 
 Every tweak is backed up before applying. Three modes: pick categories, apply all safe, or step-by-step wizard.
 
@@ -106,8 +103,6 @@ GPU-specific tweaks are auto-detected:
 <details>
 <summary><strong>🔄 Drift Detection — keep tweaks applied</strong></summary>
 
-<br>
-
 Windows Updates silently revert registry changes. Drift Detection catches this.
 
 - Tracks every applied tweak in a desired-state JSON
@@ -123,8 +118,6 @@ Windows Updates silently revert registry changes. Drift Detection catches this.
 <details>
 <summary><strong>🛡️ Security & Privacy tools</strong></summary>
 
-<br>
-
 | Tool                | Description                                                 |
 | :------------------ | :---------------------------------------------------------- |
 | **DefendNot**       | Disable Windows Defender via Security Center API            |
@@ -138,26 +131,22 @@ All tools run only when explicitly selected.
 <details>
 <summary><strong>🎨 Desktop Customization</strong></summary>
 
-<br>
-
 Complete environment setup from one menu. Runs without admin.
 
-**Desktop** — [GlazeWM](https://github.com/glzr-io/glazewm) tiling WM · [Zebar](https://github.com/glzr-io/zebar) status bar · [Flow Launcher](https://github.com/Flow-Launcher/Flow.Launcher) · [Windhawk](https://windhawk.net/) · [Rainmeter](https://www.rainmeter.net/)
+**Desktop** — [GlazeWM](https://github.com/glzr-io/glazewm) tiling WM · [Zebar](https://github.com/glzr-io/zebar) / [YASB](https://github.com/amnweb/yasb) status bar · [Flow Launcher](https://github.com/Flow-Launcher/Flow.Launcher) · [Windhawk](https://windhawk.net/) · [Rainmeter](https://www.rainmeter.net/) · Wallpaper Browser
 
 **Terminal** — Full Shell Setup (single-pass) · Windows Terminal config · Nerd Fonts · Oh My Posh / Starship · FastFetch · PowerShell profile
 
 **Editors** — Config import for 5 VSCode-based editors · extension install via CLI
 
-**Themes** — Rectify11 · SpotX · Spicetify · Steam Millennium
+**Themes** — SpotX · Spicetify · Steam Millennium
 
-**Profile & Backups** — Export / Import Winrift profile · Restore any config backup (.bak)
+**Profile & Backups** — Export / Import Winrift profile (apps, configs, tweaks state) · Restore any config backup (.bak)
 
 </details>
 
 <details>
 <summary><strong>💿 ISO Builder</strong></summary>
-
-<br>
 
 Create a bootable Windows 11 ISO with automation baked in:
 
@@ -174,8 +163,6 @@ Create a bootable Windows 11 ISO with automation baked in:
 <details>
 <summary><strong>📦 App Bundles</strong></summary>
 
-<br>
-
 7 curated collections installable directly from the menu — no third-party app required:
 
 Development · Browsers · Utilities · Productivity · Creative & Media · Gaming · Communications
@@ -186,63 +173,24 @@ Development · Browsers · Utilities · Productivity · Creative & Media · Gami
 
 </details>
 
-<details>
-<summary><strong>🌐 Community Tools</strong></summary>
-
-<br>
-
-| Tool                                                 | Description                     |
-| :--------------------------------------------------- | :------------------------------ |
-| [WinUtil](https://github.com/ChrisTitusTech/winutil) | Tweaks, apps, fixes and updates |
-| [WinScript](https://github.com/flick9000/winscript)  | Custom Windows setup scripts    |
-| [Sparkle](https://github.com/Parcoil/Sparkle)        | Optimize and debloat            |
-| [GTweak](https://github.com/Greedeks/GTweak)         | GUI tweaking and debloater      |
-
-</details>
-
 ---
-
-<a id="benchmark"></a>
-
-## 📊 Benchmark
-
-Other tools apply tweaks and hope for the best. Winrift measures 13 system metrics before and after — so you see exactly what changed.
-
-> Typical results on clean Windows 11 24H2 (your numbers will vary):
-
-| Metric            |    Before |    After |   Change |
-| :---------------- | --------: | -------: | -------: |
-| CPU idle load     |      3.2% |     1.1% | **−66%** |
-| RAM usage         |  2,800 MB | 2,100 MB | **−25%** |
-| Running processes |       142 |       98 | **−31%** |
-| Running services  |       187 |      151 | **−19%** |
-| DPC rate          |     48 /s |    22 /s | **−54%** |
-| Context switches  | 12,400 /s | 8,600 /s | **−31%** |
-
-<sub>Full methodology and metric explanations: <a href="docs/tests.md">Testing & Benchmarks Guide</a></sub>
-
----
-
-<a id="system-audit"></a>
 
 ## 🩺 System Audit
 
-Scans your system against ~22 known issues across 6 categories and shows **what's wrong, why it matters, and how to fix it**. Each finding has a real fix linked to a Winrift module — no scores, no graded reports, just actionable items.
+Scans your system against ~33 known issues across 6 categories and shows **what's wrong, why it matters, and how to fix it**. Each finding has a real fix linked to a Winrift module — no scores, no graded reports, just actionable items.
 
-| Category        | What it checks                                                            |
-| :-------------- | :------------------------------------------------------------------------ |
+| Category        | What it checks                                                                  |
+| :-------------- | :------------------------------------------------------------------------------ |
 | **Privacy**     | Telemetry level, DiagTrack, Copilot, Recall, OneDrive, Ad ID, Activity history |
-| **Performance** | Power throttling, HAGS, network throttling, MMCSS, energy estimation     |
-| **Memory**      | SysMain on SSD, large system cache, paging executive                     |
-| **Storage**    | TRIM, NTFS last-access, 8.3 names, prefetcher                            |
-| **Startup**     | HKLM/HKCU Run keys for unwanted autostart entries                        |
-| **Network**     | Nagle algorithm, throttling index                                        |
+| **Performance** | Power throttling, HAGS, network throttling, MMCSS, energy estimation            |
+| **Memory**      | SysMain on SSD, large system cache, paging executive                            |
+| **Storage**     | TRIM, NTFS last-access, 8.3 names, prefetcher                                  |
+| **Startup**     | HKLM/HKCU Run keys for unwanted autostart entries                               |
+| **Network**     | Nagle algorithm, throttling index                                               |
 
-Each finding marks its cost honestly: **measured** (real RAM right now), **estimated** (cited average with `~`), or **qualitative** (on/off, no number). Apply individually or `[A]` to bulk-apply all critical issues that don't require a reboot.
+Each finding marks its cost honestly: **measured** (real RAM right now), **estimated** (cited average with `~`), or **qualitative** (on/off, no number). The UI is a keyboard-driven multi-select TUI — navigate findings, toggle what you want, apply in one pass.
 
 ---
-
-<a id="compatibility"></a>
 
 ## ✅ Compatibility
 
@@ -256,8 +204,6 @@ Each finding marks its cost honestly: **measured** (real RAM right now), **estim
 
 ---
 
-<a id="troubleshooting"></a>
-
 ## 🔧 Troubleshooting
 
 | Problem               | Solution                                                     |
@@ -269,8 +215,6 @@ Each finding marks its cost honestly: **measured** (real RAM right now), **estim
 | UniGetUI fails        | `winget source reset --force` in admin PowerShell            |
 
 ---
-
-<a id="credits"></a>
 
 ## 🏆 Credits
 

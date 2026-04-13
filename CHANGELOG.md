@@ -5,6 +5,80 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project uses [Calendar Versioning](https://calver.org/) (YY.M.patch format).
 
+## [26.4.1] - 2026-04-13
+
+### Core Refactor
+
+- Split `Common.ps1` into three focused modules: `Common.Registry.ps1` (registry ops, audit queue, tweak backup/restore), `Common.TUI.ps1` (interactive box, menus, multi-select), `Common.Tools.ps1` (tool config, secure download/script, winget helpers)
+- Added truecolor (24-bit) ANSI palette with auto-detection (`WT_SESSION`, `COLORTERM`, `TERM_PROGRAM`) and 256-color fallback for legacy ConHost/cmd
+- Added Nerd Font detection (`Initialize-NerdFont`) with glyph icons for each main menu section and ASCII fallback
+- Added `_Enter-RawUI` / `_Exit-RawUI` helpers for consistent cursor/CtrlC state management
+- Changed `Wait-ForUser` from `Read-Host` to `ReadKey` ("Press any key to continue")
+- Removed `Show-MenuBox` (replaced by `Show-InfoBox` in TUI module)
+- Removed `Assert-AdminOrElevate` (handled by early elevation in `Winrift.ps1`)
+- Added dot-source guards (`$MyInvocation.InvocationName -ne '.'`) to `SecurityMenu.ps1`, `UniGetUI.ps1`, `Drivers.ps1`, `ISOBuilder.ps1`
+
+### Dynamic Main Menu
+
+- Added background runspace sampling CPU / RAM / process count every 10 s, displayed in menu title suffix
+- Added background job scanning system state (audit cache, drift, benchmarks, GPU, Defender, Copilot/Recall) for context-aware sidebar descriptions
+- Added `Build-MenuDescriptions` rendering live audit findings count, drift status, GPU model, Defender/Copilot/Recall state per menu item
+- Reordered main menu: Audit → Tweaks → Security → Drivers → Benchmark, then Bundles → Customize → ISO
+- Menu pauses stats sampling while sub-modules are active, resumes on return
+
+### Tweaks
+
+- Added `Invoke-TweakApply` shared collect→preview→apply pattern used by Power, GPU, and category callers
+- Added 2 new universal tweak categories: Auto-Maintenance / I/O counting (12), D3D11/D3D12 multithreading (13)
+- Split `Invoke-AggressivePowerTweaks` — power plan activation moved to `Invoke-PowerPlanActivation`
+- Added `$script:TweakSessionStarted` flag preventing duplicate restore points across sub-menus
+- Wrapped GPU and Universal tweak menus in `try/finally` for backup safety
+- SSD tweaks skip non-registry operations in `CollectMode`
+
+### Audit
+
+- Replaced `Invoke-Expression` with allowlisted `ScriptBlock::Create` for inline remediations — rejects chaining operators and unknown commands
+- Changed audit wizard default selection to critical-only findings (falls back to all if no critical)
+- Removed Phase 1 standalone entry point and `Format-AuditFinding` from `Audit.Engine.ps1`
+- Removed unused probes: `Test-RegistryValueLessThan`, `Test-ServiceStartupAuto`, `Test-ActivePowerPlanNot`
+
+### Security
+
+- Added Just the Browser — browser AI/telemetry hardening tool (`JustTheBrowser.ps1`)
+- Added DNS benchmark multi-adapter selection when more than one active adapter is detected
+
+### Self-Update
+
+- Added version verification after zip download — aborts if downloaded version doesn't match expected
+- Added empty/malformed archive detection and minimum zip size check
+
+### ISO Builder
+
+- Added Windows ISO validation — checks for `sources\install.wim` or `install.esd` before copying multi-GB content
+- Added autounattend.xml well-formedness check before embedding
+- Added oscdimg.exe download size validation
+
+### Customize
+
+- Removed Rectify11 from Apps menu
+- Fixed profile import — keyed file lookup instead of fragile index-based access
+- Organizer: uses `[Environment]::GetFolderPath('CommonStartMenu')` instead of hardcoded `C:\ProgramData`
+- Terminal config: enabled `alwaysShowTabs`, changed `launchMode` to `default`
+- README: added YASB status bar, wallpaper browser section
+
+### Bundles
+
+- Extracted `Get-InstalledAndBrokenIds` shared helper, removed duplicate winget list logic
+- Added null-safety checks for broken ID annotations
+
+### Fixes & Tests
+
+- Added `tests/UniGetUI.Tests.ps1` — tests for `Get-InstalledAndBrokenIds`
+- Updated `ModuleExports.Tests.ps1` for split Common modules
+- Drift detection: uses `Show-InfoBox`, checks scheduled task status dynamically
+- Benchmark report: uses `Show-InfoBox` instead of removed `Show-MenuBox`
+- Suppressed empty `catch {}` blocks with `$null = $_` across codebase
+
 ## [26.4.0] - 2026-04-11
 
 ### System Audit

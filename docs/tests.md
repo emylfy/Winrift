@@ -37,10 +37,9 @@ From the main menu, select **Benchmark** to access:
 | 1 | Run Benchmark (Before tweaks) |
 | 2 | Run Benchmark (After tweaks) |
 | 3 | View Last Report |
-| 4 | System Health Score — composite 0–100 rating across 7 categories |
-| 5 | Back |
+| 4 | Back |
 
-**Recommended workflow:** Before → Apply tweaks → Reboot → After → Compare → Health Score.
+**Recommended workflow:** Before → Apply tweaks → Reboot → After → Compare.
 
 ## Metrics
 
@@ -102,14 +101,6 @@ All benchmark data is stored in `%USERPROFILE%\Winrift\benchmarks\`:
 - **GPU tweaks** are not measured — GPU performance requires specialized tools (FrameView, CapFrameX)
 - **Network tweaks** — throughput/latency changes require external test servers to measure accurately
 - **Single-point measurement** — for statistically significant results, run multiple before/after cycles
-
-## Health Score
-
-The benchmark menu includes a **System Health Score** (option 4) that rates your system's optimization state across 7 weighted categories: Latency, Privacy, Memory, Network, Process Bloat, Startup, and Storage.
-
-It reuses `Get-PerformanceSnapshot` with reduced sampling (3 samples at 2-second intervals) and adds configuration checks (privacy registry keys, storage settings, network state).
-
-Full documentation is embedded in the Benchmark module (`modules/system/Benchmark.ps1`).
 
 ## Pester Tests
 

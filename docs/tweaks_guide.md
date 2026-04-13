@@ -23,6 +23,29 @@ All tweaks have been tested and compared across multiple sources. Only the most 
 **Risk levels used in this guide:**
 - 🟢 **Safe** — no side effects, can be reverted easily
 - 🟡 **Moderate** — disables features some users may need
+- ⚠️ **Aggressive** — may cause instability on some hardware
+- 🔧 **Advanced** — disables background maintenance
+
+## How to Apply
+
+Three modes are available from the System Tweaks menu:
+
+**1. Pick categories** — select any combination of the 13 categories from a numbered menu. Each category can be applied independently.
+
+**2. Apply all safe** — applies all categories rated 🟢 Safe in one pass with a single confirmation.
+
+**3. Step-by-step wizard** — walks through each of the 13 categories one at a time:
+
+```
+● ● ● ○ · · · · · · ·   [3/13]  SSD / NVMe  ✓ selected
+Interrupt steering, timer serialization
+
+[Y] Apply    [N] Skip    [B] Back    [Esc] Exit wizard
+```
+
+A progress dot bar shows selected (●), skipped (○), and pending (·) steps. Navigate back with `B` to change a previous choice. After the last step, a preview table is shown with all pending registry changes before anything is written. Confirm to apply or cancel without changes.
+
+---
 
 ## Universal Tweaks
 
@@ -138,7 +161,7 @@ Source: [CPU Tweaks](https://youtu.be/FxpRL7wheGc)
 
 ---
 
-### 7. Power Management 🟢
+### 7. Power Management 🟡
 
 Disables background power monitoring overhead. Safe for all devices including laptops on battery.
 
@@ -159,7 +182,7 @@ Sources: [Ancels Performance Batch](https://github.com/ancel1x/Ancels-Performanc
 
 ---
 
-### 8. System Responsiveness 🟡
+### 8. System Responsiveness 🟢
 
 Prioritizes foreground applications over background services.
 
@@ -192,7 +215,42 @@ Removes artificial delays during Windows startup.
 
 ---
 
-### 10. System Maintenance 🟡
+### 10. UI Responsiveness ⚠️
+
+Reduces timeouts and delays in the Windows shell for a snappier feel.
+
+| Registry Key | Value | Effect |
+|---|---|---|
+| `AutoEndTasks` | 1 | Automatically ends unresponsive tasks |
+| `HungAppTimeout` | 1000 | 1 second before marking app as hung |
+| `WaitToKillAppTimeout` | 2000 | 2 seconds before force-closing apps |
+| `LowLevelHooksTimeout` | 1000 | 1 second timeout for low-level hooks |
+| `MenuShowDelay` | 0 | Instant menu display |
+| `WaitToKillServiceTimeout` | 2000 | 2 seconds before force-stopping services |
+
+**Paths:**
+- `HKCU:\Control Panel\Desktop`
+- `HKLM:\SYSTEM\CurrentControlSet\Control`
+
+---
+
+### 11. Memory Optimization 🟡
+
+Improves memory management for systems with sufficient RAM.
+
+| Registry Key | Value | Effect |
+|---|---|---|
+| `LargeSystemCache` | 1 | Uses larger system cache for file operations |
+| `DisablePagingCombining` | 1 | Disables memory page combining |
+| `DisablePagingExecutive` | 1 | Keeps kernel and drivers in RAM instead of paging to disk |
+
+**Path:** `HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Memory Management`
+
+Source: [QuickBoost Memory Tweaks](https://github.com/SanGraphic/QuickBoost)
+
+---
+
+### 12. System Maintenance 🔧
 
 Disables background maintenance tasks that consume resources.
 
@@ -213,42 +271,7 @@ Source: [System Maintenance](https://youtu.be/5omPOfsJNSo)
 
 ---
 
-### 11. UI Responsiveness 🟢
-
-Reduces timeouts and delays in the Windows shell for a snappier feel.
-
-| Registry Key | Value | Effect |
-|---|---|---|
-| `AutoEndTasks` | 1 | Automatically ends unresponsive tasks |
-| `HungAppTimeout` | 1000 | 1 second before marking app as hung |
-| `WaitToKillAppTimeout` | 2000 | 2 seconds before force-closing apps |
-| `LowLevelHooksTimeout` | 1000 | 1 second timeout for low-level hooks |
-| `MenuShowDelay` | 0 | Instant menu display |
-| `WaitToKillServiceTimeout` | 2000 | 2 seconds before force-stopping services |
-
-**Paths:**
-- `HKCU:\Control Panel\Desktop`
-- `HKLM:\SYSTEM\CurrentControlSet\Control`
-
----
-
-### 12. Memory Optimization 🟡
-
-Improves memory management for systems with sufficient RAM.
-
-| Registry Key | Value | Effect |
-|---|---|---|
-| `LargeSystemCache` | 1 | Uses larger system cache for file operations |
-| `DisablePagingCombining` | 1 | Disables memory page combining |
-| `DisablePagingExecutive` | 1 | Keeps kernel and drivers in RAM instead of paging to disk |
-
-**Path:** `HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Memory Management`
-
-Source: [QuickBoost Memory Tweaks](https://github.com/SanGraphic/QuickBoost)
-
----
-
-### 13. DirectX Enhancements 🟢
+### 13. DirectX Enhancements ⚠️
 
 Enables advanced DirectX 11 and DirectX 12 features for better gaming performance.
 
