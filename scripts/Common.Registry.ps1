@@ -81,8 +81,7 @@ function Invoke-TweakApply {
     )
     $script:CollectMode = $true
     $script:DesiredStateCategory = $Category
-    & $CollectBlock
-    $script:CollectMode = $false
+    try { & $CollectBlock } finally { $script:CollectMode = $false }
 
     if (Show-AuditTable) {
         $alreadyStarted = ($SessionStarted -ne $null -and $SessionStarted.Value) -or $script:TweakSessionStarted

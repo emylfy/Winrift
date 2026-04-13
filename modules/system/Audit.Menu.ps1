@@ -150,17 +150,21 @@ function Invoke-AuditApply {
                 # Allowlist of permitted inline commands.
                 # audit_findings.json is a local file, but any free-form ScriptBlock::Create
                 # execution is equivalent to Invoke-Expression — validate before running.
-                # Reject chaining operators so a single allowed prefix can't smuggle arbitrary code.
-                if ($rem.target -match '[;|&`]') {
-                    Write-Log -Message "Inline remediation contains prohibited characters (;|&`). Skipping." -Level ERROR
+                # Split on `;` to allow chained commands (e.g. Stop-Service X; Set-Service X),
+                # but validate every statement independently. Reject `|`, `&`, backtick.
+                if ($rem.target -match '[|&`]') {
+                    Write-Log -Message "Inline remediation contains prohibited characters (|&`). Skipping." -Level ERROR
                     return $false
                 }
                 $allowedPrefixes = @('Stop-Service', 'Set-Service', 'Enable-MMAgent', 'Disable-MMAgent',
                                      'Get-Process', 'Start-Process', 'fsutil')
-                $firstToken = ($rem.target -split '\s' | Where-Object { $_ -ne '' } | Select-Object -First 1)
-                if ($firstToken -notin $allowedPrefixes) {
-                    Write-Log -Message "Inline remediation '$firstToken' is not in the allowed command list. Skipping." -Level ERROR
-                    return $false
+                $statements = $rem.target -split '\s*;\s*' | Where-Object { $_ -ne '' }
+                foreach ($stmt in $statements) {
+                    $firstToken = ($stmt -split '\s' | Where-Object { $_ -ne '' } | Select-Object -First 1)
+                    if ($firstToken -notin $allowedPrefixes) {
+                        Write-Log -Message "Inline remediation '$firstToken' is not in the allowed command list. Skipping." -Level ERROR
+                        return $false
+                    }
                 }
                 & ([ScriptBlock]::Create($rem.target))
                 Write-Log -Message "Inline fix executed" -Level SUCCESS

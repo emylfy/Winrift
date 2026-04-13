@@ -28,11 +28,12 @@ function Show-GPUMenu {
         "3" = {
             # Collect both GPU brands before showing the preview table
             $script:CollectMode = $true
-            $script:DesiredStateCategory = "NVIDIA GPU"
-            $null = Invoke-NvidiaTweaks -NoExit
-            $script:DesiredStateCategory = "AMD GPU"
-            $null = Invoke-AMDTweaks -NoExit
-            $script:CollectMode = $false
+            try {
+                $script:DesiredStateCategory = "NVIDIA GPU"
+                $null = Invoke-NvidiaTweaks -NoExit
+                $script:DesiredStateCategory = "AMD GPU"
+                $null = Invoke-AMDTweaks -NoExit
+            } finally { $script:CollectMode = $false }
             if (Show-AuditTable) {
                 if (-not $script:GpuSessionStarted -and -not $script:TweakSessionStarted) {
                     New-SafeRestorePoint; Start-TweakSession

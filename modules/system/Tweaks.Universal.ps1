@@ -106,13 +106,14 @@ function Invoke-TweakWizard {
     }
 
     $script:CollectMode = $true
-    foreach ($k in $selectedKeys) {
-        if ($TweakMap.ContainsKey($k)) {
-            $script:DesiredStateCategory = $CategoryNames[$k]
-            & $TweakMap[$k]
+    try {
+        foreach ($k in $selectedKeys) {
+            if ($TweakMap.ContainsKey($k)) {
+                $script:DesiredStateCategory = $CategoryNames[$k]
+                & $TweakMap[$k]
+            }
         }
-    }
-    $script:CollectMode = $false
+    } finally { $script:CollectMode = $false }
 
     if (-not (Show-AuditTable)) {
         Clear-AuditQueue
@@ -212,13 +213,14 @@ function Invoke-UniversalTweaks {
         # Collect phase — run all tweak functions in collect mode so
         # Set-RegistryValue queues entries instead of writing to registry
         $script:CollectMode = $true
-        foreach ($key in $selectedKeys) {
-            if ($tweakMap.ContainsKey($key)) {
-                $script:DesiredStateCategory = $categoryNames[$key]
-                & $tweakMap[$key]
+        try {
+            foreach ($key in $selectedKeys) {
+                if ($tweakMap.ContainsKey($key)) {
+                    $script:DesiredStateCategory = $categoryNames[$key]
+                    & $tweakMap[$key]
+                }
             }
-        }
-        $script:CollectMode = $false
+        } finally { $script:CollectMode = $false }
 
         # Show preview table — apply only if user confirms
         if (-not (Show-AuditTable)) {
