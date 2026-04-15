@@ -33,7 +33,7 @@ Deletes `desired_state.json` and stops monitoring. Use when starting fresh or sw
 
 ## Data
 
-Desired state file: `%USERPROFILE%\Winrift\tweaks\desired_state.json`
+Desired state file: `%LOCALAPPDATA%\Winrift\tweaks\desired_state.json`
 
 ```json
 {

@@ -7,7 +7,7 @@ if ($AutoCheck) {
     . "$PSScriptRoot\..\..\scripts\Common.ps1"
     Initialize-Logging -ModuleName "drift-auto"
 
-    $script:DesiredStateFile = Join-Path $env:USERPROFILE "Winrift\tweaks\desired_state.json"
+    $script:DesiredStateFile = Join-Path $env:LOCALAPPDATA "Winrift\tweaks\desired_state.json"
     $allEntries = Test-DriftedEntries
     $drifted = @($allEntries | Where-Object { $_.Status -ne "OK" })
 
@@ -24,7 +24,7 @@ if ($AutoCheck) {
 
 # Normal mode: dot-sourced from Tweaks.ps1
 
-$script:DesiredStateFile = Join-Path $env:USERPROFILE "Winrift\tweaks\desired_state.json"
+$script:DesiredStateFile = Join-Path $env:LOCALAPPDATA "Winrift\tweaks\desired_state.json"
 $script:DriftTaskName = "Winrift-DriftCheck"
 
 function Get-DesiredState {

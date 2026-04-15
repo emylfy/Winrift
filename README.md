@@ -210,7 +210,7 @@ Each finding marks its cost honestly: **measured** (real RAM right now), **estim
 | :-------------------- | :----------------------------------------------------------- |
 | Scripts disabled      | `Set-ExecutionPolicy RemoteSigned -Scope CurrentUser`        |
 | Module not found      | Re-run the install command for the latest version            |
-| Registry errors       | Check `%USERPROFILE%\Winrift\logs\` for the session log      |
+| Registry errors       | Check `%LOCALAPPDATA%\Winrift\logs\` for the session log      |
 | Tweak broke something | System Tweaks → Restore Backup, or boot from a restore point |
 | UniGetUI fails        | `winget source reset --force` in admin PowerShell            |
 

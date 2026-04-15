@@ -1,40 +1,46 @@
-# PS7 requirement gate — auto-install and relaunch in pwsh.
+# PS7 requirement gate — auto-install portable and relaunch in pwsh.
 # launch.ps1 runs via irm|iex so $PSScriptRoot is empty — inline the installer.
-# irm|iex also runs non-admin, so we elevate first if needed.
+# Portable zip goes to %LOCALAPPDATA%\Winrift\pwsh — no admin needed.
 if ($PSVersionTable.PSVersion.Major -lt 7) {
     $pwsh = (Get-Command pwsh.exe -ErrorAction SilentlyContinue).Source
     if (-not $pwsh) {
         $pwsh = "$env:ProgramFiles\PowerShell\7\pwsh.exe"
-        if (-not (Test-Path $pwsh)) { $pwsh = $null }
+        if (-not (Test-Path $pwsh)) {
+            $pwsh = "$env:LOCALAPPDATA\Winrift\pwsh\pwsh.exe"
+            if (-not (Test-Path $pwsh)) { $pwsh = $null }
+        }
     }
 
     if (-not $pwsh) {
-        # Need admin to install — elevate a PS 5.1 session that installs then relaunches
         Write-Host ""
-        Write-Host "  Winrift requires PowerShell 7. Requesting elevation to install..." -ForegroundColor Yellow
-        $installCmd = @(
-            "Write-Host '  Installing PowerShell 7...' -ForegroundColor Cyan"
-            "try {"
-            "  & winget install --id Microsoft.PowerShell --accept-package-agreements --accept-source-agreements --silent 2>&1 | Out-Null"
-            "  `$env:Path = [System.Environment]::GetEnvironmentVariable('Path','Machine') + ';' + [System.Environment]::GetEnvironmentVariable('Path','User')"
-            "  `$pwsh = `"$env:ProgramFiles\PowerShell\7\pwsh.exe`""
-            "  if (Test-Path `$pwsh) {"
-            "    Write-Host '  PowerShell 7 installed. Launching Winrift...' -ForegroundColor Green"
-            "    & `$pwsh -NoExit -ExecutionPolicy Bypass -Command `"irm https://raw.githubusercontent.com/emylfy/winrift/main/scripts/launch.ps1 | iex`""
-            "  } else {"
-            "    Write-Host '  Installation failed. Please install manually: https://aka.ms/powershell-release?tag=stable' -ForegroundColor Red"
-            "    Read-Host '  Press Enter to exit'"
-            "  }"
-            "} catch {"
-            "  Write-Host `"  Error: `$(`$_.Exception.Message)`" -ForegroundColor Red"
-            "  Read-Host '  Press Enter to exit'"
-            "}"
-        ) -join "; "
-        Start-Process "powershell.exe" -ArgumentList "-ExecutionPolicy Bypass -Command `"$installCmd`"" -Verb RunAs
-        return
+        Write-Host "  Winrift requires PowerShell 7. Downloading portable (~50MB)..." -ForegroundColor Yellow
+        $arch = if ([Environment]::Is64BitOperatingSystem) {
+            if ($env:PROCESSOR_ARCHITECTURE -eq "ARM64") { "arm64" } else { "x64" }
+        } else { "x86" }
+        $zipUrl = "https://github.com/PowerShell/PowerShell/releases/download/v7.4.7/PowerShell-7.4.7-win-$arch.zip"
+        $zipPath = Join-Path $env:TEMP "pwsh-portable.zip"
+        $destDir = "$env:LOCALAPPDATA\Winrift\pwsh"
+        try {
+            Write-Host "  Downloading..." -ForegroundColor Cyan
+            Start-BitsTransfer -Source $zipUrl -Destination $zipPath -DisplayName "PowerShell 7" -ErrorAction Stop
+            Write-Host "  Extracting..." -ForegroundColor Cyan
+            $ProgressPreference = 'SilentlyContinue'
+            if (Test-Path $destDir) { Remove-Item $destDir -Recurse -Force -ErrorAction SilentlyContinue }
+            Expand-Archive -Path $zipPath -DestinationPath $destDir -Force
+            Remove-Item $zipPath -Force -ErrorAction SilentlyContinue
+            $pwsh = "$destDir\pwsh.exe"
+            if (-not (Test-Path $pwsh)) { $pwsh = $null }
+        } catch {
+            Write-Host "  Download failed: $($_.Exception.Message)" -ForegroundColor Red
+        }
+        if (-not $pwsh) {
+            Write-Host "  Please install PowerShell 7 manually: https://aka.ms/powershell-release?tag=stable" -ForegroundColor Red
+            $null = Read-Host "  Press Enter to exit"
+            return
+        }
+        Write-Host "  PowerShell 7 ready." -ForegroundColor Green
     }
 
-    # PS7 exists but we're running in PS 5.1 — relaunch in pwsh
     & $pwsh -NoExit -ExecutionPolicy Bypass -Command "irm https://raw.githubusercontent.com/emylfy/winrift/main/scripts/launch.ps1 | iex"
     return
 }

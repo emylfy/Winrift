@@ -59,7 +59,7 @@ function Clear-AuditQueue {
 $script:TweakBackupEntries = [System.Collections.Generic.List[hashtable]]::new()
 $script:DesiredStateEntries = [System.Collections.Generic.List[hashtable]]::new()
 $script:DesiredStateCategory = "Uncategorized"
-$_baseDir = $env:USERPROFILE ?? $env:HOME ?? [System.IO.Path]::GetTempPath()
+$_baseDir = $env:LOCALAPPDATA ?? $env:USERPROFILE ?? [System.IO.Path]::GetTempPath()
 $script:TweakBackupDir = Join-Path $_baseDir "Winrift\tweaks"
 $script:DesiredStateDir = Join-Path $_baseDir "Winrift\tweaks"
 

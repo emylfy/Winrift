@@ -120,7 +120,7 @@ function Invoke-Audit {
 
 function Get-AuditCachePath {
     # Single rolling cache location — overwritten on each save, never appended.
-    $base = $env:USERPROFILE ?? $env:HOME ?? [System.IO.Path]::GetTempPath()
+    $base = $env:LOCALAPPDATA ?? $env:USERPROFILE ?? [System.IO.Path]::GetTempPath()
     $dir = Join-Path $base "Winrift\audit"
     if (-not (Test-Path $dir)) { New-Item -Path $dir -ItemType Directory -Force | Out-Null }
     return Join-Path $dir "last.json"

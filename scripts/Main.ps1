@@ -32,7 +32,7 @@ if (-not ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdenti
 # Startup transcript — captures everything, even pre-Common.ps1 failures
 $script:StartupLogStarted = $false
 try {
-    $logDir = Join-Path $env:USERPROFILE "Winrift\logs"
+    $logDir = Join-Path $env:LOCALAPPDATA "Winrift\logs"
     if (-not (Test-Path $logDir)) { New-Item -Path $logDir -ItemType Directory -Force | Out-Null }
     $script:StartupLog = Join-Path $logDir "winrift_startup_$(Get-Date -Format 'yyyy-MM-dd_HH-mm-ss')_$PID.log"
     Start-Transcript -Path $script:StartupLog -Force -ErrorAction Stop | Out-Null
@@ -151,17 +151,15 @@ try {
 
         return $r
     }
-    $script:MenuStateJob = Start-ThreadJob -ScriptBlock $script:MenuStateScript -ArgumentList (Join-Path $env:USERPROFILE "Winrift")
+    $script:MenuStateJob = Start-ThreadJob -ScriptBlock $script:MenuStateScript -ArgumentList (Join-Path $env:LOCALAPPDATA "Winrift")
 
     if ($Uninstall) {
         Write-Host ""
         Write-Log -Message "Uninstalling Winrift..." -Level INFO
         $shortcut = Join-Path ([Environment]::GetFolderPath('StartMenu')) "Programs\Winrift.lnk"
         if (Test-Path $shortcut) { Remove-Item $shortcut -Force; Write-Log -Message "Removed Start Menu shortcut" -Level SUCCESS }
-        $dataDir = Join-Path $env:USERPROFILE "Winrift"
+        $dataDir = Join-Path $env:LOCALAPPDATA "Winrift"
         if (Test-Path $dataDir) { Remove-Item $dataDir -Recurse -Force; Write-Log -Message "Removed data directory: $dataDir" -Level SUCCESS }
-        $iconDir = Join-Path $env:APPDATA "Winrift"
-        if (Test-Path $iconDir) { Remove-Item $iconDir -Recurse -Force; Write-Log -Message "Removed icon directory" -Level SUCCESS }
         try { Unregister-ScheduledTask -TaskName "Winrift-DriftCheck" -Confirm:$false -ErrorAction Stop; Write-Log -Message "Removed drift check scheduled task" -Level SUCCESS } catch { $null = $_ }
         Write-Log -Message "Winrift uninstalled." -Level SUCCESS
         exit 0
@@ -244,7 +242,7 @@ function Start-MenuStateCheck {
     if ($script:MenuStateJob) {
         Remove-Job $script:MenuStateJob -Force -ErrorAction SilentlyContinue
     }
-    $script:MenuStateJob = Start-ThreadJob -ScriptBlock $script:MenuStateScript -ArgumentList (Join-Path $env:USERPROFILE "Winrift")
+    $script:MenuStateJob = Start-ThreadJob -ScriptBlock $script:MenuStateScript -ArgumentList (Join-Path $env:LOCALAPPDATA "Winrift")
 }
 
 function Build-MenuDescriptions {

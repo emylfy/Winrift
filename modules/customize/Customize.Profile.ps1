@@ -37,7 +37,7 @@ function Export-WinriftProfile {
                 }
             }
             "2" {
-                $ds = Join-Path $env:USERPROFILE "Winrift\tweaks\desired_state.json"
+                $ds = Join-Path $env:LOCALAPPDATA "Winrift\tweaks\desired_state.json"
                 if (Test-Path $ds) {
                     Copy-Item $ds (Join-Path $profileDir "desired_state.json")
                     Write-Log -Message "Exported desired state" -Level SUCCESS
@@ -174,7 +174,7 @@ function Import-WinriftProfile {
                 }
             }
             "desired_state.json" {
-                $dst = Join-Path $env:USERPROFILE "Winrift\tweaks\desired_state.json"
+                $dst = Join-Path $env:LOCALAPPDATA "Winrift\tweaks\desired_state.json"
                 New-Item -Path (Split-Path $dst) -ItemType Directory -Force | Out-Null
                 Copy-Item $src $dst -Force
                 Write-Log -Message "Imported desired state" -Level SUCCESS

@@ -20,7 +20,7 @@ Invoke-Benchmark -Phase Before
 Invoke-Benchmark -Phase After
 ```
 
-The comparison report is displayed automatically and saved to `%USERPROFILE%\Winrift\benchmarks\`.
+The comparison report is displayed automatically and saved to `%LOCALAPPDATA%\Winrift\benchmarks\`.
 
 To re-view the last report without collecting new data:
 
@@ -85,7 +85,7 @@ Actual results depend on hardware, installed software, and which tweak categorie
 
 ## Output Files
 
-All benchmark data is stored in `%USERPROFILE%\Winrift\benchmarks\`:
+All benchmark data is stored in `%LOCALAPPDATA%\Winrift\benchmarks\`:
 
 | File | Description |
 | :--- | :--- |

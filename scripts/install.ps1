@@ -9,7 +9,7 @@ $shortcut.Arguments = '-NoProfile -ExecutionPolicy Bypass -Command "irm https://
 $shortcut.Description = "Launch Winrift"
 $shortcut.WorkingDirectory = $env:USERPROFILE
 
-$icoDir = "$env:APPDATA\Winrift"
+$icoDir = "$env:LOCALAPPDATA\Winrift"
 if (-not (Test-Path $icoDir)) {
     New-Item -Path $icoDir -ItemType Directory -Force | Out-Null
 }
