@@ -22,7 +22,7 @@
       "remediation": {
         "description": "Set AllowTelemetry to 0 (Security)",
         "type": "module",
-        "target": "modules/security/PrivacySexy.ps1",
+        "target": "modules/security/Privacy.ps1",
         "requires_reboot": false
       }
     },
@@ -125,7 +125,7 @@
       "remediation": {
         "description": "Set AdvertisingInfo Enabled=0",
         "type": "module",
-        "target": "modules/security/PrivacySexy.ps1",
+        "target": "modules/security/Privacy.ps1",
         "requires_reboot": false
       }
     },
@@ -149,7 +149,7 @@
       "remediation": {
         "description": "Set UploadUserActivities=0",
         "type": "module",
-        "target": "modules/security/PrivacySexy.ps1",
+        "target": "modules/security/Privacy.ps1",
         "requires_reboot": false
       }
     },
@@ -375,9 +375,9 @@
       },
       "cost": { "type": "qualitative" },
       "remediation": {
-        "description": "Run: fsutil behavior set DisableDeleteNotify NTFS 0",
+        "description": "Run: fsutil behavior set DisableDeleteNotify 0",
         "type": "inline",
-        "target": "fsutil behavior set DisableDeleteNotify NTFS 0",
+        "target": "fsutil behavior set DisableDeleteNotify 0",
         "requires_reboot": false
       }
     },
@@ -389,13 +389,8 @@
       "title": "NTFS last-access updates not disabled",
       "description": "Every read on NTFS writes a metadata update. On SSD this is wasted writes and slows tree traversal.",
       "detect": {
-        "probe": "Test-RegistryValueNotEquals",
-        "args": {
-          "path": "HKLM:\\SYSTEM\\CurrentControlSet\\Control\\FileSystem",
-          "name": "NtfsDisableLastAccessUpdate",
-          "expected": 1,
-          "treat_missing_as": 2
-        }
+        "probe": "Test-FsutilBehavior",
+        "args": { "key": "disablelastaccess", "expected": 1 }
       },
       "cost": { "type": "qualitative" },
       "remediation": {
@@ -471,9 +466,9 @@
       },
       "cost": { "type": "qualitative" },
       "remediation": {
-        "description": "Apply Universal Tweaks → Network",
-        "type": "module",
-        "target": "modules/system/Tweaks.Universal.ps1",
+        "description": "Set TCPNoDelay=1",
+        "type": "registry",
+        "target": "HKLM:\\SOFTWARE\\Microsoft\\MSMQ\\Parameters\\TCPNoDelay=1",
         "requires_reboot": false
       }
     },
@@ -612,9 +607,9 @@
       },
       "cost": { "type": "qualitative" },
       "remediation": {
-        "description": "Run Security & Privacy → DNS Benchmark and apply fastest provider",
-        "type": "module",
-        "target": "modules/security/SecurityMenu.ps1",
+        "description": "Go to Security & Privacy → DNS Benchmark and apply fastest provider",
+        "type": "manual",
+        "target": "",
         "requires_reboot": false
       }
     },
@@ -660,7 +655,7 @@
       "remediation": {
         "description": "Open Task Manager → Startup tab and disable unwanted entries",
         "type": "inline",
-        "target": "Start-Process taskmgr.exe -ArgumentList '/0','/Startup'",
+        "target": "Start-Process taskmgr.exe -ArgumentList '/0','/Startup' -Wait",
         "requires_reboot": false
       }
     },
@@ -682,7 +677,7 @@
       "remediation": {
         "description": "Open Task Manager → Startup tab and disable unwanted entries",
         "type": "inline",
-        "target": "Start-Process taskmgr.exe -ArgumentList '/0','/Startup'",
+        "target": "Start-Process taskmgr.exe -ArgumentList '/0','/Startup' -Wait",
         "requires_reboot": false
       }
     },
@@ -726,7 +721,7 @@
       "remediation": {
         "description": "Quit OneDrive and disable autostart",
         "type": "inline",
-        "target": "Get-Process OneDrive -ErrorAction SilentlyContinue | Stop-Process -Force",
+        "target": "Stop-Process -Name OneDrive -Force",
         "requires_reboot": false
       }
     },

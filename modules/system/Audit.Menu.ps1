@@ -1,4 +1,4 @@
-﻿. "$PSScriptRoot\..\..\scripts\Common.ps1"
+. "$PSScriptRoot\..\..\scripts\Common.ps1"
 . "$PSScriptRoot\Audit.Engine.ps1"
 
 # Audit menu UI — interactive browsing and application of audit findings.
@@ -129,6 +129,10 @@ function Invoke-AuditApply {
                     return $false
                 }
                 & $modulePath
+                Write-Log -Message "Module completed — re-scan to verify fix" -Level INFO
+            }
+            'manual' {
+                Write-Log -Message $rem.description -Level INFO
             }
             'registry' {
                 # Parse "HKLM:\Path\To\Key\Name=Value" or "...=DELETE"
@@ -156,7 +160,7 @@ function Invoke-AuditApply {
                     Write-Log -Message "Inline remediation contains prohibited characters (|&`). Skipping." -Level ERROR
                     return $false
                 }
-                $allowedPrefixes = @('Stop-Service', 'Set-Service', 'Enable-MMAgent', 'Disable-MMAgent',
+                $allowedPrefixes = @('Stop-Service', 'Set-Service', 'Stop-Process', 'Enable-MMAgent', 'Disable-MMAgent',
                                      'Get-Process', 'Start-Process', 'fsutil')
                 $statements = $rem.target -split '\s*;\s*' | Where-Object { $_ -ne '' }
                 foreach ($stmt in $statements) {
@@ -187,7 +191,7 @@ function Invoke-ApplyAllCritical {
     param([Parameter(Mandatory)][object[]]$Findings)
 
     $eligible = $Findings | Where-Object {
-        $_.Severity -eq 'critical' -and -not $_.Remediation.requires_reboot
+        $_.Severity -eq 'critical' -and -not $_.Remediation.requires_reboot -and $_.Remediation.type -notin @('module', 'manual')
     }
     if ($eligible.Count -eq 0) {
         Write-Log -Message "No critical findings eligible for bulk apply" -Level INFO
@@ -238,7 +242,7 @@ function Show-AuditWizard {
             $selection = @{}
             $hasCritical = $findings | Where-Object { $_.Severity -eq 'critical' }
             foreach ($f in $findings) {
-                $selection[$f.Id] = if ($hasCritical) { $f.Severity -eq 'critical' } else { $true }
+                $selection[$f.Id] = $hasCritical ? ($f.Severity -eq 'critical') : $true
             }
             $cursor = 0
             $vpTop = 0
@@ -273,7 +277,7 @@ function Show-AuditWizard {
                 foreach ($group in $byCategory) {
                     $items.Add("--- $($group.Name) ---")
                     foreach ($f in $group.Group) {
-                        $marker = if ($selection[$f.Id]) { "$Green[*]$Reset" } else { "$Dim[ ]$Reset" }
+                        $marker = $selection[$f.Id] ? "$Green[*]$Reset" : "$Dim[ ]$Reset"
                         $sevGlyph = switch ($f.Severity) {
                             'critical' { "$Red$([char]0x2717)$Reset" }
                             'warning'  { "$Yellow!$Reset" }
