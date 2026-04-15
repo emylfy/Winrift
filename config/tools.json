@@ -34,15 +34,6 @@
             "docs": "https://github.com/es3n1n/defendnot"
         },
         {
-            "id": "privacysexy",
-            "name": "Privacy.sexy",
-            "description": "Privacy and security hardening scripts",
-            "type": "download",
-            "url": "https://privacylearn.com/downloads/windows/standard.bat",
-            "filename": "standard.bat",
-            "docs": "https://privacy.sexy"
-        },
-        {
             "id": "removewindowsai",
             "name": "RemoveWindowsAI",
             "description": "Remove Copilot, Recall and AI features",

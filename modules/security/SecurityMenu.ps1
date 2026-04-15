@@ -1,4 +1,4 @@
-﻿. "$PSScriptRoot\..\..\scripts\Common.ps1"
+. "$PSScriptRoot\..\..\scripts\Common.ps1"
 $Host.UI.RawUI.WindowTitle = "Security & Privacy Tools"
 
 Initialize-Logging -ModuleName "security"
@@ -47,7 +47,7 @@ function Invoke-DnsBenchmark {
             }
         }
         $avg = ($times | Measure-Object -Average).Average
-        $color = if ($avg -lt 20) { $Green } elseif ($avg -lt 50) { $Yellow } else { $Red }
+        $color = $avg -lt 20 ? $Green : ($avg -lt 50 ? $Yellow : $Red)
         Write-Host "$color$([math]::Round($avg, 1)) ms$Reset"
         $results += @{ Name = $provider.Name; Primary = $provider.Primary; Secondary = $provider.Secondary; Avg = $avg }
     }
@@ -73,7 +73,7 @@ function Invoke-DnsBenchmark {
         Write-Host ""
         for ($i = 0; $i -lt $ranked.Count; $i++) {
             $r     = $ranked[$i]
-            $color = if ($r.Avg -lt 20) { $Green } elseif ($r.Avg -lt 50) { $Yellow } else { $Red }
+            $color = $r.Avg -lt 20 ? $Green : ($r.Avg -lt 50 ? $Yellow : $Red)
             Write-Host "  $Cyan$($i + 1)$Reset  $($r.Name.PadRight(16))$color$([math]::Round($r.Avg, 1)) ms$Reset"
         }
         Write-Host "  $Dim0$Reset  Skip"
@@ -119,7 +119,7 @@ function Show-SecurityMenu {
     Invoke-MenuLoop -Title "Security & Privacy Tools" -Items @(
         "1 › DefendNot - Disable Windows Defender",
         "2 › RemoveWindowsAI - Remove Copilot & Recall",
-        "3 › Privacy.sexy - Enforce privacy and security",
+        "3 › Privacy Hardening - Enforce privacy and security",
         "4 › DNS Benchmark - Test & apply fastest DNS",
         "5 › Just the Browser - Remove AI & telemetry from browsers",
         "---",
@@ -127,7 +127,7 @@ function Show-SecurityMenu {
     ) -Actions @{
         "1" = { Start-AdminProcess -ScriptPath "$menuRoot\DefendNot.ps1" }
         "2" = { Start-AdminProcess -ScriptPath "$menuRoot\RemoveWindowsAI.ps1" }
-        "3" = { Start-AdminProcess -ScriptPath "$menuRoot\PrivacySexy.ps1" }
+        "3" = { Start-AdminProcess -ScriptPath "$menuRoot\Privacy.ps1" }
         "4" = { Invoke-DnsBenchmark }
         "5" = { Start-AdminProcess -ScriptPath "$menuRoot\JustTheBrowser.ps1" }
     } -ExitKey "6"
