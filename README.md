@@ -19,7 +19,7 @@
 
 Not sure where to start? Run **System Audit** first — it scans your setup and shows exactly what's wrong.
 
-Open PowerShell as admin — <kbd>Win</kbd> + <kbd>X</kbd> → Terminal Admin:
+Open PowerShell — <kbd>Win</kbd> + <kbd>X</kbd> → Terminal:
 
 ```powershell
 Set-ExecutionPolicy Bypass -Scope Process -Force; irm https://raw.githubusercontent.com/emylfy/winrift/main/scripts/launch.ps1 | iex
@@ -66,7 +66,7 @@ Other tools apply tweaks and hope for the best. Winrift measures 13 system metri
 | 🩺  | **System Audit**                               | Concrete findings + cost estimates + one-click fixes                           |
 | ⚙️  | [**System Tweaks**](docs/tweaks_guide.md)      | 13 categories — latency, SSD, GPU, network, power, memory, DirectX             |
 | 🔄  | [**Drift Detection**](docs/drift_detection.md) | Catches Windows Update reverting your tweaks; one-click reapply                |
-| 🛡️  | **Security & Privacy**                         | Defender, Copilot/Recall removal, privacy hardening                            |
+| 🛡️  | **Security & Privacy**                         | Defender, Copilot/Recall removal, built-in privacy hardening, DNS benchmark    |
 | 🖥️  | **Drivers**                                    | NVIDIA · AMD · Intel + 11 OEM manufacturers                                    |
 | 🎨  | [**Customize**](modules/customize/README.md)   | Desktop, terminal, editors, app themes — all without admin                     |
 | 📦  | **App Bundles**                                | 7 curated collections — native winget selector, optional UniGetUI              |
@@ -122,7 +122,7 @@ Windows Updates silently revert registry changes. Drift Detection catches this.
 | :------------------ | :---------------------------------------------------------- |
 | **DefendNot**       | Disable Windows Defender via Security Center API            |
 | **RemoveWindowsAI** | Remove Copilot and Recall packages                          |
-| **privacy.sexy**    | Comprehensive privacy hardening — standard or custom preset |
+| **Privacy Hardening** | Disable telemetry, tracking, bloatware — 200+ settings |
 
 All tools run only when explicitly selected.
 
@@ -200,7 +200,7 @@ Each finding marks its cost honestly: **measured** (real RAM right now), **estim
 | Windows 11 24H2 / 22H2 | Supported     |
 | Windows 10             | Not supported |
 
-**Requirements:** PowerShell 5.1+ · Administrator · Internet connection
+**Requirements:** PowerShell 7+ (auto-installs if missing) · Administrator · Internet connection
 
 ---
 

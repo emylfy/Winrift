@@ -168,6 +168,7 @@ try {
     # Capture root path — one level up from scripts/ to repo root
     $script:Root = Split-Path $PSScriptRoot -Parent
 
+
     # Load version from version.json
     $script:UpdateAvailable = $null
     $script:UpdateCheckJob = $null
@@ -248,14 +249,13 @@ function Start-MenuStateCheck {
 function Build-MenuDescriptions {
     $d = @{}
     $st = $script:MenuState
-
     $dot = "$Dim$([char]0x00B7)$Reset"
+    $ok = "$Green$([char]0x2713)$Reset"
 
-    # 0: System Audit
     if ($st -and $st.ContainsKey('audit')) {
         $a = $st['audit']
         if ($a.total -eq 0) {
-            $d[0] = @("$Green$([char]0x2713) All checks passed$Reset", "", "No issues found.")
+            $d[0] = @("$ok All checks passed.", "${Dim}No issues found.$Reset")
         } else {
             $parts = @()
             if ($a.critical -gt 0) { $parts += "$Red$([char]0x2717) $($a.critical) critical$Reset" }
@@ -265,79 +265,134 @@ function Build-MenuDescriptions {
             try {
                 $ts = [datetime]::Parse($a.timestamp)
                 $when = ($ts.Date -eq (Get-Date).Date) ? "today $($ts.ToString('HH:mm'))" : $ts.ToString('MMM d')
-                $lines += "Scanned $when"
+                $lines += "${Dim}Scanned $when$Reset"
             } catch { $null = $_ }
-            $lines += ""; $lines += "33 checks $dot one-click fixes."
+            $lines += ""
+            $lines += "Select issues and apply fixes,"
+            $lines += "or press ${Ice}C$Reset to fix all critical."
             $d[0] = $lines
         }
     } else {
-        $d[0] = @("Not scanned yet.", "", "33 checks across 6 categories.", "One-click fixes for each finding.")
+        $d[0] = @(
+            "Scan your system for issues.",
+            "${Dim}Privacy $dot Performance $dot Memory$Reset",
+            "${Dim}Storage $dot Startup $dot Network$Reset", "",
+            "Each issue has a fix you can",
+            "apply right from here."
+        )
     }
 
-    # 1: System Tweaks
     if ($st -and $st.ContainsKey('tweaks')) {
         $t = $st['tweaks']
-        $lines = @("$($t.categories) categories $dot $($t.entries) values")
+        $lines = @("$Cyan$($t.categories)$Reset categories $dot $Cyan$($t.entries)$Reset values applied")
         if ($t.drifted -gt 0) {
             $lines += "$Yellow! $($t.drifted) drifted$Reset"
         } else {
-            $lines += "$Green$([char]0x2713) No drift$Reset"
+            $lines += "$ok No drift"
         }
-        $lines += ""; $lines += "Apply all safe or pick individual."
+        $lines += ""
+        $lines += "${Dim}Pick more categories or$Reset"
+        $lines += "${Dim}restore previous backup.$Reset"
         $d[1] = $lines
     } else {
-        $d[1] = @("No tweaks applied yet.", "", "13 categories. Pick individual,", "apply all safe, or use wizard.")
+        $d[1] = @(
+            "Optimize performance, input,",
+            "storage, GPU, network, power.", "",
+            "${Dim}13 categories. Pick one, apply$Reset",
+            "${Dim}all safe, or use the wizard.$Reset", "",
+            "${Dim}Restore point created before$Reset",
+            "${Dim}any changes. Full undo available.$Reset"
+        )
     }
 
-    # 2: Security & Privacy
     if ($st -and ($st.ContainsKey('defender') -or $st.ContainsKey('copilot'))) {
-        $lines = @()
         $def = $st.ContainsKey('defender') ? $st['defender'] : 'unknown'
         $defC = switch ($def) { 'active' { $Yellow } 'disabled' { $Green } default { $Dim } }
-        $lines += "Defender: $defC$def$Reset"
         $cop = $st.ContainsKey('copilot') ? $st['copilot'] : 'unknown'
         $rec = $st.ContainsKey('recall')  ? $st['recall']  : 'unknown'
         $copC = ($cop -eq 'removed') ? $Green : $Yellow
         $recC = ($rec -eq 'removed') ? $Green : $Yellow
-        $lines += "Copilot: $copC$cop$Reset $dot Recall: $recC$rec$Reset"
-        $lines += ""; $lines += "${Dim}Built-in privacy hardening.$Reset"
-        $d[2] = $lines
+        $d[2] = @(
+            "Defender: $defC$def$Reset",
+            "Copilot: $copC$cop$Reset $dot Recall: $recC$rec$Reset", "",
+            "${Dim}Disable Defender, remove AI,$Reset",
+            "${Dim}harden 200+ privacy settings,$Reset",
+            "${Dim}or find the fastest DNS.$Reset"
+        )
     } else {
-        $d[2] = @("Defender, Copilot, Recall.", "Built-in privacy hardening.", "", "All tools run only when selected.")
+        $d[2] = @(
+            "Manage Defender, remove Copilot",
+            "and Recall, harden privacy,",
+            "benchmark and apply fastest DNS.", "",
+            "${Dim}Each tool runs only when selected.$Reset"
+        )
     }
 
-    # 3: Drivers
     if ($st -and $st.ContainsKey('gpu')) {
-        $d[3] = @("$Cyan$($st['gpu'])$Reset", "", "NVIDIA $dot AMD $dot Intel + 11 OEM.", "Opens manufacturer download pages.")
+        $d[3] = @(
+            "$Cyan$($st['gpu'])$Reset", "",
+            "NVIDIA $dot AMD $dot Intel + 11 OEM",
+            "${Dim}Opens official download pages.$Reset"
+        )
     } else {
-        $d[3] = @("NVIDIA $dot AMD $dot Intel + 11 OEM.", "Opens manufacturer download pages.")
+        $d[3] = @(
+            "NVIDIA $dot AMD $dot Intel + 11 OEM",
+            "${Dim}Opens official download pages.$Reset"
+        )
     }
 
-    # 4: Benchmark
     if ($st -and $st.ContainsKey('benchmark')) {
-        $d[4] = @("Last run: $Cyan$($st['benchmark'].date)$Reset", "", "13 metrics, Markdown report.", "Run before & after tweaks.")
+        $d[4] = @(
+            "Last run: $Cyan$($st['benchmark'].date)$Reset", "",
+            "Run again to compare with the",
+            "previous snapshot.", "",
+            "${Dim}CPU $dot RAM $dot Boot $dot Processes$Reset",
+            "${Dim}Services $dot DPC $dot Ctx switches$Reset"
+        )
     } else {
-        $d[4] = @("No data yet.", "", "13 metrics, Markdown report.", "Run before & after tweaks.")
+        $d[4] = @(
+            "Measure your system before and",
+            "after tweaks to see the difference.", "",
+            "${Dim}CPU $dot RAM $dot Boot $dot Processes$Reset",
+            "${Dim}Services $dot DPC $dot Ctx switches$Reset"
+        )
     }
 
-    # 6: App Bundles
-    $d[6] = @("7 collections via winget.", "Dev $dot Browsers $dot Utilities", "Gaming $dot Media $dot Productivity", "Communications")
-
-    # 7: Customize (E — rainbow tool names)
-    $d[7] = @(
-        "$Cyan GlazeWM$Reset $dot $Green Oh My Posh$Reset $dot $Yellow Nerd Fonts$Reset",
-        "$Cyan Themes$Reset $dot $Green Editors$Reset $dot $Yellow Wallpapers$Reset",
-        "${Dim} Profile backup & restore.$Reset"
+    $d[6] = @(
+        "Install apps by category:",
+        "$Cyan Dev$Reset $dot $Green Browsers$Reset $dot $Yellow Utilities$Reset",
+        "$Cyan Gaming$Reset $dot $Green Media$Reset $dot $Yellow Productivity$Reset",
+        "$Cyan Communications$Reset", "",
+        "${Dim}Browse, search, or open in UniGetUI.$Reset"
     )
 
-    # 8: ISO Builder
-    $d[8] = @("Build clean Windows 11 ISO.", "Built-in or custom answer file.", "Removes bloat, disables telemetry.")
+    $d[7] = @(
+        "$Cyan GlazeWM$Reset $dot $Green Oh My Posh$Reset $dot $Yellow Nerd Fonts$Reset",
+        "$Cyan Themes$Reset $dot $Green Editors$Reset $dot $Yellow Wallpapers$Reset", "",
+        "${Dim}Desktop, terminal, and app theming.$Reset",
+        "${Dim}Runs without admin.$Reset",
+        "${Dim}Profile backup & restore.$Reset"
+    )
 
-    # 10: Community Tools
-    $d[10] = @("WinUtil $dot Sparkle $dot GTweak", "WinScript $([char]0x2014) custom script builder.", "", "Each tool opens in a new window.")
+    $d[8] = @(
+        "Build a clean Windows 11 ISO",
+        "${Dim}Removes bloat, disables telemetry,$Reset",
+        "${Dim}bypasses hardware checks.$Reset", "",
+        "${Dim}Built-in or custom answer file.$Reset"
+    )
 
-    # 11: Docs & Guides
-    $d[11] = @("Tweaks Guide $dot Answer File", "Benchmark Guide $dot Wiki.", "", "Opens in browser. GitHub-hosted.")
+    $d[10] = @(
+        "$Cyan WinUtil$Reset $dot $Cyan Sparkle$Reset $dot $Cyan GTweak$Reset",
+        "$Cyan WinScript$Reset", "",
+        "${Dim}Popular community tools.$Reset",
+        "${Dim}Each opens in a new window.$Reset"
+    )
+
+    $d[11] = @(
+        "$Cyan Tweaks guide$Reset $dot $Cyan Answer file$Reset",
+        "$Cyan Benchmark methodology$Reset $dot $Cyan Wiki$Reset", "",
+        "${Dim}Opens in browser.$Reset"
+    )
 
     return $d
 }
@@ -440,15 +495,15 @@ function Show-MainMenu {
 
     $ic = $script:MenuIcons
     $menuItems = @(
-        "1 › $($ic.audit)System Audit - Scan & fix issues",
-        "2 › $($ic.tweaks)System Tweaks - Performance & latency",
-        "3 › $($ic.security)Security & Privacy - Defender, Copilot, privacy",
-        "4 › $($ic.drivers)Driver Pages - NVIDIA, AMD, Intel, OEM",
-        "5 › $($ic.benchmark)Benchmark - Before & after metrics",
+        "1 › $($ic.audit)System Audit",
+        "2 › $($ic.tweaks)System Tweaks",
+        "3 › $($ic.security)Security & Privacy",
+        "4 › $($ic.drivers)Drivers",
+        "5 › $($ic.benchmark)Benchmark",
         "--- ---",
-        "6 › $($ic.bundles)App Bundles - Curated app collections",
-        "7 › $($ic.customize)Customize - Desktop, terminal, themes",
-        "8 › $($ic.iso)ISO Builder - Clean Windows install, no bloat",
+        "6 › $($ic.bundles)App Bundles",
+        "7 › $($ic.customize)Customize",
+        "8 › $($ic.iso)ISO Builder",
         "--- ---",
         "9 › Community Tools",
         "0 › Docs & Guides"
@@ -489,7 +544,7 @@ function Show-MainMenu {
         $actions["U"] = { Invoke-SelfUpdate -Version $script:UpdateAvailable }
     }
 
-    Invoke-MenuLoop -Title "Winrift v$script:AppVersion" -Items $menuItems -Actions $actions -Descriptions $script:MenuDescriptions -SplitAt 30 -TitleSuffix $titleSuffix -HideKeys
+    Invoke-MenuLoop -Title "Winrift v$script:AppVersion" -Items $menuItems -Actions $actions -Descriptions $script:MenuDescriptions -SplitAt 26 -TitleSuffix $titleSuffix -HideKeys
 }
 
     Show-MainMenu

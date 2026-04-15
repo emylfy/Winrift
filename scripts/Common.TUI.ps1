@@ -421,6 +421,11 @@ function _Draw-InteractiveBox {
                 if ($cur) { $tempDesc.Add($cur) }
             }
         }
+        $totalRightRows = $visibleRows + ($needsScroll ? 2 : 0)
+        $pad = [math]::Max(0, [math]::Floor(($totalRightRows - $tempDesc.Count) / 3))
+        if ($pad -gt 0) {
+            for ($p = 0; $p -lt $pad; $p++) { $tempDesc.Insert(0, "") }
+        }
         $descLines = $tempDesc.ToArray()
     }
 
