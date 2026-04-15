@@ -1,4 +1,4 @@
-﻿. "$PSScriptRoot\..\..\scripts\Common.ps1"
+. "$PSScriptRoot\..\..\scripts\Common.ps1"
 
 # Audit probes — pure functions called by Audit.Engine via reflection.
 #
@@ -39,7 +39,7 @@ function Test-RegistryValueEquals {
     )
     $current = _Get-RegistryValueOrDefault -Path $path -Name $name -Default $treat_missing_as
     $found = ($current -eq $expected)
-    $evidence = if ($null -eq $current) { "$name is not set" } else { "$name = $current (expected $expected)" }
+    $evidence = $null -eq $current ? "$name is not set" : "$name = $current (expected $expected)"
     return @{ found = $found; evidence = $evidence }
 }
 
@@ -54,7 +54,7 @@ function Test-RegistryValueNotEquals {
     )
     $current = _Get-RegistryValueOrDefault -Path $path -Name $name -Default $treat_missing_as
     $found = ($current -ne $expected)
-    $evidence = if ($null -eq $current) { "$name is not set (expected $expected)" } else { "$name = $current (expected $expected)" }
+    $evidence = $null -eq $current ? "$name is not set (expected $expected)" : "$name = $current (expected $expected)"
     return @{ found = $found; evidence = $evidence }
 }
 
@@ -71,7 +71,7 @@ function Test-RegistryValueGreaterThan {
     $numeric = 0
     $isNumeric = [int]::TryParse([string]$current, [ref]$numeric)
     $found = ($isNumeric -and $numeric -gt $threshold)
-    $evidence = if ($null -eq $current) { "$name is not set (treated as $treat_missing_as)" } else { "$name = $current (threshold $threshold)" }
+    $evidence = $null -eq $current ? "$name is not set (treated as $treat_missing_as)" : "$name = $current (threshold $threshold)"
     return @{ found = $found; evidence = $evidence }
 }
 

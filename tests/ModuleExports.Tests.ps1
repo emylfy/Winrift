@@ -1,4 +1,4 @@
-﻿BeforeDiscovery {
+BeforeDiscovery {
     $repoRoot = Split-Path $PSScriptRoot -Parent
     $scripts = @(
         @{

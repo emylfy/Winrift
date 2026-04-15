@@ -1,10 +1,10 @@
-﻿$Host.UI.RawUI.WindowTitle = "Winrift - Installer"
+$Host.UI.RawUI.WindowTitle = "Winrift - Installer"
 
 $startMenuPath = [System.Environment]::GetFolderPath('Programs')
 $shortcutPath = Join-Path -Path $startMenuPath -ChildPath "Winrift.lnk"
 $wshShell = New-Object -ComObject WScript.Shell
 $shortcut = $wshShell.CreateShortcut($shortcutPath)
-$shortcut.TargetPath = "powershell.exe"
+$shortcut.TargetPath = "pwsh.exe"
 $shortcut.Arguments = '-NoProfile -ExecutionPolicy Bypass -Command "irm https://raw.githubusercontent.com/emylfy/winrift/main/scripts/launch.ps1 | iex"'
 $shortcut.Description = "Launch Winrift"
 $shortcut.WorkingDirectory = $env:USERPROFILE

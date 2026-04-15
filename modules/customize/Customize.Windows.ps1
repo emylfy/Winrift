@@ -1,4 +1,4 @@
-﻿function Set-ShortDateHours {
+function Set-ShortDateHours {
     Clear-Host
     $confirm = Show-InteractiveMenu -Title "Set Date & Time Format" -HideKeys -Items @(
         "Sets short date to 'MMM dd yyyy' and time to 'HH:mm'.",
@@ -81,7 +81,7 @@ function Expand-StartFolders {
         Wait-ForUser
         return
     }
-    # Use powershell.exe -Verb RunAs directly — bypasses Windows Terminal
+    # Use pwsh.exe -Verb RunAs directly — bypasses Windows Terminal
     # so the admin token is always correctly applied to the PowerShell process.
-    Start-Process powershell.exe -ArgumentList "-ExecutionPolicy Bypass -File `"$organizerPath`"" -Verb RunAs
+    Start-Process pwsh.exe -ArgumentList "-ExecutionPolicy Bypass -File `"$organizerPath`"" -Verb RunAs
 }

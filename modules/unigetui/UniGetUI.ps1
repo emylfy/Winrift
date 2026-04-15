@@ -1,4 +1,4 @@
-﻿. "$PSScriptRoot\..\..\scripts\Common.ps1"
+. "$PSScriptRoot\..\..\scripts\Common.ps1"
 
 Initialize-Logging -ModuleName "unigetui"
 
@@ -75,7 +75,7 @@ function Show-NativePackageSelector {
         $isBroken    = $brokenIds    -and $brokenIds.Contains($pkg.Id)
         $isInstalled = $installedIds -and $installedIds.Contains($pkg.Id)
         if ($isInstalled) { $installedCount++ }
-        $suffix = if ($isBroken) { "  $Red[broken]$Reset" } elseif ($isInstalled) { "  $Dim(installed)$Reset" } else { "" }
+        $suffix = $isBroken ? "  $Red[broken]$Reset" : ($isInstalled ? "  $Dim(installed)$Reset" : "")
         $items += "$($pkg.Id) › $($pkg.Name)$suffix"
     }
 
@@ -145,7 +145,7 @@ function Show-AllPackagesSearch {
         if ($item -match '^---') { $annotated.Add($item); continue }
         if ($item -match '^([^\s›>]+)') {
             $id = $Matches[1]
-            $suffix = if ($brokenIds -and $brokenIds.Contains($id)) { "  $Red[broken]$Reset" } elseif ($installedIds -and $installedIds.Contains($id)) { "  $Dim(installed)$Reset" } else { "" }
+            $suffix = ($brokenIds -and $brokenIds.Contains($id)) ? "  $Red[broken]$Reset" : (($installedIds -and $installedIds.Contains($id)) ? "  $Dim(installed)$Reset" : "")
             $annotated.Add("$item$suffix")
         } else {
             $annotated.Add($item)
@@ -200,7 +200,7 @@ function Show-UniGetUIBundleMenu {
     $i = 1
     foreach ($f in $bundleFiles) {
         $base  = [System.IO.Path]::GetFileNameWithoutExtension($f.Name)
-        $label = if ($friendlyNames.ContainsKey($base)) { $friendlyNames[$base] } else { $base }
+        $label = $friendlyNames.ContainsKey($base) ? $friendlyNames[$base] : $base
         $items += "$i › $label"
         $i++
     }
@@ -234,7 +234,7 @@ function Show-UniGetUIBundleMenu {
 function Show-AppCategoryMenu {
     $unigetuiExe       = Get-UniGetUIExe
     $unigetuiInstalled = $null -ne $unigetuiExe
-    $unigetuiLabel     = if ($unigetuiInstalled) { "8 › UniGetUI - Open bundle in app" } else { "8 › UniGetUI - Install package manager UI" }
+    $unigetuiLabel     = $unigetuiInstalled ? "8 › UniGetUI - Open bundle in app" : "8 › UniGetUI - Install package manager UI"
 
     Invoke-MenuLoop -Title "App Categories" -Items @(
         "0 › Search all packages",

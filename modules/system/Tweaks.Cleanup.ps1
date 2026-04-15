@@ -1,4 +1,4 @@
-﻿$PC_MANAGER_AUMID = "Microsoft.MicrosoftPCManager_8wekyb3d8bbwe!App"
+$PC_MANAGER_AUMID = "Microsoft.MicrosoftPCManager_8wekyb3d8bbwe!App"
 $PC_MANAGER_STORE = "ms-windows-store://pdp?hl=en-us&gl=us&ocid=pdpshare&referrer=storeforweb&productid=9pm860492szd&storecid=storeweb-pdp-open-cta"
 
 function Clear-SystemSpace {

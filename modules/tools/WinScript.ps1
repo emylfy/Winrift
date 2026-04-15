@@ -1,4 +1,4 @@
-﻿. "$PSScriptRoot\..\..\scripts\Common.ps1"
+. "$PSScriptRoot\..\..\scripts\Common.ps1"
 Initialize-Logging -ModuleName "winscript"
 
 function Show-WinScriptMenu {

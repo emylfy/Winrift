@@ -1,556 +1,68 @@
-﻿param(
+param(
     [switch]$DryRun,
     [switch]$NoConfirm,
     [switch]$Uninstall
 )
 
-# Admin elevation — fail fast before any expensive I/O
-# Loads only AdminLaunch.ps1 (~55 lines, no deps) so the non-admin process
-# exits as cheaply as possible without going through Common.ps1 / transcript.
-# Without this, the user sees several [STARTUP] lines flash by before the
-# UAC prompt — looks like the script hung or crashed.
-. "$PSScriptRoot\scripts\AdminLaunch.ps1"
+# Thin entry point — PS 5.1 compatible (no ternary, no ??, no Start-ThreadJob).
+# Ensures PowerShell 7 is available, then hands off to scripts/Main.ps1 which
+# uses PS7 syntax freely. This file is the only .ps1 that PS 5.1 ever parses.
 
-if (-not ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole(
-    [Security.Principal.WindowsBuiltInRole]::Administrator)) {
-    Write-Host "Winrift requires administrator privileges. Requesting elevation..." -ForegroundColor Yellow
+if ($PSVersionTable.PSVersion.Major -lt 7) {
+    $isAdmin = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole(
+        [Security.Principal.WindowsBuiltInRole]::Administrator)
 
-    $passthrough = @()
-    if ($DryRun)    { $passthrough += "-DryRun" }
-    if ($NoConfirm) { $passthrough += "-NoConfirm" }
-    if ($Uninstall) { $passthrough += "-Uninstall" }
-
-    try {
-        Start-AdminProcess -ScriptPath $PSCommandPath -Arguments $passthrough -NoExit
-    } catch {
-        Write-Host "Elevation cancelled or failed: $($_.Exception.Message)" -ForegroundColor Red
-        exit 1
+    $pwsh = (Get-Command pwsh.exe -ErrorAction SilentlyContinue).Source
+    if (-not $pwsh) {
+        $pwsh = "$env:ProgramFiles\PowerShell\7\pwsh.exe"
+        if (-not (Test-Path $pwsh)) { $pwsh = $null }
     }
-    exit 0
-}
 
-# Startup transcript — captures everything, even pre-Common.ps1 failures
-$script:StartupLogStarted = $false
-try {
-    $logDir = Join-Path $env:USERPROFILE "Winrift\logs"
-    if (-not (Test-Path $logDir)) { New-Item -Path $logDir -ItemType Directory -Force | Out-Null }
-    $script:StartupLog = Join-Path $logDir "winrift_startup_$(Get-Date -Format 'yyyy-MM-dd_HH-mm-ss')_$PID.log"
-    Start-Transcript -Path $script:StartupLog -Force -ErrorAction Stop | Out-Null
-    $script:StartupLogStarted = $true
-} catch {
-    Write-Warning "Failed to start startup transcript: $($_.Exception.Message)"
-}
+    $mainPath = "$PSScriptRoot\scripts\Main.ps1"
+    $extraArgs = @()
+    if ($DryRun)    { $extraArgs += "-DryRun" }
+    if ($NoConfirm) { $extraArgs += "-NoConfirm" }
+    if ($Uninstall) { $extraArgs += "-Uninstall" }
 
-$ErrorActionPreference = 'Stop'
-
-try {
-    . "$PSScriptRoot\scripts\Common.ps1"
-
-    if ($DryRun) { $env:WINRIFT_DRY_RUN = "1" }
-    if ($NoConfirm) { $env:WINRIFT_NO_CONFIRM = "1" }
-
-    Initialize-NerdFont
-
-    # Background runspace: samples CPU/RAM/procs every 10 seconds.
-    # Only queries CIM when .Active = $true (set by the main menu); sleeps otherwise
-    # so sub-modules don't waste CIM calls the user never sees.
-    $script:SysStats = [hashtable]::Synchronized(@{ CPU = '...'; RAM = '...'; Procs = '...'; Active = $false })
-    $statsRs = [runspacefactory]::CreateRunspace()
-    $statsRs.Open()
-    $statsPs = [powershell]::Create()
-    $statsPs.Runspace = $statsRs
-    $null = $statsPs.AddScript({
-        param($s)
-        while ($true) {
-            if ($s.Active) {
-                try {
-                    $os  = Get-CimInstance Win32_OperatingSystem -ErrorAction Stop
-                    $cpu = (Get-CimInstance Win32_Processor -ErrorAction Stop | Measure-Object -Property LoadPercentage -Average).Average
-                    $s.CPU   = "$([Math]::Round($cpu))%"
-                    $s.RAM   = "$([Math]::Round(($os.TotalVisibleMemorySize - $os.FreePhysicalMemory) / $os.TotalVisibleMemorySize * 100))%"
-                    $s.Procs = (Get-Process -ErrorAction Stop).Count
-                } catch { $null = $_ }
-            }
-            Start-Sleep -Seconds 10
+    # Fast path: PS7 already installed — elevate directly into WT + pwsh (skip intermediate PS 5.1 window)
+    if ($pwsh -and -not $isAdmin) {
+        $hasWT = [bool](Get-Command wt.exe -ErrorAction SilentlyContinue)
+        $pwshArgString = "-ExecutionPolicy Bypass -File `"$mainPath`" $($extraArgs -join ' ')".Trim()
+        if ($hasWT) {
+            Start-Process "wt.exe" -ArgumentList "pwsh.exe $pwshArgString" -Verb RunAs
+        } else {
+            Start-Process $pwsh -ArgumentList $pwshArgString -Verb RunAs
         }
-    }).AddArgument($script:SysStats)
-    $null = $statsPs.BeginInvoke()
-
-    # Background job: scans system state for dynamic sidebar descriptions.
-    # Covers audit cache, drift state, benchmark reports, GPU, Defender, Copilot/Recall.
-    $script:MenuState = $null
-    $script:MenuStateUpdated = $false
-    $script:MenuStateScript = {
-        param($DataDir)
-        $r = @{}
-
-        # Audit cache
-        try {
-            $f = Join-Path $DataDir "audit\last.json"
-            if (Test-Path $f) {
-                $d = Get-Content $f -Raw | ConvertFrom-Json
-                $fl = @($d.findings)
-                $r['audit'] = @{
-                    critical  = @($fl | Where-Object { $_.Severity -eq 'critical' }).Count
-                    warning   = @($fl | Where-Object { $_.Severity -eq 'warning' }).Count
-                    info      = @($fl | Where-Object { $_.Severity -eq 'info' }).Count
-                    total     = $fl.Count
-                    timestamp = $d.timestamp
-                }
-            }
-        } catch { $null = $_ }
-
-        # Drift state + live registry comparison
-        try {
-            $f = Join-Path $DataDir "tweaks\desired_state.json"
-            if (Test-Path $f) {
-                $d = Get-Content $f -Raw | ConvertFrom-Json
-                $entries = @($d.entries)
-                $cats = @($entries | ForEach-Object { $_.Category } | Select-Object -Unique).Count
-                $drifted = 0
-                foreach ($e in $entries) {
-                    try {
-                        $v = (Get-ItemProperty -Path $e.Path -Name $e.Name -ErrorAction Stop).$($e.Name)
-                        if ("$v" -ne "$($e.Value)") { $drifted++ }
-                    } catch { $drifted++ }
-                }
-                $r['tweaks'] = @{ entries = $entries.Count; categories = $cats; drifted = $drifted }
-            }
-        } catch { $null = $_ }
-
-        # Last benchmark report
-        try {
-            $bd = Join-Path $DataDir "benchmarks"
-            if (Test-Path $bd) {
-                $rp = @(Get-ChildItem $bd -Filter "report_*.md" -ErrorAction SilentlyContinue | Sort-Object LastWriteTime -Descending)
-                if ($rp.Count -gt 0) { $r['benchmark'] = @{ date = $rp[0].LastWriteTime.ToString('yyyy-MM-dd HH:mm') } }
-            }
-        } catch { $null = $_ }
-
-        # GPU via registry
-        try {
-            $ck = "HKLM:\SYSTEM\CurrentControlSet\Control\Class\{4d36e968-e325-11ce-bfc1-08002be10318}"
-            if (Test-Path $ck) {
-                Get-ChildItem $ck -ErrorAction SilentlyContinue | Where-Object { $_.PSChildName -match '^\d{4}$' } | ForEach-Object {
-                    try {
-                        $desc = (Get-ItemProperty $_.PSPath -ErrorAction Stop).DriverDesc
-                        if ($desc -and -not $r.ContainsKey('gpu')) { $r['gpu'] = $desc }
-                    } catch { $null = $_ }
-                }
-            }
-        } catch { $null = $_ }
-
-        # Defender
-        try {
-            $dp = Get-MpPreference -ErrorAction Stop
-            $r['defender'] = if ($dp.DisableRealtimeMonitoring) { 'disabled' } else { 'active' }
-        } catch { $r['defender'] = 'unknown' }
-
-        # Copilot & Recall
-        try {
-            $r['copilot'] = if (Get-AppxPackage -Name "*Copilot*" -ErrorAction SilentlyContinue) { 'installed' } else { 'removed' }
-        } catch { $r['copilot'] = 'unknown' }
-        try {
-            $r['recall'] = if (Get-AppxPackage -Name "*Recall*" -ErrorAction SilentlyContinue) { 'installed' } else { 'removed' }
-        } catch { $r['recall'] = 'unknown' }
-
-        return $r
-    }
-    $script:MenuStateJob = Start-Job -ScriptBlock $script:MenuStateScript -ArgumentList (Join-Path $env:USERPROFILE "Winrift")
-
-    # Admin check was already done at the very top of the file (early elevation
-    # before transcript / Common.ps1 load). If we reached here, we're already
-    # running as administrator — no need to re-check.
-
-    if ($Uninstall) {
-        Write-Host ""
-        Write-Log -Message "Uninstalling Winrift..." -Level INFO
-        $shortcut = Join-Path ([Environment]::GetFolderPath('StartMenu')) "Programs\Winrift.lnk"
-        if (Test-Path $shortcut) { Remove-Item $shortcut -Force; Write-Log -Message "Removed Start Menu shortcut" -Level SUCCESS }
-        $dataDir = Join-Path $env:USERPROFILE "Winrift"
-        if (Test-Path $dataDir) { Remove-Item $dataDir -Recurse -Force; Write-Log -Message "Removed data directory: $dataDir" -Level SUCCESS }
-        $iconDir = Join-Path $env:APPDATA "Winrift"
-        if (Test-Path $iconDir) { Remove-Item $iconDir -Recurse -Force; Write-Log -Message "Removed icon directory" -Level SUCCESS }
-        try { Unregister-ScheduledTask -TaskName "Winrift-DriftCheck" -Confirm:$false -ErrorAction Stop; Write-Log -Message "Removed drift check scheduled task" -Level SUCCESS } catch { $null = $_ }
-        Write-Log -Message "Winrift uninstalled." -Level SUCCESS
         exit 0
     }
 
-    # Capture root path for use in scriptblock closures (where $PSScriptRoot may not resolve correctly)
-    $script:Root = $PSScriptRoot
-
-    # Load version from version.json
-    $script:UpdateAvailable = $null
-    $script:UpdateCheckJob = $null
-    $versionInfo = $null
-    $versionFile = Join-Path $script:Root "config\version.json"
-    if (Test-Path $versionFile) {
-        $versionInfo = Get-Content $versionFile -Raw | ConvertFrom-Json
-        $full = $versionInfo.version
-        $script:AppVersion = ($full -split '\.')[0..1] -join '.'
-
-        # Kick off update check in background — does not block startup.
-        # Result is consumed lazily by Get-UpdateCheckResult before each main menu draw.
-        if ($versionInfo.repo) {
-            $script:UpdateCheckJob = Start-Job -ScriptBlock {
-                param($Repo, $LocalVer)
-                try {
-                    $url = "https://raw.githubusercontent.com/$Repo/main/config/version.json"
-                    $remote = Invoke-RestMethod -Uri $url -TimeoutSec 5 -ErrorAction Stop
-                    if ($remote.version -and $remote.version -ne $LocalVer) {
-                        return $remote.version
-                    }
-                } catch { $null = $_ }
-                return $null
-            } -ArgumentList $versionInfo.repo, $versionInfo.version
+    # Slow path: PS7 not installed — need admin first to install it
+    if (-not $isAdmin) {
+        Write-Host "  Winrift requires PowerShell 7 and administrator privileges." -ForegroundColor Yellow
+        Write-Host "  Requesting elevation..." -ForegroundColor Yellow
+        $psArgs = @("-ExecutionPolicy", "Bypass", "-File", "`"$PSCommandPath`"")
+        $psArgs += $extraArgs
+        try {
+            Start-Process "powershell.exe" -ArgumentList $psArgs -Verb RunAs
+        } catch {
+            Write-Host "  Elevation cancelled or failed." -ForegroundColor Red
         }
-    } else {
-        $script:AppVersion = "unknown"
-    }
-
-    # AdminLaunch.ps1 was already dot-sourced at the very top of this file
-    # (before the elevation check), so Start-AdminProcess / Start-UserProcess
-    # are already in scope here. No re-source needed.
-
-function Invoke-Module {
-    param([string]$ScriptPath, [switch]$UserProcess)
-    if (-not (Test-Path $ScriptPath)) {
-        Write-Log -Message "Module not found: $ScriptPath" -Level ERROR
-        Write-Host "$Yellow This module may not be included in your installation.$Reset"
-        $null = Read-Host "Press Enter to continue"
-        return
-    }
-    if ($UserProcess) {
-        Start-UserProcess -ScriptPath $ScriptPath
-    } else {
-        & $ScriptPath
-        $Host.UI.RawUI.WindowTitle = "Winrift v$script:AppVersion"
-    }
-}
-
-function Get-UpdateCheckResult {
-    # Lazily consume the background update-check job. No-op if already consumed
-    # or still running. Called before every main menu draw so the "U › Update"
-    # entry appears as soon as the network call resolves.
-    if ($null -eq $script:UpdateCheckJob) { return }
-    if ($script:UpdateCheckJob.State -eq 'Completed') {
-        $result = Receive-Job $script:UpdateCheckJob -ErrorAction SilentlyContinue
-        Remove-Job $script:UpdateCheckJob -Force -ErrorAction SilentlyContinue
-        $script:UpdateCheckJob = $null
-        if ($result) { $script:UpdateAvailable = $result }
-    } elseif ($script:UpdateCheckJob.State -in 'Failed','Stopped') {
-        Remove-Job $script:UpdateCheckJob -Force -ErrorAction SilentlyContinue
-        $script:UpdateCheckJob = $null
-    }
-}
-
-function Get-MenuStateResult {
-    if ($null -eq $script:MenuStateJob) { return }
-    if ($script:MenuStateJob.State -eq 'Completed') {
-        $result = Receive-Job $script:MenuStateJob -ErrorAction SilentlyContinue
-        Remove-Job $script:MenuStateJob -Force -ErrorAction SilentlyContinue
-        $script:MenuStateJob = $null
-        if ($result) { $script:MenuState = $result; $script:MenuStateUpdated = $true }
-    } elseif ($script:MenuStateJob.State -in 'Failed','Stopped') {
-        Remove-Job $script:MenuStateJob -Force -ErrorAction SilentlyContinue
-        $script:MenuStateJob = $null
-    }
-}
-
-function Start-MenuStateCheck {
-    if ($script:MenuStateJob) {
-        Remove-Job $script:MenuStateJob -Force -ErrorAction SilentlyContinue
-    }
-    $script:MenuStateJob = Start-Job -ScriptBlock $script:MenuStateScript -ArgumentList (Join-Path $env:USERPROFILE "Winrift")
-}
-
-function Build-MenuDescriptions {
-    $d = @{}
-    $st = $script:MenuState
-
-    $dot = "$Dim$([char]0x00B7)$Reset"
-
-    # 0: System Audit
-    if ($st -and $st.ContainsKey('audit')) {
-        $a = $st['audit']
-        if ($a.total -eq 0) {
-            $d[0] = @("$Green$([char]0x2713) All checks passed$Reset", "", "No issues found.")
-        } else {
-            $parts = @()
-            if ($a.critical -gt 0) { $parts += "$Red$([char]0x2717) $($a.critical) critical$Reset" }
-            if ($a.warning -gt 0)  { $parts += "$Yellow! $($a.warning) warning$Reset" }
-            if ($a.info -gt 0)     { $parts += "$Cyan$([char]0x203A) $($a.info) info$Reset" }
-            $lines = @($parts -join "  ")
-            try {
-                $ts = [datetime]::Parse($a.timestamp)
-                $when = if ($ts.Date -eq (Get-Date).Date) { "today $($ts.ToString('HH:mm'))" } else { $ts.ToString('MMM d') }
-                $lines += "Scanned $when"
-            } catch { $null = $_ }
-            $lines += ""; $lines += "33 checks $dot one-click fixes."
-            $d[0] = $lines
-        }
-    } else {
-        # NOTE: update this count when adding/removing findings in audit_findings.json
-        $d[0] = @("Not scanned yet.", "", "33 checks across 6 categories.", "One-click fixes for each finding.")
-    }
-
-    # 1: System Tweaks
-    if ($st -and $st.ContainsKey('tweaks')) {
-        $t = $st['tweaks']
-        $lines = @("$($t.categories) categories $dot $($t.entries) values")
-        if ($t.drifted -gt 0) {
-            $lines += "$Yellow! $($t.drifted) drifted$Reset"
-        } else {
-            $lines += "$Green$([char]0x2713) No drift$Reset"
-        }
-        $lines += ""; $lines += "Apply all safe or pick individual."
-        $d[1] = $lines
-    } else {
-        $d[1] = @("No tweaks applied yet.", "", "13 categories. Pick individual,", "apply all safe, or use wizard.")
-    }
-
-    # 2: Security & Privacy
-    if ($st -and ($st.ContainsKey('defender') -or $st.ContainsKey('copilot'))) {
-        $lines = @()
-        $def = if ($st.ContainsKey('defender')) { $st['defender'] } else { 'unknown' }
-        $defC = switch ($def) { 'active' { $Yellow } 'disabled' { $Green } default { $Dim } }
-        $lines += "Defender: $defC$def$Reset"
-        $cop = if ($st.ContainsKey('copilot')) { $st['copilot'] } else { 'unknown' }
-        $rec = if ($st.ContainsKey('recall'))  { $st['recall'] }  else { 'unknown' }
-        $copC = if ($cop -eq 'removed') { $Green } else { $Yellow }
-        $recC = if ($rec -eq 'removed') { $Green } else { $Yellow }
-        $lines += "Copilot: $copC$cop$Reset $dot Recall: $recC$rec$Reset"
-        $lines += ""; $lines += "${Dim}privacy.sexy presets included.$Reset"
-        $d[2] = $lines
-    } else {
-        $d[2] = @("Defender, Copilot, Recall.", "privacy.sexy presets.", "", "All tools run only when selected.")
-    }
-
-    # 3: Drivers
-    if ($st -and $st.ContainsKey('gpu')) {
-        $d[3] = @("$Cyan$($st['gpu'])$Reset", "", "NVIDIA $dot AMD $dot Intel + 11 OEM.", "Opens manufacturer download pages.")
-    } else {
-        $d[3] = @("NVIDIA $dot AMD $dot Intel + 11 OEM.", "Opens manufacturer download pages.")
-    }
-
-    # 4: Benchmark
-    if ($st -and $st.ContainsKey('benchmark')) {
-        $d[4] = @("Last run: $Cyan$($st['benchmark'].date)$Reset", "", "13 metrics, Markdown report.", "Run before & after tweaks.")
-    } else {
-        $d[4] = @("No data yet.", "", "13 metrics, Markdown report.", "Run before & after tweaks.")
-    }
-
-    # 6: App Bundles
-    $d[6] = @("7 collections via winget.", "Dev $dot Browsers $dot Utilities", "Gaming $dot Media $dot Productivity", "Communications")
-
-    # 7: Customize (E — rainbow tool names)
-    $d[7] = @(
-        "$Cyan GlazeWM$Reset $dot $Green Oh My Posh$Reset $dot $Yellow Nerd Fonts$Reset",
-        "$Cyan Themes$Reset $dot $Green Editors$Reset $dot $Yellow Wallpapers$Reset",
-        "${Dim} Profile backup & restore.$Reset"
-    )
-
-    # 8: ISO Builder
-    $d[8] = @("Build clean Windows 11 ISO.", "Built-in or custom answer file.", "Removes bloat, disables telemetry.")
-
-    # 10: Community Tools
-    $d[10] = @("WinUtil $dot Sparkle $dot GTweak", "WinScript $([char]0x2014) custom script builder.", "", "Each tool opens in a new window.")
-
-    # 11: Docs & Guides
-    $d[11] = @("Tweaks Guide $dot Answer File", "Benchmark Guide $dot Wiki.", "", "Opens in browser. GitHub-hosted.")
-
-    return $d
-}
-
-function Invoke-SelfUpdate {
-    param([string]$Version)
-    $zipUrl  = "https://github.com/$($versionInfo.repo)/archive/refs/heads/main.zip"
-    $tempZip = Join-Path $env:TEMP "winrift_update_$(Get-Random).zip"
-    $tempDir = Join-Path $env:TEMP "winrift_update_$(Get-Random)"
-    try {
-        Invoke-WithSpinner -Message "Downloading v$Version" -ScriptBlock {
-            param($url, $out)
-            Invoke-WebRequest -Uri $url -OutFile $out -UseBasicParsing -TimeoutSec 120 -ErrorAction Stop
-        } -ArgumentList $zipUrl, $tempZip
-
-        Write-Log -Message "Extracting..." -Level INFO
-        Expand-Archive -Path $tempZip -DestinationPath $tempDir -Force
-
-        $srcDir = Get-ChildItem $tempDir -Directory | Select-Object -First 1
-        if (-not $srcDir) {
-            Write-Log -Message "Downloaded archive is empty or malformed. Aborting update." -Level ERROR
-            Wait-ForUser
-            return
-        }
-
-        $srcVersionFile = Join-Path $srcDir.FullName "config\version.json"
-        if (Test-Path $srcVersionFile) {
-            $newVersion = (Get-Content $srcVersionFile -Raw | ConvertFrom-Json).version
-            if ($newVersion -ne $Version) {
-                Write-Log -Message "Version mismatch: expected $Version, downloaded $newVersion. Aborting update." -Level ERROR
-                Wait-ForUser
-                return
-            }
-        } else {
-            $zipSize = (Get-Item $tempZip).Length
-            if ($zipSize -lt 50000) {
-                Write-Log -Message "Downloaded zip is unexpectedly small ($zipSize bytes). Aborting update." -Level ERROR
-                Wait-ForUser
-                return
-            }
-        }
-
-        Get-ChildItem $srcDir.FullName | Where-Object { $_.Name -ne 'logs' } | ForEach-Object {
-            Copy-Item $_.FullName $script:Root -Recurse -Force
-        }
-
-        Write-Log -Message "Updated to v$Version. Restarting..." -Level SUCCESS
-        Start-Sleep -Seconds 1
-        Start-AdminProcess -ScriptPath $PSCommandPath -NoExit
         exit 0
-    } catch {
-        Write-Log -Message "Update failed: $($_.Exception.Message)" -Level ERROR
-        Wait-ForUser
-    } finally {
-        Remove-Item $tempZip -Force -ErrorAction SilentlyContinue
-        Remove-Item $tempDir -Recurse -Force -ErrorAction SilentlyContinue
     }
+
+    # Admin PS 5.1 — install PS7 then relaunch
+    . "$PSScriptRoot\scripts\RequirePwsh.ps1"
+    $pwsh = Install-Pwsh
+    if (-not $pwsh) { exit 1 }
+
+    $pwshArgs = @("-ExecutionPolicy", "Bypass", "-File", $mainPath) + $extraArgs
+    if (Get-Command wt.exe -ErrorAction SilentlyContinue) {
+        & wt.exe $pwsh @pwshArgs
+    } else {
+        & $pwsh @pwshArgs
+    }
+    exit $LASTEXITCODE
 }
 
-function Show-CommunityToolsMenu {
-    $launcherPath = "$script:Root\modules\tools\ExternalLauncher.ps1"
-
-    Invoke-MenuLoop -Title "Community Tools" -Items @(
-        "1 › WinUtil - Tweaks, Apps & Fixes",
-        "2 › Sparkle - Optimize & Debloat",
-        "3 › GTweak - Debloat & Tweak",
-        "4 › WinScript - Custom Script Builder",
-        "---",
-        "5 › Back to main menu"
-    ) -Actions @{
-        "1" = { Start-AdminProcess -ScriptPath $launcherPath -Arguments @("-ToolId", "winutil") }
-        "2" = { Start-AdminProcess -ScriptPath $launcherPath -Arguments @("-ToolId", "sparkle") }
-        "3" = { Start-AdminProcess -ScriptPath $launcherPath -Arguments @("-ToolId", "gtweak") }
-        "4" = {
-            & "$script:Root\modules\tools\WinScript.ps1"
-            $Host.UI.RawUI.WindowTitle = "Winrift v$script:AppVersion"
-        }
-    } -ExitKey "5"
-}
-
-function Show-DocsMenu {
-    Invoke-MenuLoop -Title "Docs & Guides" -Items @(
-        "1 › Tweaks Guide - What each tweak does",
-        "2 › Answer File Guide - Windows installation",
-        "3 › Testing & Benchmarks - Methodology & results",
-        "4 › Wiki - Full documentation",
-        "---",
-        "5 › Back to main menu"
-    ) -Actions @{
-        "1" = { Start-Process "https://github.com/emylfy/winrift/blob/main/docs/tweaks_guide.md" }
-        "2" = { Start-Process "https://github.com/emylfy/winrift/blob/main/docs/autounattend_guide.md" }
-        "3" = { Start-Process "https://github.com/emylfy/winrift/blob/main/docs/tests.md" }
-        "4" = { Start-Process "https://github.com/emylfy/Winrift/wiki" }
-    } -ExitKey "5"
-}
-
-function Show-MainMenu {
-    $Host.UI.RawUI.WindowTitle = "Winrift v$script:AppVersion"
-    Get-UpdateCheckResult
-
-    $ic = $script:MenuIcons
-    $menuItems = @(
-        "1 › $($ic.audit)System Audit - Scan & fix issues",
-        "2 › $($ic.tweaks)System Tweaks - Performance & latency",
-        "3 › $($ic.security)Security & Privacy - Defender, Copilot, privacy",
-        "4 › $($ic.drivers)Driver Pages - NVIDIA, AMD, Intel, OEM",
-        "5 › $($ic.benchmark)Benchmark - Before & after metrics",
-        "--- ---",
-        "6 › $($ic.bundles)App Bundles - Curated app collections",
-        "7 › $($ic.customize)Customize - Desktop, terminal, themes",
-        "8 › $($ic.iso)ISO Builder - Clean Windows install, no bloat",
-        "--- ---",
-        "9 › Community Tools",
-        "0 › Docs & Guides"
-    )
-    # Pause background stats sampling while a sub-module is active, resume on return.
-    $pauseStats = { $script:SysStats.Active = $false }
-    $resumeStats = { $script:SysStats.Active = $true }
-    $actions = @{
-        "1" = { & $pauseStats; Invoke-Module "$script:Root\modules\system\Audit.Menu.ps1"; Start-MenuStateCheck; & $resumeStats }
-        "2" = { & $pauseStats; Invoke-Module "$script:Root\modules\system\Tweaks.ps1"; Start-MenuStateCheck; & $resumeStats }
-        "3" = { & $pauseStats; Invoke-Module "$script:Root\modules\security\SecurityMenu.ps1"; Start-MenuStateCheck; & $resumeStats }
-        "4" = { & $pauseStats; Invoke-Module "$script:Root\modules\drivers\Drivers.ps1"; & $resumeStats }
-        "5" = { & $pauseStats; Invoke-Module "$script:Root\modules\system\Benchmark.ps1"; Start-MenuStateCheck; & $resumeStats }
-        "6" = { & $pauseStats; Invoke-Module "$script:Root\modules\unigetui\UniGetUI.ps1" -UserProcess; & $resumeStats }
-        "7" = { & $pauseStats; Invoke-Module "$script:Root\modules\customize\Customize.Menu.ps1" -UserProcess; & $resumeStats }
-        "8" = { & $pauseStats; Invoke-Module "$script:Root\modules\iso\ISOBuilder.ps1"; & $resumeStats }
-        "9" = { & $pauseStats; Show-CommunityToolsMenu; & $resumeStats }
-        "0" = { & $pauseStats; Show-DocsMenu; & $resumeStats }
-    }
-
-    $script:MenuDescriptions = Build-MenuDescriptions
-    $script:SysStats.Active = $true
-
-    $titleSuffix = {
-        Get-MenuStateResult
-        if ($script:MenuStateUpdated) {
-            $script:MenuStateUpdated = $false
-            $newDesc = Build-MenuDescriptions
-            foreach ($k in $newDesc.Keys) { $script:MenuDescriptions[$k] = $newDesc[$k] }
-        }
-        $s = $script:SysStats
-        if ($s.CPU -ne '...') {
-            "$($s.CPU) CPU  $($s.RAM) RAM  $($s.Procs) procs"
-        } else { $null }
-    }
-
-    if ($script:UpdateAvailable) {
-        $menuItems += "---"
-        $menuItems += "U › $Green Update available: v$($script:UpdateAvailable)$Reset"
-        $actions["U"] = { Invoke-SelfUpdate -Version $script:UpdateAvailable }
-    }
-
-    Invoke-MenuLoop -Title "Winrift v$script:AppVersion" -Items $menuItems -Actions $actions -Descriptions $script:MenuDescriptions -SplitAt 30 -TitleSuffix $titleSuffix -HideKeys
-}
-
-    Show-MainMenu
-} catch {
-    Write-Host ""
-    Write-Host "================================================" -ForegroundColor Red
-    Write-Host " FATAL: Winrift startup failed" -ForegroundColor Red
-    Write-Host "================================================" -ForegroundColor Red
-    Write-Host ""
-    Write-Host "Error:    $($_.Exception.Message)" -ForegroundColor Red
-    Write-Host "Type:     $($_.Exception.GetType().FullName)" -ForegroundColor DarkGray
-    if ($_.InvocationInfo) {
-        Write-Host "At:       $($_.InvocationInfo.ScriptName):$($_.InvocationInfo.ScriptLineNumber)" -ForegroundColor DarkGray
-        Write-Host "Line:     $($_.InvocationInfo.Line.Trim())" -ForegroundColor DarkGray
-    }
-    Write-Host ""
-    Write-Host "Stack trace:" -ForegroundColor Yellow
-    Write-Host $_.ScriptStackTrace -ForegroundColor DarkGray
-    Write-Host ""
-    if ($script:StartupLogStarted) {
-        Write-Host "Full log: $script:StartupLog" -ForegroundColor Cyan
-        Write-Host ""
-    }
-    $null = Read-Host "Press Enter to exit"
-    exit 1
-} finally {
-    if ($script:UpdateCheckJob) {
-        try { Remove-Job $script:UpdateCheckJob -Force -ErrorAction SilentlyContinue } catch { $null = $_ }
-    }
-    if ($script:MenuStateJob) {
-        try { Remove-Job $script:MenuStateJob -Force -ErrorAction SilentlyContinue } catch { $null = $_ }
-    }
-    if ($statsPs) {
-        try { $statsPs.Stop(); $statsPs.Dispose() } catch { $null = $_ }
-    }
-    if ($statsRs) {
-        try { $statsRs.Close(); $statsRs.Dispose() } catch { $null = $_ }
-    }
-    if ($script:StartupLogStarted) {
-        try { Stop-Transcript | Out-Null } catch { $null = $_ }
-    }
-}
+# Already running PS7+ — call Main.ps1 directly in the same process
+& "$PSScriptRoot\scripts\Main.ps1" @PSBoundParameters

@@ -1,4 +1,4 @@
-﻿function _Enter-RawUI {
+function _Enter-RawUI {
     # Saves cursor visibility and CtrlC mode, hides cursor.
     # Returns a state hashtable to pass to _Exit-RawUI.
     $visible = try { [Console]::CursorVisible } catch { $true }
@@ -107,7 +107,7 @@ function _Draw-InteractiveBox {
         if ($w -lt $splitMinW) { $w = $splitMinW }
         $splitRightW = $w - $SplitAt - 3
     }
-    $rightPlain = if ($TitleRight) { $TitleRight -replace '\x1b\[[0-9;]*m', '' } else { $null }
+    $rightPlain = $TitleRight ? ($TitleRight -replace '\x1b\[[0-9;]*m', '') : $null
     $topFill = $w - ("$h $titlePlain ").Length
     if ($topFill -lt 0) { $topFill = 0 }
 
@@ -173,7 +173,7 @@ function _Draw-InteractiveBox {
     }
 
     # Determine vp_top (scroll position)
-    $currentVp = if ($hasVpTop) { [int]$VpTop.Value } else { 0 }
+    $currentVp = $hasVpTop ? [int]$VpTop.Value : 0
 
     # Compute cursor row coordinates (used both for adjustment and safety check)
     $cursorRow = 0
@@ -299,10 +299,10 @@ function _Draw-InteractiveBox {
 
         $chk = ""
         if ($null -ne $Checked) {
-            $chk = if ($Checked[$idx]) { "$Green[x]$Reset " } else { "$Dim[ ]$Reset " }
+            $chk = $Checked[$idx] ? "$Green[x]$Reset " : "$Dim[ ]$Reset "
             $plain = "    $plain"
         }
-        $ptr = if ($isCur) { "$Bold$Ice$([char]0x25B8)$Reset " } else { "  " }
+        $ptr = $isCur ? "$Bold$Ice$([char]0x25B8)$Reset " : "  "
         $plainFull = "  $plain"
         $pad = ($w - 1) - $plainFull.Length; if ($pad -lt 0) { $pad = 0 }
 
@@ -368,7 +368,7 @@ function _Draw-InteractiveBox {
     # Helper: build a scroll indicator row (▲/▼ ···)
     $buildScrollIndicator = {
         param([string]$direction)  # 'up' or 'down'
-        $arrow = if ($direction -eq 'up') { [char]0x25B2 } else { [char]0x25BC }  # ▲ / ▼
+        $arrow = $direction -eq 'up' ? [char]0x25B2 : [char]0x25BC  # ▲ / ▼
         $label = "$arrow $([char]0x00B7)$([char]0x00B7)$([char]0x00B7)"  # "▲ ···"
         $labelLen = 5
         $leftPad = [math]::Max(0, [math]::Floor(($w - $labelLen) / 2))
@@ -414,7 +414,7 @@ function _Draw-InteractiveBox {
             } else {
                 $cur = ''
                 foreach ($word in ($dlPlain -split ' ')) {
-                    $cand = if ($cur) { "$cur $word" } else { $word }
+                    $cand = $cur ? "$cur $word" : $word
                     if ($cand.Length -le $descW) { $cur = $cand }
                     else { if ($cur) { $tempDesc.Add($cur) }; $cur = $word }
                 }
@@ -432,7 +432,7 @@ function _Draw-InteractiveBox {
                 $lp = [math]::Max(0,[math]::Floor(($SplitAt-5)/2))
                 "$BP $v$Reset$(' '*$lp)$Dim$lbl$Reset$(' '*([math]::Max(0,$SplitAt-5-$lp)))"
             } else { "$BP $v$Reset$(' '*$SplitAt)" }
-            $_src = if ($_splitDescIdx -lt $descLines.Count) { $descLines[$_splitDescIdx] } else { "" }
+            $_src = $_splitDescIdx -lt $descLines.Count ? $descLines[$_splitDescIdx] : ""
             $_srp = [math]::Max(0, $splitRightW - ($_src -replace '\x1b\[[0-9;]*m','').Length)
             $lines.Add("$upLeft $Dim$v$Reset $_src$(' '*$_srp)$BP$v$Reset")
             $_splitDescIdx++
@@ -451,7 +451,7 @@ function _Draw-InteractiveBox {
         foreach ($line in $itemLines) {
             if ($rendered -lt $visibleRows) {
                 if ($hasSplit) {
-                    $_src = if ($_splitDescIdx -lt $descLines.Count) { $descLines[$_splitDescIdx] } else { "" }
+                    $_src = $_splitDescIdx -lt $descLines.Count ? $descLines[$_splitDescIdx] : ""
                     $_srp = [math]::Max(0, $splitRightW - ($_src -replace '\x1b\[[0-9;]*m','').Length)
                     $lines.Add("$line $Dim$v$Reset $_src$(' '*$_srp)$BP$v$Reset")
                     $_splitDescIdx++
@@ -466,7 +466,7 @@ function _Draw-InteractiveBox {
     # Fill remaining viewport rows with empty lines to keep box height stable
     while ($rendered -lt $visibleRows) {
         if ($hasSplit) {
-            $_src = if ($_splitDescIdx -lt $descLines.Count) { $descLines[$_splitDescIdx] } else { "" }
+            $_src = $_splitDescIdx -lt $descLines.Count ? $descLines[$_splitDescIdx] : ""
             $_srp = [math]::Max(0, $splitRightW - ($_src -replace '\x1b\[[0-9;]*m','').Length)
             $lines.Add("$BP $v$Reset$(' '*$SplitAt) $Dim$v$Reset $_src$(' '*$_srp)$BP$v$Reset")
             $_splitDescIdx++
@@ -482,7 +482,7 @@ function _Draw-InteractiveBox {
                 $lp = [math]::Max(0,[math]::Floor(($SplitAt-5)/2))
                 "$BP $v$Reset$(' '*$lp)$Dim$lbl$Reset$(' '*([math]::Max(0,$SplitAt-5-$lp)))"
             } else { "$BP $v$Reset$(' '*$SplitAt)" }
-            $_src = if ($_splitDescIdx -lt $descLines.Count) { $descLines[$_splitDescIdx] } else { "" }
+            $_src = $_splitDescIdx -lt $descLines.Count ? $descLines[$_splitDescIdx] : ""
             $_srp = [math]::Max(0, $splitRightW - ($_src -replace '\x1b\[[0-9;]*m','').Length)
             $lines.Add("$dnLeft $Dim$v$Reset $_src$(' '*$_srp)$BP$v$Reset")
             $_splitDescIdx++
@@ -594,7 +594,7 @@ function Invoke-MenuLoop {
 
     try {
         while ($true) {
-            $drawRight = if ($TitleSuffix) { & $TitleSuffix } else { $null }
+            $drawRight = $TitleSuffix ? (& $TitleSuffix) : $null
             $prevLines = _Draw-InteractiveBox -Title $Title -Items $Items -HighlightIndex $selectIdx[$cursor] -PrevLines $prevLines -VpTop ([ref]$vpTop) -Descriptions $Descriptions -SplitAt $SplitAt -TitleRight $drawRight -HideKeys:$HideKeys
 
             # Wait for keypress. When TitleSuffix is set, poll periodically to

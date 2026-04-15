@@ -1,4 +1,4 @@
-﻿param(
+param(
     [switch]$AutoCheck
 )
 
@@ -158,7 +158,7 @@ function Register-DriftScheduledTask {
     $scriptPath = Join-Path $PSScriptRoot "Tweaks.Drift.ps1"
 
     $action = New-ScheduledTaskAction `
-        -Execute "powershell.exe" `
+        -Execute "$env:ProgramFiles\PowerShell\7\pwsh.exe" `
         -Argument "-ExecutionPolicy Bypass -NoProfile -File `"$scriptPath`" -AutoCheck"
 
     # Trigger on Windows Update completion (Event ID 19)
@@ -223,7 +223,7 @@ function Get-DriftScheduledTaskStatus {
 
 function Show-DriftMenu {
     $taskRegistered = Get-DriftScheduledTaskStatus
-    $taskLabel = if ($taskRegistered) { "Disable" } else { "Enable" }
+    $taskLabel = $taskRegistered ? "Disable" : "Enable"
 
     Invoke-MenuLoop -Title "Drift Detection" -Items @(
         "1 › Check for drift now",

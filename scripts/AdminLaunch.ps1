@@ -1,4 +1,4 @@
-﻿function Start-UserProcess {
+function Start-UserProcess {
     param (
         [Parameter(Mandatory = $true)]
         [string]$ScriptPath,
@@ -12,9 +12,9 @@
 
     $useWT = Get-Command wt.exe -ErrorAction SilentlyContinue
     if ($useWT) {
-        Start-Process "runas.exe" -ArgumentList "/trustlevel:0x20000 `"wt.exe powershell.exe $psArgs`""
+        Start-Process "runas.exe" -ArgumentList "/trustlevel:0x20000 `"wt.exe pwsh.exe $psArgs`""
     } else {
-        Start-Process "runas.exe" -ArgumentList "/trustlevel:0x20000 `"powershell.exe $psArgs`""
+        Start-Process "runas.exe" -ArgumentList "/trustlevel:0x20000 `"pwsh.exe $psArgs`""
     }
 }
 
@@ -41,14 +41,14 @@ function Start-AdminProcess {
     $insideWT = $null -ne $env:WT_SESSION
 
     if ($useWindowsTerminal -and $isAdmin -and $insideWT) {
-        & wt.exe -w 0 new-tab powershell.exe @psArgs
+        & wt.exe -w 0 new-tab pwsh.exe @psArgs
     } elseif ($useWindowsTerminal -and $isAdmin) {
-        & wt.exe powershell.exe @psArgs
+        & wt.exe pwsh.exe @psArgs
     } elseif ($useWindowsTerminal) {
         $psArgString = ($psArgs | ForEach-Object { if ($_ -match ' ') { "`"$_`"" } else { $_ } }) -join ' '
-        Start-Process -FilePath "wt.exe" -ArgumentList "powershell $psArgString" -Verb RunAs
+        Start-Process -FilePath "wt.exe" -ArgumentList "pwsh $psArgString" -Verb RunAs
     } else {
         $psArgString = ($psArgs | ForEach-Object { if ($_ -match ' ') { "`"$_`"" } else { $_ } }) -join ' '
-        Start-Process -FilePath "powershell.exe" -ArgumentList $psArgString -Verb RunAs
+        Start-Process -FilePath "pwsh.exe" -ArgumentList $psArgString -Verb RunAs
     }
 }

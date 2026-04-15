@@ -1,4 +1,4 @@
-﻿. "$PSScriptRoot\..\..\scripts\Common.ps1"
+. "$PSScriptRoot\..\..\scripts\Common.ps1"
 # https://github.com/AlchemyTweaks/Verified-Tweaks
 # https://github.com/SanGraphic/QuickBoost
 # Every tweak in this script has been thoroughly tested and compared across multiple sources.

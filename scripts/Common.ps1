@@ -1,5 +1,4 @@
-﻿[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
-
+[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
 $ProgressPreference = 'SilentlyContinue'
 
 # ANSI color palette. Truecolor (24-bit) when the terminal supports it
@@ -34,19 +33,19 @@ function Initialize-NerdFont {
         Add-Type -AssemblyName System.Drawing -ErrorAction Stop
         $families = [System.Drawing.Text.InstalledFontCollection]::new().Families
         $script:HasNerdFont = [bool]($families | Where-Object {
-            $_.Name -match 'Nerd Font|NF\b|Caskaydia|MesloLG|JetBrains.*NF|FiraCode NF'
+            $_.Name -match 'Nerd Font|NF\b|Caskaydia|MesloLG|JetBrains.*NF|FiraCode NF|Maple Mono NF'
         })
     } catch { $null = $_ }
     $nf = $script:HasNerdFont
     $script:MenuIcons = @{
-        audit     = if ($nf) { "$([char]::ConvertFromUtf32(0xF0510)) " } else { "? " }
-        tweaks    = if ($nf) { "$([char]::ConvertFromUtf32(0xF08D6)) " } else { "* " }
-        security  = if ($nf) { "$([char]::ConvertFromUtf32(0xF0496)) " } else { "# " }
-        drivers   = if ($nf) { "$([char]::ConvertFromUtf32(0xF12A2)) " } else { "> " }
-        benchmark = if ($nf) { "$([char]::ConvertFromUtf32(0xF03D6)) " } else { "% " }
-        bundles   = if ($nf) { "$([char]::ConvertFromUtf32(0xF187)) " }  else { "+ " }
-        customize = if ($nf) { "$([char]::ConvertFromUtf32(0xF1535)) " } else { ": " }
-        iso       = if ($nf) { "$([char]::ConvertFromUtf32(0xF1477)) " } else { "o " }
+        audit     = $nf ? "$([char]::ConvertFromUtf32(0xF0510)) " : "? "
+        tweaks    = $nf ? "$([char]::ConvertFromUtf32(0xF08D6)) " : "* "
+        security  = $nf ? "$([char]::ConvertFromUtf32(0xF0496)) " : "# "
+        drivers   = $nf ? "$([char]::ConvertFromUtf32(0xF12A2)) " : "> "
+        benchmark = $nf ? "$([char]::ConvertFromUtf32(0xF03D6)) " : "% "
+        bundles   = $nf ? "$([char]::ConvertFromUtf32(0xF187)) "  : "+ "
+        customize = $nf ? "$([char]::ConvertFromUtf32(0xF1535)) " : ": "
+        iso       = $nf ? "$([char]::ConvertFromUtf32(0xF1477)) " : "o "
     }
 }
 
@@ -91,7 +90,7 @@ function Write-Log {
 
     Write-Host "  $glyph  $Message"
 
-    $effectiveLog = if ($LogFile -ne "") { $LogFile } elseif ($script:LogFile) { $script:LogFile } else { "" }
+    $effectiveLog = ($LogFile -ne "") ? $LogFile : ($script:LogFile ? $script:LogFile : "")
     if ($effectiveLog -ne "") {
         $timestamp = Get-Date -Format 'yyyy-MM-dd HH:mm:ss'
         $plainLine = "[$timestamp] [$Level] $Message"

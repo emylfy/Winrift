@@ -1,4 +1,4 @@
-﻿# https://github.com/AlchemyTweaks/Verified-Tweaks
+# https://github.com/AlchemyTweaks/Verified-Tweaks
 # https://github.com/SanGraphic/QuickBoost
 # https://github.com/UnLovedCookie/CoutX
 # https://github.com/Snowfliger/SyncOS
@@ -61,7 +61,7 @@ function Invoke-TweakWizard {
         for ($i = 0; $i -lt $total; $i++) {
             if ($i -lt $step) {
                 $dk    = $wizardCategories[$i]
-                $dots += if ($selections[$dk]) { "$Green●$Reset" } else { "$Dim○$Reset" }
+                $dots += $selections[$dk] ? "$Green●$Reset" : "$Dim○$Reset"
             } elseif ($i -eq $step) {
                 $dots += "$Cyan●$Reset"
             } else {

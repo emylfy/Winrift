@@ -1,4 +1,4 @@
-﻿# Config-driven external tool launcher
+# Config-driven external tool launcher
 # All tool definitions live in config/tools.json - no more per-tool wrapper files
 
 param(

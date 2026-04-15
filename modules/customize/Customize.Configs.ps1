@@ -1,4 +1,4 @@
-﻿function Copy-ConfigFiles {
+function Copy-ConfigFiles {
     param (
         [string]$SourceDir,
         [string[]]$FileNames,
@@ -28,7 +28,7 @@
             }
             Copy-Item -Path $src -Destination $dst -Force
         }
-        $backupNote = if ($backedUp) { " Previous config backed up as .bak." } else { "" }
+        $backupNote = $backedUp ? " Previous config backed up as .bak." : ""
         Write-Log -Message "$ConfigName configuration applied.$backupNote" -Level SUCCESS
     } catch {
         Write-Log -Message "Failed to copy $ConfigName configuration: $($_.Exception.Message)" -Level ERROR
@@ -207,19 +207,17 @@ function Set-PwshConfig {
 
     $docsDir = [Environment]::GetFolderPath('MyDocuments')
 
-    # PowerShell 5.1 profile
+    # PowerShell 7 profile (primary)
+    Copy-ConfigFiles -SourceDir "$PSScriptRoot\config\cli" `
+                     -FileNames @("Microsoft.PowerShell_profile.ps1") `
+                     -TargetDir "$docsDir\PowerShell" `
+                     -ConfigName "PowerShell 7"
+
+    # PowerShell 5.1 profile (copy for users who also use legacy shell)
     Copy-ConfigFiles -SourceDir "$PSScriptRoot\config\cli" `
                      -FileNames @("Microsoft.PowerShell_profile.ps1") `
                      -TargetDir "$docsDir\WindowsPowerShell" `
                      -ConfigName "PowerShell 5.1"
-
-    # PowerShell 7+ profile
-    if (Get-Command pwsh -ErrorAction SilentlyContinue) {
-        Copy-ConfigFiles -SourceDir "$PSScriptRoot\config\cli" `
-                         -FileNames @("Microsoft.PowerShell_profile.ps1") `
-                         -TargetDir "$docsDir\PowerShell" `
-                         -ConfigName "PowerShell 7"
-    }
 
     Wait-ForUser
 }

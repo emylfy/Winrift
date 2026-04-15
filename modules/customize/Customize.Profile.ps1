@@ -1,4 +1,4 @@
-﻿function Export-WinriftProfile {
+function Export-WinriftProfile {
     Clear-Host
 
     $timestamp = Get-Date -Format 'yyyy-MM-dd_HH-mm'
@@ -114,7 +114,7 @@
         hostname   = $env:COMPUTERNAME
         osBuild    = (Get-CimInstance Win32_OperatingSystem).BuildNumber
         items      = $selected
-    } | ConvertTo-Json | Set-Content (Join-Path $profileDir "profile.json")
+    } | ConvertTo-Json | Set-Content (Join-Path $profileDir "profile.json") -Encoding UTF8
 
     Write-Host ""
     Write-Log -Message "Profile exported to: $profileDir" -Level SUCCESS

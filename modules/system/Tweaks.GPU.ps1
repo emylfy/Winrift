@@ -1,4 +1,4 @@
-﻿# {4d36e968-e325-11ce-bfc1-08002be10318} = Display Adapters device class GUID
+# {4d36e968-e325-11ce-bfc1-08002be10318} = Display Adapters device class GUID
 $DISPLAY_ADAPTER_CLASS = "HKLM:\SYSTEM\CurrentControlSet\Control\Class\{4d36e968-e325-11ce-bfc1-08002be10318}"
 
 function Get-DisplayAdapterIndices {

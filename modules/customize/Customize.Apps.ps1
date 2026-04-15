@@ -1,4 +1,4 @@
-﻿function Install-SpotX {
+function Install-SpotX {
     Clear-Host
     $null = Invoke-Tool "spotx"
     Wait-ForUser

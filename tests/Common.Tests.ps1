@@ -1,4 +1,4 @@
-﻿BeforeAll {
+BeforeAll {
     . (Join-Path (Join-Path (Split-Path $PSScriptRoot -Parent) 'scripts') 'Common.ps1')
 }
 

@@ -1,4 +1,4 @@
-﻿BeforeAll {
+BeforeAll {
     . (Join-Path (Split-Path $PSScriptRoot -Parent) 'modules/system/Audit.Engine.ps1')
 }
 
@@ -34,7 +34,7 @@ Describe 'Read-AuditFindings' {
 
 Describe 'Invoke-AuditProbe' {
     It 'returns found=false for unknown probe' {
-        $detect = [PSCustomObject]@{ probe = 'No-SuchProbeExists'; args = $null }
+        $detect = @{ probe = 'No-SuchProbeExists'; args = $null }
         $r = Invoke-AuditProbe -Detect $detect
         $r.found | Should -BeFalse
         $r.evidence | Should -Match 'unknown probe'
@@ -42,9 +42,9 @@ Describe 'Invoke-AuditProbe' {
     It 'dispatches a known probe and returns its result' {
         # Define a stub probe in the current scope
         function Test-AuditStubProbe { param($x) return @{ found = $true; evidence = "stub:$x" } }
-        $detect = [PSCustomObject]@{
+        $detect = @{
             probe = 'Test-AuditStubProbe'
-            args  = [PSCustomObject]@{ x = 'hello' }
+            args  = @{ x = 'hello' }
         }
         $r = Invoke-AuditProbe -Detect $detect
         $r.found | Should -BeTrue
@@ -52,7 +52,7 @@ Describe 'Invoke-AuditProbe' {
     }
     It 'catches throwing probes and returns found=false' {
         function Test-AuditThrowingProbe { throw 'kaboom' }
-        $detect = [PSCustomObject]@{ probe = 'Test-AuditThrowingProbe'; args = $null }
+        $detect = @{ probe = 'Test-AuditThrowingProbe'; args = $null }
         $r = Invoke-AuditProbe -Detect $detect
         $r.found | Should -BeFalse
         $r.evidence | Should -Match 'kaboom'

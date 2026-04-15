@@ -1,4 +1,4 @@
-﻿
+
 function Get-ToolConfig {
     param([string]$ToolId)
     # $PSScriptRoot always resolves to the directory of Common.Tools.ps1 (scripts/),
@@ -35,7 +35,13 @@ function Invoke-SecureScript {
         Write-Log -Message "Hash verified for $ToolName" -Level SUCCESS
     }
 
-    & ([ScriptBlock]::Create($scriptContent)) | Out-Host
+    $tempFile = Join-Path $env:TEMP "winrift_irm_$([guid]::NewGuid().ToString('N').Substring(0,8)).ps1"
+    try {
+        Set-Content -Path $tempFile -Value $scriptContent -Encoding UTF8
+        Start-Process powershell.exe -ArgumentList "-ExecutionPolicy Bypass -File `"$tempFile`"" -Wait
+    } finally {
+        Remove-Item $tempFile -Force -ErrorAction SilentlyContinue
+    }
 }
 
 function Invoke-SecureDownload {
@@ -49,7 +55,7 @@ function Invoke-SecureDownload {
 
     Invoke-WithSpinner -Message "Downloading $ToolName" -ScriptBlock {
         param($u, $o, $t)
-        Invoke-WebRequest -Uri $u -OutFile $o -UseBasicParsing -TimeoutSec $t -ErrorAction Stop
+        Invoke-WebRequest -Uri $u -OutFile $o -TimeoutSec $t -ErrorAction Stop
     } -ArgumentList $Url, $OutFile, $TimeoutSec
 
     if (-not (Test-Path $OutFile)) {
@@ -131,7 +137,7 @@ function Invoke-Tool {
     if ($PreRun) { & $PreRun }
 
     try {
-        if ($tool.sha256) { $hash = $tool.sha256 } else { $hash = "" }
+        $hash = $tool.sha256 ?? ""
         switch ($effectiveType) {
             "irm" {
                 Invoke-SecureScript -Url $tool.url -ToolName $tool.name -ExpectedHash $hash
@@ -140,7 +146,7 @@ function Invoke-Tool {
                 $tempScript = Join-Path $env:TEMP "$($tool.id)_$([guid]::NewGuid().ToString('N').Substring(0,8)).ps1"
                 try {
                     Write-Log -Message "Downloading $($tool.name)..." -Level INFO
-                    Invoke-WebRequest -Uri $tool.url -OutFile $tempScript -UseBasicParsing -TimeoutSec 60 -ErrorAction Stop
+                    Invoke-WebRequest -Uri $tool.url -OutFile $tempScript -TimeoutSec 60 -ErrorAction Stop
                     Start-Process powershell.exe -ArgumentList "-ExecutionPolicy Bypass -File `"$tempScript`"" -Wait
                 } finally {
                     Remove-Item $tempScript -Force -ErrorAction SilentlyContinue
@@ -167,7 +173,7 @@ function Invoke-Tool {
         }
 
         if ($tool.type -ne "browser") {
-            if ($SuccessMessage) { $msg = $SuccessMessage } else { $msg = "$($tool.name) completed successfully." }
+            $msg = $SuccessMessage ? $SuccessMessage : "$($tool.name) completed successfully."
             Write-Log -Message $msg -Level SUCCESS
         }
         if ($OnSuccess -and $tool.type -ne "download") {
@@ -175,7 +181,7 @@ function Invoke-Tool {
         }
         return $true
     } catch {
-        if ($ErrorMessage) { $msg = $ErrorMessage } else { $msg = "Failed to run $($tool.name)" }
+        $msg = $ErrorMessage ? $ErrorMessage : "Failed to run $($tool.name)"
         Write-Log -Message "${msg}: $($_.Exception.Message)" -Level ERROR
 
         # Browser fallback when network/download fails (timeout, DNS, blocked
@@ -242,7 +248,7 @@ function Install-WingetPackage {
                 $LASTEXITCODE
             } -ArgumentList (,@($wingetArgs))
             # Runspace returns as a collection; extract the int
-            $LASTEXITCODE = if ($exitCode -is [array]) { [int]$exitCode[-1] } elseif ($exitCode) { [int]$exitCode } else { 0 }
+            $LASTEXITCODE = ($exitCode -is [array]) ? [int]$exitCode[-1] : ($exitCode ? [int]$exitCode : 0)
         }
 
         if ($LASTEXITCODE -eq 0) {
@@ -269,7 +275,7 @@ function Invoke-NativeCommand {
         [string]$ErrorMessage = ""
     )
 
-    $label = if ($SuccessMessage) { $SuccessMessage -replace '^\w+\s+', '' } else { "$Command $($Arguments[0])" }
+    $label = $SuccessMessage ? ($SuccessMessage -replace '^\w+\s+', '') : "$Command $($Arguments[0])"
     try {
         $code = Invoke-WithSpinner -Message $label -ScriptBlock {
             param($cmd, $cmdArgs)
@@ -277,9 +283,9 @@ function Invoke-NativeCommand {
             $LASTEXITCODE
         } -ArgumentList $Command, (,@($Arguments))
 
-        $exitCode = if ($code -is [array]) { [int]$code[-1] } elseif ($code) { [int]$code } else { 0 }
+        $exitCode = ($code -is [array]) ? [int]$code[-1] : ($code ? [int]$code : 0)
         if ($exitCode -ne 0) {
-            if ($ErrorMessage) { $msg = $ErrorMessage } else { $msg = "Command failed: $Command $($Arguments -join ' ')" }
+            $msg = $ErrorMessage ? $ErrorMessage : "Command failed: $Command $($Arguments -join ' ')"
             Write-Log -Message "$msg (exit code: $exitCode)" -Level ERROR
             return $false
         }
@@ -288,7 +294,7 @@ function Invoke-NativeCommand {
         }
         return $true
     } catch {
-        if ($ErrorMessage) { $msg = $ErrorMessage } else { $msg = "Command failed: $Command" }
+        $msg = $ErrorMessage ? $ErrorMessage : "Command failed: $Command"
         Write-Log -Message "$msg - $($_.Exception.Message)" -Level ERROR
         return $false
     }

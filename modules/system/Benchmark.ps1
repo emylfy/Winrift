@@ -1,4 +1,4 @@
-﻿. "$PSScriptRoot\..\..\scripts\Common.ps1"
+. "$PSScriptRoot\..\..\scripts\Common.ps1"
 
 $script:BenchmarkRoot = $env:USERPROFILE
 if (-not $script:BenchmarkRoot) { $script:BenchmarkRoot = $env:HOME }
@@ -189,7 +189,7 @@ function Compare-Snapshots {
         $meta = $metricLabels[$key]
 
         $delta = $aVal - $bVal
-        $changePct = if ($bVal -ne 0) { [math]::Round(($delta / $bVal) * 100, 1) } else { 0 }
+        $changePct = $bVal -ne 0 ? [math]::Round(($delta / $bVal) * 100, 1) : 0
 
         [PSCustomObject]@{
             Label     = $meta.label

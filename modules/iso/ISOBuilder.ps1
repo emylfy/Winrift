@@ -1,4 +1,4 @@
-﻿$scriptRoot = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
+$scriptRoot = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
 . "$scriptRoot\scripts\Common.ps1"
 Initialize-Logging -ModuleName "isobuilder"
 
@@ -51,7 +51,7 @@ function Get-OscdimgPath {
     # Download
     Write-Log -Message "Downloading from: $OSCDIMG_URL" -Level INFO -LogFile $script:LogFile
     try {
-        Invoke-WebRequest -Uri $OSCDIMG_URL -OutFile $localPath -UseBasicParsing -ErrorAction Stop
+        Invoke-WebRequest -Uri $OSCDIMG_URL -OutFile $localPath -ErrorAction Stop
         if (-not (Test-Path $localPath)) {
             throw "File not found after download"
         }

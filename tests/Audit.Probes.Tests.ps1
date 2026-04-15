@@ -1,4 +1,4 @@
-﻿BeforeAll {
+BeforeAll {
     . (Join-Path (Split-Path $PSScriptRoot -Parent) 'modules/system/Audit.Probes.ps1')
 
     # Pester 5 cannot Mock a command that doesn't exist in the current session.

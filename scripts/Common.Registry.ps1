@@ -1,4 +1,4 @@
-﻿
+
 $script:AuditQueue = [System.Collections.Generic.List[hashtable]]::new()
 
 function Add-AuditEntry {
@@ -29,7 +29,7 @@ function Show-AuditTable {
 
     $items = @()
     foreach ($e in $changed) {
-        $cur = if ($null -eq $e.Current) { "(not set)" } else { "$($e.Current)" }
+        $cur = ($null -eq $e.Current) ? "(not set)" : "$($e.Current)"
         $new = "$($e.Value)"
         $items += "$($e.Message)  $Dim$cur$Reset $Yellow->$Reset $Green$new$Reset"
     }
@@ -59,9 +59,7 @@ function Clear-AuditQueue {
 $script:TweakBackupEntries = [System.Collections.Generic.List[hashtable]]::new()
 $script:DesiredStateEntries = [System.Collections.Generic.List[hashtable]]::new()
 $script:DesiredStateCategory = "Uncategorized"
-$_baseDir = $env:USERPROFILE
-if (-not $_baseDir) { $_baseDir = $env:HOME }
-if (-not $_baseDir) { $_baseDir = [System.IO.Path]::GetTempPath() }
+$_baseDir = $env:USERPROFILE ?? $env:HOME ?? [System.IO.Path]::GetTempPath()
 $script:TweakBackupDir = Join-Path $_baseDir "Winrift\tweaks"
 $script:DesiredStateDir = Join-Path $_baseDir "Winrift\tweaks"
 
@@ -256,7 +254,7 @@ function Restore-TweakBackup {
     foreach ($entry in $selected.entries) {
         try {
             if ($entry.Existed -and $null -ne $entry.PrevValue) {
-                $type = if ($entry.PrevType) { $entry.PrevType } else { "String" }
+                $type = $entry.PrevType ?? "String"
                 Set-ItemProperty -Path $entry.Path -Name $entry.Name -Type $type -Value $entry.PrevValue -Force
                 $restored++
             } elseif (-not $entry.Existed) {
@@ -268,7 +266,7 @@ function Restore-TweakBackup {
         }
     }
 
-    Write-Log -Message "Restored $restored of $($selected.entries.Count) registry values. Errors: $errors" -Level $(if ($errors -eq 0) { 'SUCCESS' } else { 'WARNING' })
+    Write-Log -Message "Restored $restored of $($selected.entries.Count) registry values. Errors: $errors" -Level ($errors -eq 0 ? 'SUCCESS' : 'WARNING')
     Write-Log -Message "A system restart is recommended for changes to take effect." -Level INFO
     Wait-ForUser
 }

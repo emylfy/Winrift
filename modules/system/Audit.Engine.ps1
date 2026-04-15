@@ -1,4 +1,4 @@
-﻿. "$PSScriptRoot\..\..\scripts\Common.ps1"
+. "$PSScriptRoot\..\..\scripts\Common.ps1"
 . "$PSScriptRoot\Audit.Probes.ps1"
 
 # Audit engine — loads finding definitions from config/audit_findings.json,
@@ -28,7 +28,7 @@ function Read-AuditFindings {
         throw "audit_findings.json not found at $path"
     }
     $raw = Get-Content -Path $path -Raw -ErrorAction Stop
-    $parsed = $raw | ConvertFrom-Json -ErrorAction Stop
+    $parsed = $raw | ConvertFrom-Json -AsHashtable -ErrorAction Stop
     if ($null -eq $parsed.findings) {
         throw "audit_findings.json missing top-level 'findings' array"
     }
@@ -40,7 +40,7 @@ function Invoke-AuditProbe {
     # Returns @{ found, evidence } from the probe, or @{ found=$false; evidence="probe error: ..." }
     # if the probe is missing, throws, or returns malformed data.
     param(
-        [Parameter(Mandatory)][PSCustomObject]$Detect
+        [Parameter(Mandatory)]$Detect
     )
     $probeName = $Detect.probe
     if (-not $probeName) {
@@ -51,13 +51,8 @@ function Invoke-AuditProbe {
         return @{ found = $false; evidence = "unknown probe: $probeName" }
     }
 
-    # Convert PSCustomObject args → hashtable for splatting
-    $argHash = @{}
-    if ($Detect.args) {
-        foreach ($prop in $Detect.args.PSObject.Properties) {
-            $argHash[$prop.Name] = $prop.Value
-        }
-    }
+    $raw = $Detect.args
+    $argHash = ($raw -is [hashtable]) ? $raw : @{}
 
     try {
         $result = & $probeName @argHash
@@ -99,14 +94,7 @@ function Invoke-Audit {
 
         $result = Invoke-AuditProbe -Detect $finding.detect
         if ($result.found) {
-            # Merge dynamic_cost from the probe into the static cost from JSON.
-            # Convert PSCustomObject → hashtable so we can mutate it cleanly.
-            $cost = @{}
-            if ($finding.cost) {
-                foreach ($prop in $finding.cost.PSObject.Properties) {
-                    $cost[$prop.Name] = $prop.Value
-                }
-            }
+            $cost = $finding.cost ? [hashtable]$finding.cost.Clone() : @{}
             if ($result.ContainsKey('dynamic_cost') -and $result.dynamic_cost) {
                 foreach ($k in $result.dynamic_cost.Keys) {
                     $cost[$k] = $result.dynamic_cost[$k]
@@ -132,7 +120,7 @@ function Invoke-Audit {
 
 function Get-AuditCachePath {
     # Single rolling cache location — overwritten on each save, never appended.
-    $base = if ($env:USERPROFILE) { $env:USERPROFILE } elseif ($env:HOME) { $env:HOME } else { [System.IO.Path]::GetTempPath() }
+    $base = $env:USERPROFILE ?? $env:HOME ?? [System.IO.Path]::GetTempPath()
     $dir = Join-Path $base "Winrift\audit"
     if (-not (Test-Path $dir)) { New-Item -Path $dir -ItemType Directory -Force | Out-Null }
     return Join-Path $dir "last.json"

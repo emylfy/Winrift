@@ -1,4 +1,45 @@
-﻿$Host.UI.RawUI.WindowTitle = "Launcher"
+# PS7 requirement gate — auto-install and relaunch in pwsh.
+# launch.ps1 runs via irm|iex so $PSScriptRoot is empty — inline the installer.
+# irm|iex also runs non-admin, so we elevate first if needed.
+if ($PSVersionTable.PSVersion.Major -lt 7) {
+    $pwsh = (Get-Command pwsh.exe -ErrorAction SilentlyContinue).Source
+    if (-not $pwsh) {
+        $pwsh = "$env:ProgramFiles\PowerShell\7\pwsh.exe"
+        if (-not (Test-Path $pwsh)) { $pwsh = $null }
+    }
+
+    if (-not $pwsh) {
+        # Need admin to install — elevate a PS 5.1 session that installs then relaunches
+        Write-Host ""
+        Write-Host "  Winrift requires PowerShell 7. Requesting elevation to install..." -ForegroundColor Yellow
+        $installCmd = @(
+            "Write-Host '  Installing PowerShell 7...' -ForegroundColor Cyan"
+            "try {"
+            "  & winget install --id Microsoft.PowerShell --accept-package-agreements --accept-source-agreements --silent 2>&1 | Out-Null"
+            "  `$env:Path = [System.Environment]::GetEnvironmentVariable('Path','Machine') + ';' + [System.Environment]::GetEnvironmentVariable('Path','User')"
+            "  `$pwsh = `"$env:ProgramFiles\PowerShell\7\pwsh.exe`""
+            "  if (Test-Path `$pwsh) {"
+            "    Write-Host '  PowerShell 7 installed. Launching Winrift...' -ForegroundColor Green"
+            "    & `$pwsh -NoExit -ExecutionPolicy Bypass -Command `"irm https://raw.githubusercontent.com/emylfy/winrift/main/scripts/launch.ps1 | iex`""
+            "  } else {"
+            "    Write-Host '  Installation failed. Please install manually: https://aka.ms/powershell-release?tag=stable' -ForegroundColor Red"
+            "    Read-Host '  Press Enter to exit'"
+            "  }"
+            "} catch {"
+            "  Write-Host `"  Error: `$(`$_.Exception.Message)`" -ForegroundColor Red"
+            "  Read-Host '  Press Enter to exit'"
+            "}"
+        ) -join "; "
+        Start-Process "powershell.exe" -ArgumentList "-ExecutionPolicy Bypass -Command `"$installCmd`"" -Verb RunAs
+        return
+    }
+
+    # PS7 exists but we're running in PS 5.1 — relaunch in pwsh
+    & $pwsh -NoExit -ExecutionPolicy Bypass -Command "irm https://raw.githubusercontent.com/emylfy/winrift/main/scripts/launch.ps1 | iex"
+    return
+}
+
+$Host.UI.RawUI.WindowTitle = "Launcher"
 
 # Incremental launcher: skip download if the local copy in $env:TEMP\winrift
 # matches the latest remote version. Saves bandwidth and 5-15 seconds on every
@@ -101,7 +142,7 @@ Write-Host @"
 # regardless of system execution policy.
 $winriftPath = "$extractPath\Winrift.ps1"
 if (Get-Command wt -ErrorAction SilentlyContinue) {
-    wt powershell.exe -NoExit -ExecutionPolicy Bypass -File $winriftPath
+    wt pwsh.exe -NoExit -ExecutionPolicy Bypass -File $winriftPath
 } else {
-    Start-Process powershell.exe -ArgumentList "-NoExit", "-ExecutionPolicy", "Bypass", "-File", $winriftPath
+    Start-Process pwsh.exe -ArgumentList "-NoExit", "-ExecutionPolicy", "Bypass", "-File", $winriftPath
 }

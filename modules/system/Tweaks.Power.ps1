@@ -1,4 +1,4 @@
-﻿# https://github.com/ancel1x/Ancels-Performance-Batch
+# https://github.com/ancel1x/Ancels-Performance-Batch
 
 function Invoke-PowerMenu {
     $choice = Show-InteractiveMenu -Title "Power Management" -Items @(

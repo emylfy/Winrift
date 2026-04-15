@@ -1,4 +1,4 @@
-﻿BeforeAll {
+BeforeAll {
     . (Join-Path (Split-Path $PSScriptRoot -Parent) 'modules/system/Audit.Probes.ps1')
 }
 
@@ -13,9 +13,7 @@
 # These complement the unit tests in Audit.Probes.Tests.ps1 (which mock the
 # underlying cmdlets) by exercising the real Windows code paths.
 
-$skip = $true
-if ($PSVersionTable.PSEdition -eq 'Desktop' -or $env:OS -eq 'Windows_NT') { $skip = $false }
-if ($PSVersionTable.PSVersion.Major -ge 6 -and $IsWindows) { $skip = $false }
+$skip = -not ($IsWindows -or $env:OS -eq 'Windows_NT')
 
 Describe 'Test-RegistryValueEquals (live)' -Tag Integration -Skip:$skip {
     It 'reads a guaranteed-existing key without throwing' {

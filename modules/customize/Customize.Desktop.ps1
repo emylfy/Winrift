@@ -1,4 +1,4 @@
-﻿function Install-GlazeWM {
+function Install-GlazeWM {
     $choice = Show-InteractiveMenu -Title "GlazeWM - Tiling Window Manager" -Items @(
         "i3-inspired tiling window manager for Windows.",
         "Manages window layout with keyboard shortcuts.",
