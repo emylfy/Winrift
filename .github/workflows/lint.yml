@@ -38,7 +38,10 @@ jobs:
               'PSAvoidUsingPositionalParameters',
               'PSAvoidOverwritingBuiltInCmdlets',
               'PSUseBOMForUnicodeEncodedFile',
-              'PSAvoidUsingEmptyCatchBlock'
+              'PSAvoidUsingEmptyCatchBlock',
+              'PSUseApprovedVerbs',
+              'PSUseUsingScopeModifierInNewRunspaces',
+              'PSReviewUnusedParameter'
             )
           }
 
