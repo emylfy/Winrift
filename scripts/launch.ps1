@@ -145,10 +145,14 @@ Write-Host @"
 "@ -ForegroundColor Cyan
 
 # Spawn Winrift.ps1 with -ExecutionPolicy Bypass so the new process can run
-# regardless of system execution policy.
+# regardless of system execution policy. Resolve the current pwsh.exe by full
+# path — portable PS7 installed to %LOCALAPPDATA%\Winrift\pwsh\ is NOT on PATH,
+# so `wt pwsh.exe` / `Start-Process pwsh.exe` would fail with 0x80070002.
 $winriftPath = "$extractPath\Winrift.ps1"
+$pwshPath = (Get-Process -Id $PID).Path
+if (-not $pwshPath -or -not (Test-Path $pwshPath)) { $pwshPath = 'pwsh.exe' }
 if (Get-Command wt -ErrorAction SilentlyContinue) {
-    wt pwsh.exe -NoExit -ExecutionPolicy Bypass -File $winriftPath
+    wt $pwshPath -NoExit -ExecutionPolicy Bypass -File $winriftPath
 } else {
-    Start-Process pwsh.exe -ArgumentList "-NoExit", "-ExecutionPolicy", "Bypass", "-File", $winriftPath
+    Start-Process $pwshPath -ArgumentList "-NoExit", "-ExecutionPolicy", "Bypass", "-File", $winriftPath
 }
