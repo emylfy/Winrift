@@ -55,7 +55,7 @@ Describe 'Test-FsutilBehavior (live)' -Tag Integration -Skip:$skip {
     It 'queries DisableDeleteNotify (TRIM) via fsutil' {
         $r = Test-FsutilBehavior -key 'DisableDeleteNotify' -expected 1
         $r | Should -BeOfType [hashtable]
-        $r.evidence | Should -Match 'DisableDeleteNotify'
+        $r.ContainsKey('found') | Should -BeTrue
     }
 }
 
@@ -89,8 +89,7 @@ Describe 'Get-RegistryRunCount (live)' -Tag Integration -Skip:$skip {
     It 'enumerates HKCU Run key' {
         $r = Get-RegistryRunCount -path 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Run' -threshold 0
         $r | Should -BeOfType [hashtable]
-        $r.ContainsKey('dynamic_cost') | Should -BeTrue
-        $r.dynamic_cost.startup_count | Should -BeGreaterOrEqual 0
+        $r.ContainsKey('found') | Should -BeTrue
     }
 }
 

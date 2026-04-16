@@ -5,6 +5,56 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project uses [Calendar Versioning](https://calver.org/) (YY.M.patch format).
 
+## [26.4.2] - 2026-04-16
+
+### PowerShell 7 Migration
+
+- Migrated from PowerShell 5.1 to PowerShell 7.4+ as the runtime target
+- `Winrift.ps1` is now a thin PS 5.1-compatible launcher that auto-installs PS7 and relaunches in `pwsh.exe`
+- Portable PS7 zip install (~50MB) to `%LOCALAPPDATA%\Winrift\pwsh\` — no admin needed, no winget/MSI dependency, BITS transfer for fast download
+- All logic moved to `scripts/Main.ps1` (PS7 syntax: ternary `?:`, `??`, `Start-ThreadJob`, `-AsHashtable`)
+- All `powershell.exe` references replaced with `pwsh.exe` (AdminLaunch, launch, install, scheduled tasks, Customize)
+- External tool scripts (`irm`, `irm-interactive`) still run in `powershell.exe` for PS 5.1 compatibility
+- `Start-Job` → `Start-ThreadJob` for background stats and menu state
+- `-UseBasicParsing` removed (dead in PS7), UTF-8 BOM stripped from all `.ps1` files
+- Windows Terminal detection: launches in `wt.exe` when available after PS7 install
+
+### Security & Privacy
+
+- Replaced external `privacy.sexy` download with built-in `Privacy.ps1` — data-driven, 675 lines
+- 381 registry tweaks, 24 services disabled, 20 apps removed, 28 tasks disabled, 10 features disabled, 32 telemetry domains blocked, 71 file cleanups
+- Menu renamed: "Privacy.sexy" → "Privacy Hardening"
+
+### Audit Fixes
+
+- Fixed `storage-trim-disabled` inline fix (removed invalid `NTFS` argument from fsutil)
+- Fixed `memory-onedrive-rss` fix (pipe `|` was blocked by allowlist; now uses `Stop-Process -Name`)
+- Fixed `privacy-activity-history` (Privacy.ps1 now writes `UploadUserActivities` and `PublishUserActivities`)
+- Fixed `network-nodelack-disabled` (changed to registry type — Tweaks never wrote `TCPNoDelay`)
+- Fixed `storage-last-access` probe (now uses `Test-FsutilBehavior` instead of registry — avoids fsutil/registry mismatch)
+- Changed `network-dns-default` to manual type (was launching detached subprocess)
+- Bulk-critical (`C`) now excludes `module` and `manual` remediation types
+- Task Manager startup fix now uses `-Wait` (re-scan no longer fires before user acts)
+- Module remediation logs "re-scan to verify" after completion
+- Added `Stop-Process` to inline remediation allowlist
+- Added `manual` remediation type handler
+- Moved `Initialize-Logging` inside `Show-PrivacyMenu` (prevents transcript corruption from audit)
+
+### UI
+
+- Rewrote all main menu sidebar descriptions — 5-8 lines per item instead of 2-3
+- Removed subtitles from menu item names (sidebar handles descriptions)
+- Added `$Dim` for secondary text, `$Cyan` for tool names, colored categories for App Bundles
+- Sidebar content vertically centered in the right panel
+- Narrowed left column (`SplitAt` 30 → 26) for wider sidebar
+
+### Data & Paths
+
+- Moved all data to `%LOCALAPPDATA%\Winrift\` (logs, tweaks, audit, benchmarks, icons)
+- Previously scattered between `%USERPROFILE%\Winrift\` and `%APPDATA%\Winrift\`
+- Uninstall cleanup simplified to one directory
+- Updated docs: README, drift_detection.md, tests.md
+
 ## [26.4.1] - 2026-04-13
 
 ### Core Refactor

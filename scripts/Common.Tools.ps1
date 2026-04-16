@@ -35,7 +35,7 @@ function Invoke-SecureScript {
         Write-Log -Message "Hash verified for $ToolName" -Level SUCCESS
     }
 
-    $tempFile = Join-Path $env:TEMP "winrift_irm_$([guid]::NewGuid().ToString('N').Substring(0,8)).ps1"
+    $tempFile = Join-Path ([System.IO.Path]::GetTempPath()) "winrift_irm_$([guid]::NewGuid().ToString('N').Substring(0,8)).ps1"
     try {
         Set-Content -Path $tempFile -Value $scriptContent -Encoding UTF8
         Start-Process powershell.exe -ArgumentList "-ExecutionPolicy Bypass -File `"$tempFile`"" -Wait

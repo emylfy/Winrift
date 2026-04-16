@@ -9,15 +9,13 @@
 <a href="https://github.com/emylfy/winrift/commits/main/"><img src="https://img.shields.io/github/last-commit/emylfy/winrift?style=for-the-badge&logo=github&logoColor=eba0ac&label=Last%20Commit&labelColor=302D41&color=eba0ac" alt="Last Commit"></a>&nbsp;&nbsp;
 <a href="https://github.com/emylfy/winrift/releases"><img src="https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fraw.githubusercontent.com%2Femylfy%2Fwinrift%2Fmain%2Fconfig%2Fversion.json&query=%24.version&prefix=v&style=for-the-badge&label=Version&color=a6e3a1&labelColor=302D41" alt="Version"></a>
 
-<img src="media/screenshot-main.png" alt="Winrift terminal interface main menu" width="90%">
+<img src="media/demo.gif" alt="Winrift terminal interface demo" width="90%">
 
 </div>
 
 ---
 
 ## ⚡ Quick Start
-
-Not sure where to start? Run **System Audit** first — it scans your setup and shows exactly what's wrong.
 
 Open PowerShell — <kbd>Win</kbd> + <kbd>X</kbd> → Terminal:
 
@@ -26,7 +24,7 @@ Set-ExecutionPolicy Bypass -Scope Process -Force; irm https://raw.githubusercont
 ```
 
 > [!NOTE]
-> A system restore point is created automatically before any changes. Every registry modification is backed up to JSON for rollback.
+> PowerShell 7 installs automatically if missing. A restore point is created before any changes. Every registry modification is backed up for rollback.
 
 <details>
 <summary><strong>Pin shortcut to Start Menu</strong></summary>
@@ -39,38 +37,35 @@ Set-ExecutionPolicy Bypass -Scope Process -Force; irm https://raw.githubusercont
 
 ---
 
-## 📊 Benchmark
-
-Other tools apply tweaks and hope for the best. Winrift measures 13 system metrics before and after — so you see exactly what changed.
-
-> Typical results on clean Windows 11 24H2 (your numbers will vary):
-
-| Metric            |    Before |    After |   Change |
-| :---------------- | --------: | -------: | -------: |
-| CPU idle load     |      3.2% |     1.1% | **−66%** |
-| RAM usage         |  2,800 MB | 2,100 MB | **−25%** |
-| Running processes |       142 |       98 | **−31%** |
-| Running services  |       187 |      151 | **−19%** |
-| DPC rate          |     48 /s |    22 /s | **−54%** |
-| Context switches  | 12,400 /s | 8,600 /s | **−31%** |
-
-<sub>Full methodology: <a href="docs/tests.md">Testing & Benchmarks Guide</a></sub>
-
----
-
 ## 🧩 Features
 
-|     | Feature                                        | What it does                                                                   |
-| :-- | :--------------------------------------------- | :----------------------------------------------------------------------------- |
-| 📊  | [**Benchmark**](docs/tests.md)                 | 13 metrics before & after, Markdown reports                                    |
-| 🩺  | **System Audit**                               | Concrete findings + cost estimates + one-click fixes                           |
-| ⚙️  | [**System Tweaks**](docs/tweaks_guide.md)      | 13 categories — latency, SSD, GPU, network, power, memory, DirectX             |
-| 🔄  | [**Drift Detection**](docs/drift_detection.md) | Catches Windows Update reverting your tweaks; one-click reapply                |
-| 🛡️  | **Security & Privacy**                         | Defender, Copilot/Recall removal, built-in privacy hardening, DNS benchmark    |
-| 🖥️  | **Drivers**                                    | NVIDIA · AMD · Intel + 11 OEM manufacturers                                    |
-| 🎨  | [**Customize**](modules/customize/README.md)   | Desktop, terminal, editors, app themes — all without admin                     |
-| 📦  | **App Bundles**                                | 7 curated collections — native winget selector, optional UniGetUI              |
-| 💿  | [**ISO Builder**](docs/autounattend_guide.md)  | Embed answer file into Windows 11 ISO for automated install                    |
+|     | Feature                                        | What it does                                                       |
+| :-- | :--------------------------------------------- | :----------------------------------------------------------------- |
+| 🩺  | **System Audit**                               | Scans 33 issues across 6 categories — one-click fixes              |
+| ⚙️  | [**System Tweaks**](docs/tweaks_guide.md)      | 13 categories — latency, SSD, GPU, network, power, memory, DirectX |
+| 🔄  | [**Drift Detection**](docs/drift_detection.md) | Catches Windows Update reverting your tweaks; one-click reapply    |
+| 🛡️  | **Security & Privacy**                         | Defender, Copilot/Recall removal, privacy hardening, DNS benchmark |
+| 📊  | [**Benchmark**](docs/tests.md)                 | 13 metrics before & after, Markdown comparison reports             |
+| 🖥️  | **Drivers**                                    | NVIDIA · AMD · Intel + 11 OEM manufacturers                        |
+| 🎨  | [**Customize**](modules/customize/README.md)   | Desktop, terminal, editors, app themes — all without admin         |
+| 📦  | **App Bundles**                                | 7 collections via winget — native selector, optional UniGetUI      |
+| 💿  | [**ISO Builder**](docs/autounattend_guide.md)  | Embed answer file into Windows 11 ISO for automated install        |
+
+<details>
+<summary><strong>🩺 System Audit — 33 checks</strong></summary>
+
+Scans your system and shows **what's wrong, why it matters, and how to fix it**. Each issue links to a Winrift fix you can apply right from the audit screen.
+
+| Category        | What it checks                                                                 |
+| :-------------- | :----------------------------------------------------------------------------- |
+| **Privacy**     | Telemetry level, DiagTrack, Copilot, Recall, OneDrive, Ad ID, Activity history |
+| **Performance** | Power throttling, HAGS, network throttling, MMCSS, energy estimation           |
+| **Memory**      | SysMain on SSD, large system cache, paging executive                           |
+| **Storage**     | TRIM, NTFS last-access, 8.3 names, prefetcher                                  |
+| **Startup**     | HKLM/HKCU Run keys for unwanted autostart entries                              |
+| **Network**     | Nagle algorithm, DNS resolver, throttling index                                |
+
+</details>
 
 <details>
 <summary><strong>⚙️ System Tweaks — all 13 categories</strong></summary>
@@ -118,11 +113,13 @@ Windows Updates silently revert registry changes. Drift Detection catches this.
 <details>
 <summary><strong>🛡️ Security & Privacy tools</strong></summary>
 
-| Tool                | Description                                                 |
-| :------------------ | :---------------------------------------------------------- |
-| **DefendNot**       | Disable Windows Defender via Security Center API            |
-| **RemoveWindowsAI** | Remove Copilot and Recall packages                          |
+| Tool                  | Description                                            |
+| :-------------------- | :----------------------------------------------------- |
+| **DefendNot**         | Disable Windows Defender via Security Center API       |
+| **RemoveWindowsAI**   | Remove Copilot and Recall packages                     |
 | **Privacy Hardening** | Disable telemetry, tracking, bloatware — 200+ settings |
+| **JustTheBrowser**    | Remove AI, telemetry, sponsored content from browsers  |
+| **DNS Benchmark**     | Test 8 providers, apply the fastest to your adapter    |
 
 All tools run only when explicitly selected.
 
@@ -163,7 +160,7 @@ Create a bootable Windows 11 ISO with automation baked in:
 <details>
 <summary><strong>📦 App Bundles</strong></summary>
 
-7 curated collections installable directly from the menu — no third-party app required:
+7 collections installable directly from the menu:
 
 Development · Browsers · Utilities · Productivity · Creative & Media · Gaming · Communications
 
@@ -172,23 +169,6 @@ Development · Browsers · Utilities · Productivity · Creative & Media · Gami
 - **UniGetUI integration** — if [UniGetUI](https://github.com/marticliment/UniGetUI) is installed, open any bundle directly in the app for a full GUI experience
 
 </details>
-
----
-
-## 🩺 System Audit
-
-Scans your system against ~33 known issues across 6 categories and shows **what's wrong, why it matters, and how to fix it**. Each finding has a real fix linked to a Winrift module — no scores, no graded reports, just actionable items.
-
-| Category        | What it checks                                                                  |
-| :-------------- | :------------------------------------------------------------------------------ |
-| **Privacy**     | Telemetry level, DiagTrack, Copilot, Recall, OneDrive, Ad ID, Activity history |
-| **Performance** | Power throttling, HAGS, network throttling, MMCSS, energy estimation            |
-| **Memory**      | SysMain on SSD, large system cache, paging executive                            |
-| **Storage**     | TRIM, NTFS last-access, 8.3 names, prefetcher                                  |
-| **Startup**     | HKLM/HKCU Run keys for unwanted autostart entries                               |
-| **Network**     | Nagle algorithm, throttling index                                               |
-
-Each finding marks its cost honestly: **measured** (real RAM right now), **estimated** (cited average with `~`), or **qualitative** (on/off, no number). The UI is a keyboard-driven multi-select TUI — navigate findings, toggle what you want, apply in one pass.
 
 ---
 
@@ -210,7 +190,7 @@ Each finding marks its cost honestly: **measured** (real RAM right now), **estim
 | :-------------------- | :----------------------------------------------------------- |
 | Scripts disabled      | `Set-ExecutionPolicy RemoteSigned -Scope CurrentUser`        |
 | Module not found      | Re-run the install command for the latest version            |
-| Registry errors       | Check `%LOCALAPPDATA%\Winrift\logs\` for the session log      |
+| Registry errors       | Check `%LOCALAPPDATA%\Winrift\logs\` for the session log     |
 | Tweak broke something | System Tweaks → Restore Backup, or boot from a restore point |
 | UniGetUI fails        | `winget source reset --force` in admin PowerShell            |
 

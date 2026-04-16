@@ -674,4 +674,4 @@ function Show-PrivacyMenu {
     Wait-ForUser
 }
 
-Show-PrivacyMenu
+if ($MyInvocation.InvocationName -ne '.') { Show-PrivacyMenu }

@@ -480,13 +480,25 @@ function Show-DocsMenu {
         "3 › Testing & Benchmarks - Methodology & results",
         "4 › Wiki - Full documentation",
         "---",
-        "5 › Back to main menu"
+        "5 › Uninstall Winrift",
+        "---",
+        "6 › Back to main menu"
     ) -Actions @{
         "1" = { Start-Process "https://github.com/emylfy/winrift/blob/main/docs/tweaks_guide.md" }
         "2" = { Start-Process "https://github.com/emylfy/winrift/blob/main/docs/autounattend_guide.md" }
         "3" = { Start-Process "https://github.com/emylfy/winrift/blob/main/docs/tests.md" }
         "4" = { Start-Process "https://github.com/emylfy/Winrift/wiki" }
-    } -ExitKey "5"
+        "5" = {
+            $confirm = Show-InteractiveMenu -Title "Uninstall Winrift" -HideKeys -Items @(
+                "This will remove:", "  Start Menu shortcut", "  Data directory", "  Drift check task", "---", "Y › Uninstall", "N › Cancel"
+            )
+            if ($confirm -eq "Y") {
+                & "$script:Root\scripts\uninstall.ps1"
+                Wait-ForUser
+                exit 0
+            }
+        }
+    } -ExitKey "6"
 }
 
 function Show-MainMenu {

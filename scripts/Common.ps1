@@ -181,7 +181,7 @@ function New-SafeRestorePoint {
 
 function Initialize-Logging {
     param([string]$ModuleName)
-    $logDir = Join-Path $env:LOCALAPPDATA "Winrift\logs"
+    $logDir = Join-Path ($env:LOCALAPPDATA ?? $env:TMPDIR ?? "/tmp") "Winrift/logs"
     if (-not (Test-Path $logDir)) { New-Item -Path $logDir -ItemType Directory -Force | Out-Null }
     $script:LogFile = Join-Path $logDir "${ModuleName}_$(Get-Date -Format 'yyyy-MM-dd_HH-mm-ss').log"
     try {
