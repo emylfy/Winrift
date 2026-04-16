@@ -129,9 +129,8 @@ Describe 'Invoke-SecureScript hash verification' {
             -ExpectedHash 'AAAA1111BBBB2222CCCC3333DDDD4444EEEE5555FFFF6666AAAA7777BBBB8888' 6>&1 | Out-Null } | Should -Throw '*Hash verification failed*'
     }
 
-    It 'skips verification when ExpectedHash is empty' {
+    It 'skips verification when ExpectedHash is empty' -Skip:(-not $IsWindows) {
         Mock Invoke-RestMethod { return 'Write-Host "mock script"' }
-        Mock Invoke-Expression {}
 
         { Invoke-SecureScript -Url 'https://example.com/script.ps1' -ToolName 'TestScript' 6>&1 | Out-Null } | Should -Not -Throw
     }

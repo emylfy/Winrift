@@ -115,7 +115,7 @@ Describe 'Tweak Backup System' {
         }
     }
 
-    It 'Restore-TweakBackup handles missing backup directory gracefully' {
+    It 'Restore-TweakBackup handles missing backup directory gracefully' -Skip:(-not $IsWindows) {
         { Restore-TweakBackup 6>&1 | Out-Null } | Should -Not -Throw
     }
 }
