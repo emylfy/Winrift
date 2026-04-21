@@ -208,6 +208,10 @@ function Build-WinriftISO {
 
         $bootBios = "$scratchDir\boot\etfsboot.com"
         $bootEfi = "$scratchDir\efi\microsoft\boot\efisys.bin"
+        # PS 7.3+ Standard argument passing re-wraps args containing embedded
+        # quotes, producing ""path"" which oscdimg rejects. Force Legacy for
+        # this call so the -bootdata: quoting reaches oscdimg intact.
+        $PSNativeCommandArgumentPassing = 'Legacy'
         & $oscdimg -m -o -u2 -udfver102 -bootdata:"2#p0,e,b`"$bootBios`"#pEF,e,b`"$bootEfi`"" "$scratchDir" "$outputPath"
 
         if ($LASTEXITCODE -eq 0) {
