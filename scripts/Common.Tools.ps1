@@ -143,14 +143,7 @@ function Invoke-Tool {
                 Invoke-SecureScript -Url $tool.url -ToolName $tool.name -ExpectedHash $hash
             }
             "irm-interactive" {
-                $tempScript = Join-Path $env:TEMP "$($tool.id)_$([guid]::NewGuid().ToString('N').Substring(0,8)).ps1"
-                try {
-                    Write-Log -Message "Downloading $($tool.name)..." -Level INFO
-                    Invoke-WebRequest -Uri $tool.url -OutFile $tempScript -TimeoutSec 60 -ErrorAction Stop
-                    Start-Process powershell.exe -ArgumentList "-ExecutionPolicy Bypass -File `"$tempScript`"" -Wait
-                } finally {
-                    Remove-Item $tempScript -Force -ErrorAction SilentlyContinue
-                }
+                Invoke-SecureScript -Url $tool.url -ToolName $tool.name -ExpectedHash $hash
             }
             "download" {
                 $downloadPath = Join-Path $env:TEMP $tool.filename

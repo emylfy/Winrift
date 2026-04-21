@@ -7,14 +7,15 @@ function Start-UserProcess {
         [string[]]$Arguments = @()
     )
     # Drop admin privileges using runas /trustlevel:0x20000 (basic user)
-    $psArgs = "-ExecutionPolicy Bypass -File `"$ScriptPath`""
-    if ($Arguments.Count -gt 0) { $psArgs += " " + ($Arguments -join " ") }
+    $psArgs = @("-ExecutionPolicy", "Bypass", "-File", $ScriptPath)
+    if ($Arguments.Count -gt 0) { $psArgs += $Arguments }
+    $psArgString = ($psArgs | ForEach-Object { if ($_ -match ' ') { "`"$_`"" } else { $_ } }) -join ' '
 
     $useWT = Get-Command wt.exe -ErrorAction SilentlyContinue
     if ($useWT) {
-        Start-Process "runas.exe" -ArgumentList "/trustlevel:0x20000 `"wt.exe pwsh.exe $psArgs`""
+        Start-Process "runas.exe" -ArgumentList "/trustlevel:0x20000 `"wt.exe pwsh.exe $psArgString`""
     } else {
-        Start-Process "runas.exe" -ArgumentList "/trustlevel:0x20000 `"pwsh.exe $psArgs`""
+        Start-Process "runas.exe" -ArgumentList "/trustlevel:0x20000 `"pwsh.exe $psArgString`""
     }
 }
 

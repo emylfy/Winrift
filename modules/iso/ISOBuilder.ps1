@@ -3,6 +3,7 @@ $scriptRoot = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
 Initialize-Logging -ModuleName "isobuilder"
 
 $OSCDIMG_URL = "https://msdl.microsoft.com/download/symbols/oscdimg.exe/3D44737265000/oscdimg.exe"
+$OSCDIMG_SHA256 = "" # TODO: pin hash — run (Get-FileHash oscdimg.exe -Algorithm SHA256).Hash on Windows
 $ADK_PAGE = "https://learn.microsoft.com/en-us/windows-hardware/get-started/adk-install"
 
 function Get-OscdimgPath {
@@ -48,22 +49,10 @@ function Get-OscdimgPath {
         default { return $null }
     }
 
-    # Download
-    Write-Log -Message "Downloading from: $OSCDIMG_URL" -Level INFO -LogFile $script:LogFile
+    # Download via Invoke-SecureDownload (hash verified when $OSCDIMG_SHA256 is set)
     try {
-        Invoke-WebRequest -Uri $OSCDIMG_URL -OutFile $localPath -ErrorAction Stop
-        if (-not (Test-Path $localPath)) {
-            throw "File not found after download"
-        }
-        $fileSize = (Get-Item $localPath).Length
-        if ($fileSize -lt 10KB) {
-            Remove-Item $localPath -Force -ErrorAction SilentlyContinue
-            throw "Downloaded file is too small ($([math]::Round($fileSize / 1KB)) KB) — likely not a valid binary"
-        }
-        $sizeMB = [math]::Round($fileSize / 1KB)
-        Write-Log -Message "Downloaded oscdimg.exe (${sizeMB} KB)" -Level SUCCESS -LogFile $script:LogFile
-    }
-    catch {
+        Invoke-SecureDownload -Url $OSCDIMG_URL -OutFile $localPath -ToolName "oscdimg.exe" -ExpectedHash $OSCDIMG_SHA256
+    } catch {
         Write-Log -Message "Download failed: $($_.Exception.Message)" -Level ERROR -LogFile $script:LogFile
         return $null
     }

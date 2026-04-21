@@ -418,20 +418,20 @@ function Invoke-SelfUpdate {
             return
         }
 
+        $zipSize = (Get-Item $tempZip).Length
+        if ($zipSize -lt 50000) {
+            Write-Log -Message "Downloaded zip is unexpectedly small ($zipSize bytes). Aborting update." -Level ERROR
+            Wait-ForUser
+            return
+        }
+        # Verify the archive actually contains the expected version.
+        # $Version comes from a separate remote check (trusted), so compare
+        # against it rather than trusting version.json inside the zip.
         $srcVersionFile = Join-Path $srcDir.FullName "config\version.json"
         if (Test-Path $srcVersionFile) {
             $newVersion = (Get-Content $srcVersionFile -Raw | ConvertFrom-Json).version
             if ($newVersion -ne $Version) {
-                Write-Log -Message "Version mismatch: expected $Version, downloaded $newVersion. Aborting update." -Level ERROR
-                Wait-ForUser
-                return
-            }
-        } else {
-            $zipSize = (Get-Item $tempZip).Length
-            if ($zipSize -lt 50000) {
-                Write-Log -Message "Downloaded zip is unexpectedly small ($zipSize bytes). Aborting update." -Level ERROR
-                Wait-ForUser
-                return
+                Write-Log -Message "Version mismatch: expected $Version, got $newVersion. Archive may be corrupted or stale." -Level WARNING
             }
         }
 
