@@ -16,7 +16,16 @@ function Install-Pwsh {
         if ($env:PROCESSOR_ARCHITECTURE -eq "ARM64") { "arm64" } else { "x64" }
     } else { "x86" }
 
-    $zipUrl = "https://github.com/PowerShell/PowerShell/releases/download/v7.4.7/PowerShell-7.4.7-win-$arch.zip"
+    # Resolve the latest stable PS7 from GitHub; fall back to a known-good pin
+    # if the API is unreachable (offline, rate-limited). Avoids the version
+    # going stale in source over the years this must keep working unattended.
+    $pwshVer = "7.4.7"
+    try {
+        $rel = Invoke-RestMethod -Uri "https://api.github.com/repos/PowerShell/PowerShell/releases/latest" -Headers @{ "User-Agent" = "winrift" } -TimeoutSec 10 -ErrorAction Stop
+        if ($rel.tag_name -match '^v?(\d+\.\d+\.\d+)$') { $pwshVer = $Matches[1] }
+    } catch { }
+
+    $zipUrl = "https://github.com/PowerShell/PowerShell/releases/download/v$pwshVer/PowerShell-$pwshVer-win-$arch.zip"
     $zipPath = Join-Path $env:TEMP "pwsh-portable.zip"
     $destDir = "$env:LOCALAPPDATA\Winrift\pwsh"
 

@@ -3,7 +3,7 @@ $scriptRoot = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
 Initialize-Logging -ModuleName "isobuilder"
 
 $OSCDIMG_URL = "https://msdl.microsoft.com/download/symbols/oscdimg.exe/3D44737265000/oscdimg.exe"
-$OSCDIMG_SHA256 = "" # TODO: pin hash — run (Get-FileHash oscdimg.exe -Algorithm SHA256).Hash on Windows
+$OSCDIMG_SHA256 = "F5129F313ED7EB46F2677CF522E64264A225F226307ED0DDB52BB14C46E7CFDD"
 $ADK_PAGE = "https://learn.microsoft.com/en-us/windows-hardware/get-started/adk-install"
 
 function Get-OscdimgPath {
