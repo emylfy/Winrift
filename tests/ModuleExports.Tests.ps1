@@ -5,7 +5,7 @@ BeforeDiscovery {
             File = 'modules/customize/Customize.Menu.ps1'
             ExpectedFunctions = @(
                 'Show-CustomizeMenu', 'Show-DesktopMenu', 'Show-TerminalMenu',
-                'Show-AppsMenu', 'Show-VSCodeConfigMenu', 'Show-SpotifyToolsMenu',
+                'Show-VSCodeConfigMenu',
                 'Show-WindowsMenu', 'Show-ProfileBackupsMenu'
             )
         }
@@ -15,13 +15,6 @@ BeforeDiscovery {
                 'Install-GlazeWM', 'Copy-GlazeWMConfig', 'Install-StatusBar',
                 'Install-FlowLauncher', 'Install-Windhawk', 'Install-Rainmeter',
                 'Open-WallpaperBrowser'
-            )
-        }
-        @{
-            File = 'modules/customize/Customize.Apps.ps1'
-            ExpectedFunctions = @(
-                'Install-SpotX', 'Install-Spicetify',
-                'Install-SteamMillennium'
             )
         }
         @{
@@ -73,14 +66,6 @@ BeforeDiscovery {
                 'Format-AuditSummary', 'Format-FindingShort',
                 'Show-AuditFindingDetail', 'Invoke-AuditApply',
                 'Invoke-ApplyAllCritical', 'Show-AuditWizard'
-            )
-        }
-        @{
-            File = 'modules/system/Benchmark.ps1'
-            ExpectedFunctions = @(
-                'Get-PerformanceSnapshot', 'Save-Snapshot',
-                'Compare-Snapshots', 'Export-BenchmarkReport',
-                'Invoke-Benchmark', 'Show-BenchmarkMenu'
             )
         }
     )

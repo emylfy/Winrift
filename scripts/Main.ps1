@@ -72,7 +72,7 @@ try {
     } -ArgumentList $script:SysStats
 
     # Background job: scans system state for dynamic sidebar descriptions.
-    # Covers audit cache, drift state, benchmark reports, GPU, Defender, Copilot/Recall.
+    # Covers audit cache, drift state, GPU, Defender, Copilot/Recall.
     $script:MenuState = $null
     $script:MenuStateUpdated = $false
     $script:MenuStateScript = {
@@ -110,15 +110,6 @@ try {
                     } catch { $drifted++ }
                 }
                 $r['tweaks'] = @{ entries = $entries.Count; categories = $cats; drifted = $drifted }
-            }
-        } catch { $null = $_ }
-
-        # Last benchmark report
-        try {
-            $bd = Join-Path $DataDir "benchmarks"
-            if (Test-Path $bd) {
-                $rp = @(Get-ChildItem $bd -Filter "report_*.md" -ErrorAction SilentlyContinue | Sort-Object LastWriteTime -Descending)
-                if ($rp.Count -gt 0) { $r['benchmark'] = @{ date = $rp[0].LastWriteTime.ToString('yyyy-MM-dd HH:mm') } }
             }
         } catch { $null = $_ }
 
@@ -331,34 +322,17 @@ function Build-MenuDescriptions {
     if ($st -and $st.ContainsKey('gpu')) {
         $d[3] = @(
             "$Cyan$($st['gpu'])$Reset", "",
-            "NVIDIA $dot AMD $dot Intel + 11 OEM",
-            "${Dim}Opens official download pages.$Reset"
+            "Intel Driver & Support Assistant",
+            "${Dim}Auto-detects and installs Intel drivers.$Reset"
         )
     } else {
         $d[3] = @(
-            "NVIDIA $dot AMD $dot Intel + 11 OEM",
-            "${Dim}Opens official download pages.$Reset"
+            "Intel Driver & Support Assistant",
+            "${Dim}Auto-detects and installs Intel drivers.$Reset"
         )
     }
 
-    if ($st -and $st.ContainsKey('benchmark')) {
-        $d[4] = @(
-            "Last run: $Cyan$($st['benchmark'].date)$Reset", "",
-            "Run again to compare with the",
-            "previous snapshot.", "",
-            "${Dim}CPU $dot RAM $dot Boot $dot Processes$Reset",
-            "${Dim}Services $dot DPC $dot Ctx switches$Reset"
-        )
-    } else {
-        $d[4] = @(
-            "Measure your system before and",
-            "after tweaks to see the difference.", "",
-            "${Dim}CPU $dot RAM $dot Boot $dot Processes$Reset",
-            "${Dim}Services $dot DPC $dot Ctx switches$Reset"
-        )
-    }
-
-    $d[6] = @(
+    $d[5] = @(
         "Install apps by category:",
         "$Cyan Dev$Reset $dot $Green Browsers$Reset $dot $Yellow Utilities$Reset",
         "$Cyan Gaming$Reset $dot $Green Media$Reset $dot $Yellow Productivity$Reset",
@@ -366,7 +340,7 @@ function Build-MenuDescriptions {
         "${Dim}Browse, search, or open in UniGetUI.$Reset"
     )
 
-    $d[7] = @(
+    $d[6] = @(
         "$Cyan GlazeWM$Reset $dot $Green Oh My Posh$Reset $dot $Yellow Nerd Fonts$Reset",
         "$Cyan Themes$Reset $dot $Green Editors$Reset $dot $Yellow Wallpapers$Reset", "",
         "${Dim}Desktop, terminal, and app theming.$Reset",
@@ -374,23 +348,15 @@ function Build-MenuDescriptions {
         "${Dim}Profile backup & restore.$Reset"
     )
 
-    $d[8] = @(
+    $d[7] = @(
         "Build a clean Windows 11 ISO",
         "${Dim}Removes bloat, disables telemetry,$Reset",
         "${Dim}bypasses hardware checks.$Reset", "",
         "${Dim}Built-in or custom answer file.$Reset"
     )
 
-    $d[10] = @(
-        "$Cyan WinUtil$Reset $dot $Cyan Sparkle$Reset $dot $Cyan GTweak$Reset",
-        "$Cyan WinScript$Reset", "",
-        "${Dim}Popular community tools.$Reset",
-        "${Dim}Each opens in a new window.$Reset"
-    )
-
-    $d[11] = @(
-        "$Cyan Tweaks guide$Reset $dot $Cyan Answer file$Reset",
-        "$Cyan Benchmark methodology$Reset $dot $Cyan Wiki$Reset", "",
+    $d[9] = @(
+        "$Cyan Answer file guide$Reset $dot $Cyan Wiki$Reset", "",
         "${Dim}Opens in browser.$Reset"
     )
 
@@ -452,43 +418,18 @@ function Invoke-SelfUpdate {
     }
 }
 
-function Show-CommunityToolsMenu {
-    $launcherPath = "$script:Root\modules\tools\ExternalLauncher.ps1"
-
-    Invoke-MenuLoop -Title "Community Tools" -Items @(
-        "1 › WinUtil - Tweaks, Apps & Fixes",
-        "2 › Sparkle - Optimize & Debloat",
-        "3 › GTweak - Debloat & Tweak",
-        "4 › WinScript - Custom Script Builder",
-        "---",
-        "5 › Back to main menu"
-    ) -Actions @{
-        "1" = { Start-AdminProcess -ScriptPath $launcherPath -Arguments @("-ToolId", "winutil") }
-        "2" = { Start-AdminProcess -ScriptPath $launcherPath -Arguments @("-ToolId", "sparkle") }
-        "3" = { Start-AdminProcess -ScriptPath $launcherPath -Arguments @("-ToolId", "gtweak") }
-        "4" = {
-            & "$script:Root\modules\tools\WinScript.ps1"
-            $Host.UI.RawUI.WindowTitle = "Winrift v$script:AppVersion"
-        }
-    } -ExitKey "5"
-}
-
 function Show-DocsMenu {
     Invoke-MenuLoop -Title "Docs & Guides" -Items @(
-        "1 › Tweaks Guide - What each tweak does",
-        "2 › Answer File Guide - Windows installation",
-        "3 › Testing & Benchmarks - Methodology & results",
-        "4 › Wiki - Full documentation",
+        "1 › Answer File Guide - Windows installation",
+        "2 › Wiki - Full documentation",
         "---",
-        "5 › Uninstall Winrift",
+        "3 › Uninstall Winrift",
         "---",
-        "6 › Back to main menu"
+        "4 › Back to main menu"
     ) -Actions @{
-        "1" = { Start-Process "https://github.com/emylfy/winrift/blob/main/docs/tweaks_guide.md" }
-        "2" = { Start-Process "https://github.com/emylfy/winrift/blob/main/docs/autounattend_guide.md" }
-        "3" = { Start-Process "https://github.com/emylfy/winrift/blob/main/docs/tests.md" }
-        "4" = { Start-Process "https://github.com/emylfy/Winrift/wiki" }
-        "5" = {
+        "1" = { Start-Process "https://github.com/emylfy/winrift/blob/main/docs/autounattend_guide.md" }
+        "2" = { Start-Process "https://github.com/emylfy/Winrift/wiki" }
+        "3" = {
             $confirm = Show-InteractiveMenu -Title "Uninstall Winrift" -HideKeys -Items @(
                 "This will remove:", "  Start Menu shortcut", "  Data directory", "  Drift check task", "---", "Y › Uninstall", "N › Cancel"
             )
@@ -498,7 +439,7 @@ function Show-DocsMenu {
                 exit 0
             }
         }
-    } -ExitKey "6"
+    } -ExitKey "4"
 }
 
 function Show-MainMenu {
@@ -511,13 +452,11 @@ function Show-MainMenu {
         "2 › $($ic.tweaks)System Tweaks",
         "3 › $($ic.security)Security & Privacy",
         "4 › $($ic.drivers)Drivers",
-        "5 › $($ic.benchmark)Benchmark",
         "--- ---",
-        "6 › $($ic.bundles)App Bundles",
-        "7 › $($ic.customize)Customize",
-        "8 › $($ic.iso)ISO Builder",
+        "5 › $($ic.bundles)App Bundles",
+        "6 › $($ic.customize)Customize",
+        "7 › $($ic.iso)ISO Builder",
         "--- ---",
-        "9 › Community Tools",
         "0 › Docs & Guides"
     )
     # Pause background stats sampling while a sub-module is active, resume on return.
@@ -528,11 +467,9 @@ function Show-MainMenu {
         "2" = { & $pauseStats; Invoke-Module "$script:Root\modules\system\Tweaks.ps1"; Start-MenuStateCheck; & $resumeStats }
         "3" = { & $pauseStats; Invoke-Module "$script:Root\modules\security\SecurityMenu.ps1"; Start-MenuStateCheck; & $resumeStats }
         "4" = { & $pauseStats; Invoke-Module "$script:Root\modules\drivers\Drivers.ps1"; & $resumeStats }
-        "5" = { & $pauseStats; Invoke-Module "$script:Root\modules\system\Benchmark.ps1"; Start-MenuStateCheck; & $resumeStats }
-        "6" = { & $pauseStats; Invoke-Module "$script:Root\modules\unigetui\UniGetUI.ps1" -UserProcess; & $resumeStats }
-        "7" = { & $pauseStats; Invoke-Module "$script:Root\modules\customize\Customize.Menu.ps1" -UserProcess; & $resumeStats }
-        "8" = { & $pauseStats; Invoke-Module "$script:Root\modules\iso\ISOBuilder.ps1"; & $resumeStats }
-        "9" = { & $pauseStats; Show-CommunityToolsMenu; & $resumeStats }
+        "5" = { & $pauseStats; Invoke-Module "$script:Root\modules\unigetui\UniGetUI.ps1" -UserProcess; & $resumeStats }
+        "6" = { & $pauseStats; Invoke-Module "$script:Root\modules\customize\Customize.Menu.ps1" -UserProcess; & $resumeStats }
+        "7" = { & $pauseStats; Invoke-Module "$script:Root\modules\iso\ISOBuilder.ps1"; & $resumeStats }
         "0" = { & $pauseStats; Show-DocsMenu; & $resumeStats }
     }
 

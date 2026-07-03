@@ -5,7 +5,6 @@ Initialize-Logging -ModuleName "customize"
 
 # Load sub-modules
 . "$PSScriptRoot\Customize.Desktop.ps1"
-. "$PSScriptRoot\Customize.Apps.ps1"
 . "$PSScriptRoot\Customize.Configs.ps1"
 . "$PSScriptRoot\Customize.Windows.ps1"
 . "$PSScriptRoot\Customize.Profile.ps1"
@@ -29,7 +28,7 @@ function Show-CustomizeMenu {
     Invoke-MenuLoop -Title "Customize" -Items @(
         "1 › Desktop - GlazeWM, status bar, launcher",
         "2 › Terminal - WT config, PS profile, prompts",
-        "3 › Apps - Themes, editors, Spotify",
+        "3 › Editors - Import VSCode/Cursor config",
         "4 › Windows - Date format, Start Menu, misc",
         "---",
         "5 › Profile & Backups",
@@ -38,7 +37,7 @@ function Show-CustomizeMenu {
     ) -Actions @{
         "1" = { Show-DesktopMenu }
         "2" = { Show-TerminalMenu }
-        "3" = { Show-AppsMenu }
+        "3" = { Show-VSCodeConfigMenu }
         "4" = { Show-WindowsMenu }
         "5" = { Show-ProfileBackupsMenu }
     } -ExitKey "6"
@@ -85,21 +84,6 @@ function Show-TerminalMenu {
     } -ExitKey "6"
 }
 
-function Show-AppsMenu {
-    Invoke-MenuLoop -Title "Apps" -Items @(
-        "1 › Import VSCode config (settings.json)",
-        "--- Themes ---",
-        "2 › Spotify Tools",
-        "3 › Steam Millennium + Theme",
-        "---",
-        "4 › Back"
-    ) -Actions @{
-        "1" = { Show-VSCodeConfigMenu }
-        "2" = { Show-SpotifyToolsMenu }
-        "3" = { Install-SteamMillennium }
-    } -ExitKey "4"
-}
-
 function Show-VSCodeConfigMenu {
     $choice = Show-InteractiveMenu -Title "Import VSCode Config" -Items @(
         "Applies Winrift settings.json to your editor.",
@@ -122,18 +106,6 @@ function Show-VSCodeConfigMenu {
         "5" { Set-VSCodeConfig "$env:USERPROFILE\AppData\Roaming\Trae\User" }
         "6" { Set-OtherVSCodeConfig }
     }
-}
-
-function Show-SpotifyToolsMenu {
-    Invoke-MenuLoop -Title "Spotify Tools" -Items @(
-        "1 › Install SpotX",
-        "2 › Install Spicetify",
-        "---",
-        "3 › Back"
-    ) -Actions @{
-        "1" = { Install-SpotX }
-        "2" = { Install-Spicetify }
-    } -ExitKey "3"
 }
 
 function Show-WindowsMenu {

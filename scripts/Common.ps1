@@ -42,7 +42,6 @@ function Initialize-NerdFont {
         tweaks    = $nf ? "$([char]::ConvertFromUtf32(0xF08D6)) " : "* "
         security  = $nf ? "$([char]::ConvertFromUtf32(0xF0496)) " : "# "
         drivers   = $nf ? "$([char]::ConvertFromUtf32(0xF12A2)) " : "> "
-        benchmark = $nf ? "$([char]::ConvertFromUtf32(0xF03D6)) " : "% "
         bundles   = $nf ? "$([char]::ConvertFromUtf32(0xF187)) "  : "+ "
         customize = $nf ? "$([char]::ConvertFromUtf32(0xF1535)) " : ": "
         iso       = $nf ? "$([char]::ConvertFromUtf32(0xF1477)) " : "o "

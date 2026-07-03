@@ -5,9 +5,9 @@ BeforeAll {
 
 Describe 'Get-ToolConfig' {
     It 'returns tool object for known ID' {
-        $tool = Get-ToolConfig 'winutil'
+        $tool = Get-ToolConfig 'defendnot'
         $tool | Should -Not -BeNullOrEmpty
-        $tool.id | Should -Be 'winutil'
+        $tool.id | Should -Be 'defendnot'
         $tool.name | Should -Not -BeNullOrEmpty
         $tool.url | Should -Not -BeNullOrEmpty
     }
@@ -18,9 +18,9 @@ Describe 'Get-ToolConfig' {
     }
 
     It 'returns correct type for each tool' {
-        $tool = Get-ToolConfig 'gtweak'
-        $tool.type | Should -Be 'download'
-        $tool.filename | Should -Not -BeNullOrEmpty
+        $tool = Get-ToolConfig 'justthebrowser'
+        $tool.type | Should -Be 'irm-interactive'
+        $tool.url | Should -Not -BeNullOrEmpty
     }
 }
 
