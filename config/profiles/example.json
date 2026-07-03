@@ -1,0 +1,31 @@
+{
+    "winriftProfile": 1,
+    "name": "example",
+    "privacy": false,
+    "tweaks": [
+        {
+            "Path": "HKLM:\\SYSTEM\\CurrentControlSet\\Control\\Power\\PowerThrottling",
+            "Name": "PowerThrottlingOff",
+            "Value": 1,
+            "Type": "DWord",
+            "Category": "Power"
+        },
+        {
+            "Path": "HKLM:\\SYSTEM\\CurrentControlSet\\Control\\PriorityControl",
+            "Name": "Win32PrioritySeparation",
+            "Value": 38,
+            "Type": "DWord",
+            "Category": "Responsiveness"
+        }
+    ],
+    "apps": [
+        "Microsoft.VisualStudioCode",
+        "Microsoft.WindowsTerminal",
+        "Fastfetch-cli.Fastfetch"
+    ],
+    "configs": [
+        "terminal",
+        "pwsh",
+        "fastfetch"
+    ]
+}

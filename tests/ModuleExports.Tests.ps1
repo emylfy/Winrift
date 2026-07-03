@@ -68,6 +68,13 @@ BeforeDiscovery {
                 'Invoke-ApplyAllCritical', 'Show-AuditWizard'
             )
         }
+        @{
+            File = 'modules/profile/Profile.ps1'
+            ExpectedFunctions = @(
+                'Get-WinriftConfigMap', 'Read-WinriftProfile',
+                'Invoke-WinriftProfileApply'
+            )
+        }
     )
 }
 
@@ -112,7 +119,7 @@ Describe 'Common.ps1 exports' {
         'Invoke-SecureDownload', 'Confirm-ExternalTool', 'Invoke-Tool',
         'Assert-WingetAvailable', 'Install-WingetPackage', 'Invoke-NativeCommand',
         'Save-DesiredState', 'Save-TweakBackup', 'Start-TweakSession',
-        'New-SafeRestorePoint', 'Restore-TweakBackup'
+        'New-SafeRestorePoint', 'Restore-TweakBackup', 'Invoke-DesiredStateApply'
     ) {
         $functionNames | Should -Contain $_
     }

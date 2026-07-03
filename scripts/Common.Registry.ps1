@@ -270,3 +270,23 @@ function Restore-TweakBackup {
     Write-Log -Message "A system restart is recommended for changes to take effect." -Level INFO
     Wait-ForUser
 }
+
+function Invoke-DesiredStateApply {
+    # Applies desired-state entries (Path/Name/Value/Type/Category) via
+    # Set-RegistryValue, which records a rollback backup + desired state and
+    # honours dry-run. Callers persist with Save-TweakBackup / Save-DesiredState.
+    # Shared by profile apply and profile import. Returns the count applied.
+    param(
+        [Parameter(Mandatory)][object[]]$Entries,
+        [string]$DefaultCategory = "Profile"
+    )
+    $applied = 0
+    foreach ($e in $Entries) {
+        if (-not $e.Path -or -not $e.Name) { continue }
+        $script:DesiredStateCategory = $e.Category ? $e.Category : $DefaultCategory
+        $type = $e.Type ? $e.Type : "DWord"
+        Set-RegistryValue -Path $e.Path -Name $e.Name -Type $type -Value $e.Value -Message "Apply: $($e.Name)"
+        $applied++
+    }
+    return $applied
+}

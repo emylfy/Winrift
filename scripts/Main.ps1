@@ -1,7 +1,8 @@
 param(
     [switch]$DryRun,
     [switch]$NoConfirm,
-    [switch]$Uninstall
+    [switch]$Uninstall,
+    [string]$Apply
 )
 
 # Admin elevation — fail fast before any expensive I/O
@@ -19,6 +20,7 @@ if (-not ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdenti
     if ($DryRun)    { $passthrough += "-DryRun" }
     if ($NoConfirm) { $passthrough += "-NoConfirm" }
     if ($Uninstall) { $passthrough += "-Uninstall" }
+    if ($Apply)     { $passthrough += @("-Apply", $Apply) }
 
     try {
         Start-AdminProcess -ScriptPath $PSCommandPath -Arguments $passthrough -NoExit
@@ -48,6 +50,26 @@ try {
 
     if ($DryRun) { $env:WINRIFT_DRY_RUN = "1" }
     if ($NoConfirm) { $env:WINRIFT_NO_CONFIRM = "1" }
+
+    # Headless profile apply — the single-pass entry point. Runs the whole
+    # profile (tweaks + privacy + apps + configs) without the menu, then exits.
+    if ($Apply) {
+        $env:WINRIFT_NO_CONFIRM = "1"
+        Initialize-Logging -ModuleName "apply"
+        . "$PSScriptRoot\..\modules\customize\Customize.Configs.ps1"
+        . "$PSScriptRoot\..\modules\security\Privacy.ps1"
+        . "$PSScriptRoot\..\modules\profile\Profile.ps1"
+        try {
+            $profileObj = Read-WinriftProfile -Path $Apply
+            Invoke-WinriftProfileApply -ProfileObject $profileObj
+            if ($script:StartupLogStarted) { try { Stop-Transcript | Out-Null } catch { $null = $_ } }
+            exit 0
+        } catch {
+            Write-Log -Message "Profile apply failed: $($_.Exception.Message)" -Level ERROR
+            if ($script:StartupLogStarted) { try { Stop-Transcript | Out-Null } catch { $null = $_ } }
+            exit 1
+        }
+    }
 
     Initialize-NerdFont
 

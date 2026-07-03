@@ -1,7 +1,8 @@
 param(
     [switch]$DryRun,
     [switch]$NoConfirm,
-    [switch]$Uninstall
+    [switch]$Uninstall,
+    [string]$Apply
 )
 
 # Thin entry point — PS 5.1 compatible (no ternary, no ??, no Start-ThreadJob).
@@ -35,6 +36,7 @@ if ($PSVersionTable.PSVersion.Major -lt 7) {
     if ($DryRun)    { $extraArgs += "-DryRun" }
     if ($NoConfirm) { $extraArgs += "-NoConfirm" }
     if ($Uninstall) { $extraArgs += "-Uninstall" }
+    if ($Apply)     { $extraArgs += @("-Apply", $Apply) }
 
     $pwshArgString = "-ExecutionPolicy Bypass -File `"$mainPath`" $($extraArgs -join ' ')".Trim()
 
