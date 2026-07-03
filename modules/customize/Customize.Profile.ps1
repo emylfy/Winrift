@@ -177,7 +177,19 @@ function Import-WinriftProfile {
                 $dst = Join-Path $env:LOCALAPPDATA "Winrift\tweaks\desired_state.json"
                 New-Item -Path (Split-Path $dst) -ItemType Directory -Force | Out-Null
                 Copy-Item $src $dst -Force
-                Write-Log -Message "Imported desired state" -Level SUCCESS
+                try {
+                    $entries = @((Get-Content $src -Raw | ConvertFrom-Json).entries) | Where-Object { $_ }
+                    if ($entries.Count -gt 0) {
+                        New-SafeRestorePoint
+                        $applied = Invoke-DesiredStateApply -Entries $entries
+                        Save-TweakBackup
+                        Write-Log -Message "Imported and applied desired state ($applied value(s))" -Level SUCCESS
+                    } else {
+                        Write-Log -Message "Imported desired state (no entries to apply)" -Level SUCCESS
+                    }
+                } catch {
+                    Write-Log -Message "Imported desired state file, but applying it failed: $($_.Exception.Message)" -Level WARNING
+                }
             }
             "terminal.json" {
                 $dst = "$env:USERPROFILE\AppData\Local\Packages\Microsoft.WindowsTerminal_8wekyb3d8bbwe\LocalState\settings.json"
