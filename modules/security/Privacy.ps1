@@ -1,7 +1,8 @@
 . "$PSScriptRoot\..\..\scripts\Common.ps1"
 
 function Invoke-PrivacyHardening {
-    $ErrorActionPreference = 'SilentlyContinue'
+    $ErrorActionPreference = 'Continue'
+    $dry = $env:WINRIFT_DRY_RUN -eq '1'
 
     Write-Host "  Applying registry tweaks..."
     $registryTweaks = @(
@@ -160,7 +161,7 @@ function Invoke-PrivacyHardening {
         @{ Path = "HKLM:\Software\Microsoft\Windows\Windows Error Reporting"; Name = "LoggingDisabled"; Value = 1 }
         @{ Path = "HKLM:\SOFTWARE\Policies\Microsoft\Windows\DeliveryOptimization"; Name = "DODownloadMode"; Value = 0 }
         @{ Path = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\DeliveryOptimization\Config"; Name = "DODownloadMode"; Value = 0 }
-        @{ Path = "HKEY_USERS\S-1-5-20\Software\Microsoft\Windows\CurrentVersion\DeliveryOptimization\Settings"; Name = "DownloadMode"; Value = 0 }
+        @{ Path = "Registry::HKEY_USERS\S-1-5-20\Software\Microsoft\Windows\CurrentVersion\DeliveryOptimization\Settings"; Name = "DownloadMode"; Value = 0 }
         @{ Path = "HKCU:\Software\Microsoft\Windows\CurrentVersion\DeliveryOptimization"; Name = "SystemSettingsDownloadMode"; Value = 0 }
         @{ Path = "HKLM:\SOFTWARE\Policies\Microsoft\Windows\LocationAndSensors"; Name = "DisableLocationScripting"; Value = 1 }
         @{ Path = "HKLM:\SOFTWARE\Policies\Microsoft\Windows\LocationAndSensors"; Name = "DisableLocation"; Value = 1 }
@@ -389,10 +390,15 @@ function Invoke-PrivacyHardening {
         @{ Path = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer"; Name = "NoPublishingWizard"; Value = 1 }
         @{ Path = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer"; Name = "NoWebServices"; Value = 1 }
     )
+    $script:DesiredStateCategory = "Privacy"
     foreach ($r in $registryTweaks) {
-        $p = $r.Path
-        if (-not (Test-Path $p)) { New-Item -Path $p -Force | Out-Null }
-        Set-ItemProperty -Path $p -Name $r.Name -Value $r.Value -Type ($r.Type ?? "DWord") -Force
+        $t = $r.Type ?? "DWord"
+        Set-RegistryValue -Path $r.Path -Name $r.Name -Type $t -Value $r.Value -Message "Privacy: $($r.Name)"
+    }
+
+    if ($dry) {
+        Write-Log -Message "[DRY-RUN] Registry preview complete. Skipping services, tasks, appx, features, hosts, env, and file changes." -Level INFO
+        return
     }
 
     Write-Host "  Removing registry values..."
@@ -572,8 +578,9 @@ function Invoke-PrivacyHardening {
         "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Applets\Wordpad\Recent File List",
         "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\ComDlg32\OpenSaveMRU"
     ) | ForEach-Object {
-        if (Test-Path $_) {
-            Get-Item $_ | Select-Object -ExpandProperty Property | ForEach-Object { Remove-ItemProperty -Path $using:_ -Name $_ -Force }
+        $mruKey = $_
+        if (Test-Path $mruKey) {
+            Get-Item $mruKey | Select-Object -ExpandProperty Property | ForEach-Object { Remove-ItemProperty -Path $mruKey -Name $_ -Force }
         }
     }
 
@@ -652,6 +659,9 @@ function Invoke-PrivacyHardening {
         $expanded = [System.Environment]::ExpandEnvironmentVariables($_)
         Remove-Item -Path $expanded -Recurse -Force -ErrorAction SilentlyContinue
     }
+
+    Save-TweakBackup
+    Save-DesiredState
 }
 
 function Show-PrivacyMenu {
