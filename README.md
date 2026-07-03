@@ -37,19 +37,44 @@ Set-ExecutionPolicy Bypass -Scope Process -Force; irm https://raw.githubusercont
 
 ---
 
+## 🎯 One-pass provisioning
+
+Describe a machine as a single JSON **profile** — system tweaks, winget apps, app
+configs and privacy hardening — and apply it all in one non-interactive pass:
+
+```powershell
+Winrift.ps1 -Apply myprofile.json -NoConfirm
+```
+
+Preview first with `-DryRun` (writes nothing). See [`config/profiles/example.json`](config/profiles/example.json)
+for the schema:
+
+```json
+{
+  "winriftProfile": 1,
+  "privacy": true,
+  "tweaks":  [ { "Path": "...", "Name": "...", "Value": 1, "Type": "DWord" } ],
+  "apps":    [ "Microsoft.VisualStudioCode", "Microsoft.WindowsTerminal" ],
+  "configs": [ "terminal", "pwsh", "fastfetch" ]
+}
+```
+
+The **ISO Builder** can bake a profile straight into a Windows 11 ISO — the machine
+then configures itself at first logon with zero clicks.
+
 ## 🧩 Features
 
 |     | Feature                                        | What it does                                                       |
 | :-- | :--------------------------------------------- | :----------------------------------------------------------------- |
+| 📦  | **Profiles**                                   | One JSON file → whole machine (tweaks + apps + configs + privacy) in a single pass |
 | 🩺  | **System Audit**                               | Scans 33 issues across 6 categories — one-click fixes              |
 | ⚙️  | [**System Tweaks**](docs/tweaks_guide.md)      | 13 categories — latency, SSD, GPU, network, power, memory, DirectX |
 | 🔄  | [**Drift Detection**](docs/drift_detection.md) | Catches Windows Update reverting your tweaks; one-click reapply    |
 | 🛡️  | **Security & Privacy**                         | Defender, Copilot/Recall removal, privacy hardening, DNS benchmark |
-| 📊  | [**Benchmark**](docs/tests.md)                 | 13 metrics before & after, Markdown comparison reports             |
-| 🖥️  | **Drivers**                                    | NVIDIA · AMD · Intel + 11 OEM manufacturers                        |
+| 🖥️  | **Drivers**                                    | Intel Driver & Support Assistant (auto-install)                    |
 | 🎨  | [**Customize**](modules/customize/README.md)   | Desktop, terminal, editors, app themes — all without admin         |
 | 📦  | **App Bundles**                                | 7 collections via winget — native selector, optional UniGetUI      |
-| 💿  | [**ISO Builder**](docs/autounattend_guide.md)  | Embed answer file into Windows 11 ISO for automated install        |
+| 💿  | [**ISO Builder**](docs/autounattend_guide.md)  | Embed answer file (and optionally a profile) into a Windows 11 ISO |
 
 <details>
 <summary><strong>🩺 System Audit — 33 checks</strong></summary>
@@ -136,8 +161,6 @@ Complete environment setup from one menu. Runs without admin.
 
 **Editors** — Config import for 5 VSCode-based editors · extension install via CLI
 
-**Themes** — SpotX · Spicetify · Steam Millennium
-
 **Profile & Backups** — Export / Import Winrift profile (apps, configs, tweaks state) · Restore any config backup (.bak)
 
 </details>
@@ -151,7 +174,7 @@ Create a bootable Windows 11 ISO with automation baked in:
 - Removes 25 bloatware apps (Cortana, Teams, Edge, News, OneDrive...)
 - Disables telemetry and Copilot
 - Bypasses TPM / SecureBoot / RAM checks
-- Launches Winrift on first login
+- Optionally bakes in a Winrift profile — the machine self-configures at first logon (zero clicks)
 
 <sub>→ <a href="docs/autounattend_guide.md">Autounattend Guide</a></sub>
 
@@ -198,7 +221,7 @@ Development · Browsers · Utilities · Productivity · Creative & Media · Gami
 
 ## 🏆 Credits
 
-Built on the work of [AlchemyTweaks/Verified-Tweaks](https://github.com/AlchemyTweaks/Verified-Tweaks), [ashish0kumar/windots](https://github.com/ashish0kumar/windots), [ChrisTitusTech/winutil](https://github.com/ChrisTitusTech/winutil), [flick9000/winscript](https://github.com/flick9000/winscript), [Greedeks/GTweak](https://github.com/Greedeks/GTweak), [Parcoil/Sparkle](https://github.com/Parcoil/Sparkle), [marticliment/UniGetUI](https://github.com/marticliment/UniGetUI).
+Built on the work of [AlchemyTweaks/Verified-Tweaks](https://github.com/AlchemyTweaks/Verified-Tweaks), [ashish0kumar/windots](https://github.com/ashish0kumar/windots), [marticliment/UniGetUI](https://github.com/marticliment/UniGetUI), and the [schneegans unattend generator](https://schneegans.de/windows/unattend-generator/).
 
 <div align="center">
 

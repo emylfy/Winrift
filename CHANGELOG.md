@@ -5,6 +5,32 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project uses [Calendar Versioning](https://calver.org/) (YY.M.patch format).
 
+## [26.7.0] - 2026-07-03
+
+### One-pass provisioning (headless profiles)
+
+- Declarative machine profile as a single JSON file (`tweaks` + `apps` + `configs` + `privacy`); see `config/profiles/example.json`
+- New headless entry point: `Winrift.ps1 -Apply profile.json -NoConfirm` applies the whole profile in one non-interactive pass — no menu, honours `-DryRun` end to end
+- `Invoke-DesiredStateApply` (shared engine helper): applies registry entries with per-key backup/undo, drift tracking, dry-run and logging
+- `Invoke-WinriftProfileApply` runs tweaks (restore point + backup), privacy, winget installs and config copies from one profile object
+- ISO Builder can bake a profile into the answer file: the installed machine self-configures at first logon (zero clicks) via an embedded `winrift-profile.json` + `scripts/apply.ps1` bootstrap
+- Profile import now actually re-applies tweaks (previously only copied `desired_state.json`)
+
+### Fixes
+
+- `Privacy.ps1` registry writes now route through the engine (undo, drift, dry-run, logging); fixed the invalid `HKEY_USERS\S-1-5-20` path and the broken `$using:_` MRU cleanup that silently did nothing
+- GPU/IRQ tweaks target `CurrentControlSet` instead of a hardcoded `ControlSet001`
+- Bootstrap resolves the latest stable PowerShell 7 (was pinned to 7.4.7)
+- `oscdimg.exe` download is now SHA256-pinned
+- Self-update targets published release tags instead of the live `main` branch
+
+### Removed
+
+- Community Tools menu and the external-tool launchers it exposed (WinUtil, Sparkle, GTweak, WinScript)
+- Benchmark module — a measurement feature outside the "set up the machine" scope
+- Cosmetic launchers (SpotX, Spicetify, Steam Millennium / Space Theme, macOS cursor)
+- Drivers menu reduced to Intel Driver & Support Assistant (dropped the vendor-URL openers)
+
 ## [26.4.2] - 2026-04-16
 
 ### PowerShell 7 Migration

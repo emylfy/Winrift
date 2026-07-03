@@ -192,16 +192,18 @@ try {
         $full = $versionInfo.version
         $script:AppVersion = ($full -split '\.')[0..1] -join '.'
 
-        # Kick off update check in background — does not block startup.
+        # Kick off update check in background — does not block startup. Checks the
+        # latest published RELEASE, not the live main branch, so an in-progress
+        # commit to main never prompts users to "update" to a half-finished tree.
+        # No releases published yet -> API 404 -> no update offered.
         if ($versionInfo.repo) {
             $script:UpdateCheckJob = Start-ThreadJob -ScriptBlock {
                 param($Repo, $LocalVer)
                 try {
-                    $url = "https://raw.githubusercontent.com/$Repo/main/config/version.json"
-                    $remote = Invoke-RestMethod -Uri $url -TimeoutSec 5 -ErrorAction Stop
-                    if ($remote.version -and $remote.version -ne $LocalVer) {
-                        return $remote.version
-                    }
+                    $url = "https://api.github.com/repos/$Repo/releases/latest"
+                    $remote = Invoke-RestMethod -Uri $url -Headers @{ "User-Agent" = "winrift" } -TimeoutSec 5 -ErrorAction Stop
+                    $tag = "$($remote.tag_name)" -replace '^v', ''
+                    if ($tag -and $tag -ne $LocalVer) { return $tag }
                 } catch { $null = $_ }
                 return $null
             } -ArgumentList $versionInfo.repo, $versionInfo.version
@@ -387,7 +389,9 @@ function Build-MenuDescriptions {
 
 function Invoke-SelfUpdate {
     param([string]$Version)
-    $zipUrl  = "https://github.com/$($versionInfo.repo)/archive/refs/heads/main.zip"
+    # Update to the tagged release, not live main, so users only move between
+    # published versions.
+    $zipUrl  = "https://github.com/$($versionInfo.repo)/archive/refs/tags/v$Version.zip"
     $tempZip = Join-Path $env:TEMP "winrift_update_$(Get-Random).zip"
     $tempDir = Join-Path $env:TEMP "winrift_update_$(Get-Random)"
     try {
