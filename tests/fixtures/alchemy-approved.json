@@ -1,0 +1,317 @@
+{
+  "presets": {
+    "AMD": {
+      "sourceFile": "AMD Tweak Melody.reg",
+      "sha256": "3F58AA0AFD1D2229E9E566A7CFB82B13E411CB7AEDB7EDC124A6A76641CD0AB9",
+      "entries": [
+        {
+          "Path": "HKLM:\\SYSTEM\\CurrentControlSet\\Control\\Class\\{4d36e968-e325-11ce-bfc1-08002be10318}\\<adapter>",
+          "Type": "DWord",
+          "Value": 0,
+          "Name": "AllowSnapshot"
+        },
+        {
+          "Path": "HKLM:\\SYSTEM\\CurrentControlSet\\Control\\Class\\{4d36e968-e325-11ce-bfc1-08002be10318}\\<adapter>",
+          "Type": "DWord",
+          "Value": 0,
+          "Name": "AllowSubscription"
+        },
+        {
+          "Path": "HKLM:\\SYSTEM\\CurrentControlSet\\Control\\Class\\{4d36e968-e325-11ce-bfc1-08002be10318}\\<adapter>",
+          "Type": "String",
+          "Value": "false",
+          "Name": "AllowRSOverlay"
+        },
+        {
+          "Path": "HKLM:\\SYSTEM\\CurrentControlSet\\Control\\Class\\{4d36e968-e325-11ce-bfc1-08002be10318}\\<adapter>",
+          "Type": "String",
+          "Value": "false",
+          "Name": "AllowSkins"
+        },
+        {
+          "Path": "HKLM:\\SYSTEM\\CurrentControlSet\\Control\\Class\\{4d36e968-e325-11ce-bfc1-08002be10318}\\<adapter>",
+          "Type": "DWord",
+          "Value": 0,
+          "Name": "AutoColorDepthReduction_NA"
+        },
+        {
+          "Path": "HKLM:\\SYSTEM\\CurrentControlSet\\Control\\Class\\{4d36e968-e325-11ce-bfc1-08002be10318}\\<adapter>",
+          "Type": "DWord",
+          "Value": 1,
+          "Name": "DisableUVDPowerGatingDynamic"
+        },
+        {
+          "Path": "HKLM:\\SYSTEM\\CurrentControlSet\\Control\\Class\\{4d36e968-e325-11ce-bfc1-08002be10318}\\<adapter>",
+          "Type": "DWord",
+          "Value": 1,
+          "Name": "DisableVCEPowerGating"
+        },
+        {
+          "Path": "HKLM:\\SYSTEM\\CurrentControlSet\\Control\\Class\\{4d36e968-e325-11ce-bfc1-08002be10318}\\<adapter>",
+          "Type": "DWord",
+          "Value": 1,
+          "Name": "DisablePowerGating"
+        },
+        {
+          "Path": "HKLM:\\SYSTEM\\CurrentControlSet\\Control\\Class\\{4d36e968-e325-11ce-bfc1-08002be10318}\\<adapter>",
+          "Type": "DWord",
+          "Value": 1,
+          "Name": "DisableDrmdmaPowerGating"
+        },
+        {
+          "Path": "HKLM:\\SYSTEM\\CurrentControlSet\\Control\\Class\\{4d36e968-e325-11ce-bfc1-08002be10318}\\<adapter>",
+          "Type": "DWord",
+          "Value": 1,
+          "Name": "DisableDMACopy"
+        },
+        {
+          "Path": "HKLM:\\SYSTEM\\CurrentControlSet\\Control\\Class\\{4d36e968-e325-11ce-bfc1-08002be10318}\\<adapter>",
+          "Type": "DWord",
+          "Value": 0,
+          "Name": "DisableBlockWrite"
+        },
+        {
+          "Path": "HKLM:\\SYSTEM\\CurrentControlSet\\Control\\Class\\{4d36e968-e325-11ce-bfc1-08002be10318}\\<adapter>",
+          "Type": "DWord",
+          "Value": 0,
+          "Name": "StutterMode"
+        },
+        {
+          "Path": "HKLM:\\SYSTEM\\CurrentControlSet\\Control\\Class\\{4d36e968-e325-11ce-bfc1-08002be10318}\\<adapter>",
+          "Type": "DWord",
+          "Value": 0,
+          "Name": "PP_GPUPowerDownEnabled"
+        },
+        {
+          "Path": "HKLM:\\SYSTEM\\CurrentControlSet\\Control\\Class\\{4d36e968-e325-11ce-bfc1-08002be10318}\\<adapter>",
+          "Type": "DWord",
+          "Value": 1,
+          "Name": "LTRSnoopL1Latency"
+        },
+        {
+          "Path": "HKLM:\\SYSTEM\\CurrentControlSet\\Control\\Class\\{4d36e968-e325-11ce-bfc1-08002be10318}\\<adapter>",
+          "Type": "DWord",
+          "Value": 1,
+          "Name": "LTRSnoopL0Latency"
+        },
+        {
+          "Path": "HKLM:\\SYSTEM\\CurrentControlSet\\Control\\Class\\{4d36e968-e325-11ce-bfc1-08002be10318}\\<adapter>",
+          "Type": "DWord",
+          "Value": 1,
+          "Name": "LTRNoSnoopL1Latency"
+        },
+        {
+          "Path": "HKLM:\\SYSTEM\\CurrentControlSet\\Control\\Class\\{4d36e968-e325-11ce-bfc1-08002be10318}\\<adapter>",
+          "Type": "DWord",
+          "Value": 1,
+          "Name": "LTRMaxNoSnoopLatency"
+        },
+        {
+          "Path": "HKLM:\\SYSTEM\\CurrentControlSet\\Control\\Class\\{4d36e968-e325-11ce-bfc1-08002be10318}\\<adapter>",
+          "Type": "DWord",
+          "Value": 1,
+          "Name": "KMD_RpmComputeLatency"
+        },
+        {
+          "Path": "HKLM:\\SYSTEM\\CurrentControlSet\\Control\\Class\\{4d36e968-e325-11ce-bfc1-08002be10318}\\<adapter>",
+          "Type": "DWord",
+          "Value": 1,
+          "Name": "DalUrgentLatencyNs"
+        },
+        {
+          "Path": "HKLM:\\SYSTEM\\CurrentControlSet\\Control\\Class\\{4d36e968-e325-11ce-bfc1-08002be10318}\\<adapter>",
+          "Type": "DWord",
+          "Value": 1,
+          "Name": "memClockSwitchLatency"
+        },
+        {
+          "Path": "HKLM:\\SYSTEM\\CurrentControlSet\\Control\\Class\\{4d36e968-e325-11ce-bfc1-08002be10318}\\<adapter>",
+          "Type": "DWord",
+          "Value": 1,
+          "Name": "PP_RTPMComputeF1Latency"
+        },
+        {
+          "Path": "HKLM:\\SYSTEM\\CurrentControlSet\\Control\\Class\\{4d36e968-e325-11ce-bfc1-08002be10318}\\<adapter>",
+          "Type": "DWord",
+          "Value": 1,
+          "Name": "PP_DGBMMMaxTransitionLatencyUvd"
+        },
+        {
+          "Path": "HKLM:\\SYSTEM\\CurrentControlSet\\Control\\Class\\{4d36e968-e325-11ce-bfc1-08002be10318}\\<adapter>",
+          "Type": "DWord",
+          "Value": 1,
+          "Name": "PP_DGBPMMaxTransitionLatencyGfx"
+        },
+        {
+          "Path": "HKLM:\\SYSTEM\\CurrentControlSet\\Control\\Class\\{4d36e968-e325-11ce-bfc1-08002be10318}\\<adapter>",
+          "Type": "DWord",
+          "Value": 1,
+          "Name": "DalNBLatencyForUnderFlow"
+        },
+        {
+          "Path": "HKLM:\\SYSTEM\\CurrentControlSet\\Control\\Class\\{4d36e968-e325-11ce-bfc1-08002be10318}\\<adapter>",
+          "Type": "DWord",
+          "Value": 1,
+          "Name": "BGM_LTRSnoopL1Latency"
+        },
+        {
+          "Path": "HKLM:\\SYSTEM\\CurrentControlSet\\Control\\Class\\{4d36e968-e325-11ce-bfc1-08002be10318}\\<adapter>",
+          "Type": "DWord",
+          "Value": 1,
+          "Name": "BGM_LTRSnoopL0Latency"
+        },
+        {
+          "Path": "HKLM:\\SYSTEM\\CurrentControlSet\\Control\\Class\\{4d36e968-e325-11ce-bfc1-08002be10318}\\<adapter>",
+          "Type": "DWord",
+          "Value": 1,
+          "Name": "BGM_LTRNoSnoopL1Latency"
+        },
+        {
+          "Path": "HKLM:\\SYSTEM\\CurrentControlSet\\Control\\Class\\{4d36e968-e325-11ce-bfc1-08002be10318}\\<adapter>",
+          "Type": "DWord",
+          "Value": 1,
+          "Name": "BGM_LTRNoSnoopL0Latency"
+        },
+        {
+          "Path": "HKLM:\\SYSTEM\\CurrentControlSet\\Control\\Class\\{4d36e968-e325-11ce-bfc1-08002be10318}\\<adapter>",
+          "Type": "DWord",
+          "Value": 1,
+          "Name": "BGM_LTRMaxSnoopLatencyValue"
+        },
+        {
+          "Path": "HKLM:\\SYSTEM\\CurrentControlSet\\Control\\Class\\{4d36e968-e325-11ce-bfc1-08002be10318}\\<adapter>",
+          "Type": "DWord",
+          "Value": 1,
+          "Name": "BGM_LTRMaxNoSnoopLatencyValue"
+        }
+      ]
+    },
+    "DirectX": {
+      "sourceFile": "DirectX/D3D11 - D3D12 Tweaks/D3D11 - D3D12 Tweaks.bat",
+      "entries": [
+        {
+          "Path": "HKLM:\\SOFTWARE\\Microsoft\\DirectX",
+          "Type": "DWord",
+          "Value": 1,
+          "Name": "D3D12_ENABLE_UNSAFE_COMMAND_BUFFER_REUSE"
+        },
+        {
+          "Path": "HKLM:\\SOFTWARE\\Microsoft\\DirectX",
+          "Type": "DWord",
+          "Value": 1,
+          "Name": "D3D12_ENABLE_RUNTIME_DRIVER_OPTIMIZATIONS"
+        },
+        {
+          "Path": "HKLM:\\SOFTWARE\\Microsoft\\DirectX",
+          "Type": "DWord",
+          "Value": 1,
+          "Name": "D3D12_RESOURCE_ALIGNMENT"
+        },
+        {
+          "Path": "HKLM:\\SOFTWARE\\Microsoft\\DirectX",
+          "Type": "DWord",
+          "Value": 1,
+          "Name": "D3D11_MULTITHREADED"
+        },
+        {
+          "Path": "HKLM:\\SOFTWARE\\Microsoft\\DirectX",
+          "Type": "DWord",
+          "Value": 1,
+          "Name": "D3D12_MULTITHREADED"
+        },
+        {
+          "Path": "HKLM:\\SOFTWARE\\Microsoft\\DirectX",
+          "Type": "DWord",
+          "Value": 1,
+          "Name": "D3D11_DEFERRED_CONTEXTS"
+        },
+        {
+          "Path": "HKLM:\\SOFTWARE\\Microsoft\\DirectX",
+          "Type": "DWord",
+          "Value": 1,
+          "Name": "D3D12_DEFERRED_CONTEXTS"
+        },
+        {
+          "Path": "HKLM:\\SOFTWARE\\Microsoft\\DirectX",
+          "Type": "DWord",
+          "Value": 1,
+          "Name": "D3D11_ALLOW_TILING"
+        },
+        {
+          "Path": "HKLM:\\SOFTWARE\\Microsoft\\DirectX",
+          "Type": "DWord",
+          "Value": 1,
+          "Name": "D3D11_ENABLE_DYNAMIC_CODEGEN"
+        },
+        {
+          "Path": "HKLM:\\SOFTWARE\\Microsoft\\DirectX",
+          "Type": "DWord",
+          "Value": 1,
+          "Name": "D3D12_ALLOW_TILING"
+        },
+        {
+          "Path": "HKLM:\\SOFTWARE\\Microsoft\\DirectX",
+          "Type": "DWord",
+          "Value": 1,
+          "Name": "D3D12_CPU_PAGE_TABLE_ENABLED"
+        },
+        {
+          "Path": "HKLM:\\SOFTWARE\\Microsoft\\DirectX",
+          "Type": "DWord",
+          "Value": 1,
+          "Name": "D3D12_HEAP_SERIALIZATION_ENABLED"
+        },
+        {
+          "Path": "HKLM:\\SOFTWARE\\Microsoft\\DirectX",
+          "Type": "DWord",
+          "Value": 1,
+          "Name": "D3D12_MAP_HEAP_ALLOCATIONS"
+        },
+        {
+          "Path": "HKLM:\\SOFTWARE\\Microsoft\\DirectX",
+          "Type": "DWord",
+          "Value": 1,
+          "Name": "D3D12_RESIDENCY_MANAGEMENT_ENABLED"
+        }
+      ]
+    },
+    "NVIDIA": {
+      "sourceFile": "RmGpsPsEnablePerCpuCoreDpc.reg",
+      "sha256": "8074E28BDF8E3405BE5743715DAEEF8543DCBE52AAFCB89CC8754BFA75C410A8",
+      "entries": [
+        {
+          "Path": "HKLM:\\SYSTEM\\CurrentControlSet\\Control\\GraphicsDrivers",
+          "Type": "DWord",
+          "Value": 1,
+          "Name": "RmGpsPsEnablePerCpuCoreDpc"
+        },
+        {
+          "Path": "HKLM:\\SYSTEM\\CurrentControlSet\\Control\\GraphicsDrivers\\Power",
+          "Type": "DWord",
+          "Value": 1,
+          "Name": "RmGpsPsEnablePerCpuCoreDpc"
+        },
+        {
+          "Path": "HKLM:\\SYSTEM\\CurrentControlSet\\Services\\nvlddmkm",
+          "Type": "DWord",
+          "Value": 1,
+          "Name": "RmGpsPsEnablePerCpuCoreDpc"
+        },
+        {
+          "Path": "HKLM:\\SYSTEM\\CurrentControlSet\\Services\\nvlddmkm\\NVAPI",
+          "Type": "DWord",
+          "Value": 1,
+          "Name": "RmGpsPsEnablePerCpuCoreDpc"
+        },
+        {
+          "Path": "HKLM:\\SYSTEM\\CurrentControlSet\\Services\\nvlddmkm\\Global\\NVTweak",
+          "Type": "DWord",
+          "Value": 1,
+          "Name": "RmGpsPsEnablePerCpuCoreDpc"
+        }
+      ]
+    }
+  },
+  "repository": "https://github.com/AlchemyTweaks/Verified-Tweaks",
+  "commit": "9b8d96d2d60eac53fc688f718726006321818d62"
+}

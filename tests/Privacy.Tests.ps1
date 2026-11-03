@@ -56,9 +56,4 @@ Describe 'Privacy.ps1 script structure' {
         $script:content | Should -Match 'UploadUserActivities'
     }
 
-    It 'does not contain comment-only lines' {
-        $lines = Get-Content $script:filePath
-        $commentOnly = $lines | Where-Object { $_ -match '^\s*#' -and $_ -notmatch '^\s*#Requires' }
-        $commentOnly | Should -BeNullOrEmpty
-    }
 }

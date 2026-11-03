@@ -1,8 +1,6 @@
 . "$PSScriptRoot\..\..\scripts\Common.ps1"
 # https://github.com/AlchemyTweaks/Verified-Tweaks
 # https://github.com/SanGraphic/QuickBoost
-# Every tweak in this script has been thoroughly tested and compared across multiple sources.
-# Only the most effective values and best practices have been selected for this collection.
 # Detailed information can be found in the source link provided for each tweak.
 
 Initialize-Logging -ModuleName "tweaks"
@@ -12,32 +10,20 @@ Initialize-Logging -ModuleName "tweaks"
 . "$PSScriptRoot\Tweaks.Power.ps1"
 . "$PSScriptRoot\Tweaks.GPU.ps1"
 . "$PSScriptRoot\Tweaks.Cleanup.ps1"
-. "$PSScriptRoot\Tweaks.Drift.ps1"
+
 function Show-TweaksMenu {
-    $Host.UI.RawUI.WindowTitle = "Winrift - System Tweaks"
-    $script:TweakSessionStarted = $false
-    try {
-        Invoke-MenuLoop -Title "System Tweaks" -Items @(
-            "1 › Universal Tweaks",
-            "2 › Power Management",
-            "3 › NVIDIA/AMD GPU Tweaks",
-            "4 › Free Up Space",
-            "---",
-            "5 › Drift Detection",
-            "6 › Restore Previous Tweaks",
-            "---",
-            "7 › Back to menu"
-        ) -Actions @{
-            "1" = { Invoke-UniversalTweaks }
-            "2" = { Invoke-PowerMenu }
-            "3" = { Show-GPUMenu }
-            "4" = { Clear-SystemSpace }
-            "5" = { Show-DriftMenu }
-            "6" = { Restore-TweakBackup }
-        } -ExitKey "7"
-    } finally {
-        $script:TweakSessionStarted = $false
-    }
+    Invoke-MenuLoop -Title 'Performance Tweaks' -Items @(
+        '1 › Review Recommended Preset        ›',
+        '2 › All Tweaks                       ›',
+        '3 › GPU Tweaks                       ›',
+        '4 › Power Settings                   ›',
+        '---', '0 › Back'
+    ) -Actions @{
+        '1' = { Invoke-RecommendedTweaks }
+        '2' = { Invoke-UniversalTweaks }
+        '3' = { Show-GPUMenu }
+        '4' = { Invoke-PowerMenu }
+    } -ExitKey '0' -HideKeys
 }
 
-Show-TweaksMenu
+if ($MyInvocation.InvocationName -ne '.') { Show-TweaksMenu }

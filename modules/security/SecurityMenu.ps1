@@ -43,16 +43,18 @@ function Invoke-DnsBenchmark {
                 $times += $sw.Elapsed.TotalMilliseconds
             } catch {
                 $sw.Stop()
-                $times += $sw.Elapsed.TotalMilliseconds
+                # Failed DNS queries are excluded from latency samples.
             }
         }
+        if ($times.Count -ne $queries) { Write-Host 'Unavailable or partial failure'; continue }
         $avg = ($times | Measure-Object -Average).Average
         $color = $avg -lt 20 ? $Green : ($avg -lt 50 ? $Yellow : $Red)
         Write-Host "$color$([math]::Round($avg, 1)) ms$Reset"
         $results += @{ Name = $provider.Name; Primary = $provider.Primary; Secondary = $provider.Secondary; Avg = $avg }
     }
 
-    $ranked = $results | Sort-Object { $_.Avg }
+    if (-not $results.Count) { Write-Log 'No provider completed all queries. No DNS changes will be offered.' -Level WARNING; Wait-ForUser; return }
+    $ranked = @($results | Sort-Object { $_.Avg })
     $best = $ranked[0]
 
     Write-Host ""
@@ -105,6 +107,7 @@ function Invoke-DnsBenchmark {
             $adapter = $adapters | Select-Object -First 1
         }
         if ($adapter) {
+            if ($env:WINRIFT_DRY_RUN -eq '1') { Write-Log "[DRY-RUN] Set DNS to $($selected.Name) on $($adapter.Name)"; Wait-ForUser; return }
             Set-DnsClientServerAddress -InterfaceIndex $adapter.InterfaceIndex -ServerAddresses @($selected.Primary, $selected.Secondary) -ErrorAction Stop
             Write-Log -Message "DNS set to $($selected.Name) on $($adapter.Name)" -Level SUCCESS
         } else {

@@ -2,55 +2,68 @@
 $DISPLAY_ADAPTER_CLASS = "HKLM:\SYSTEM\CurrentControlSet\Control\Class\{4d36e968-e325-11ce-bfc1-08002be10318}"
 
 function Get-DisplayAdapterIndices {
-    # Dynamically enumerate all display adapter registry indices instead of hardcoding 0000-0003
-    if (-not (Test-Path $DISPLAY_ADAPTER_CLASS)) { return @() }
-    Get-ChildItem -Path $DISPLAY_ADAPTER_CLASS -ErrorAction SilentlyContinue |
-        Where-Object { $_.PSChildName -match '^\d{4}$' } |
-        ForEach-Object { $_.PSChildName }
+    # Resolve registry keys only for present display adapters, excluding stale
+    # driver class entries left by removed hardware.
+    foreach ($device in @(Get-PnpDevice -PresentOnly -Class Display -ErrorAction SilentlyContinue)) {
+        $property = Get-PnpDeviceProperty -InstanceId $device.InstanceId -KeyName 'DEVPKEY_Device_Driver' -ErrorAction SilentlyContinue
+        if ($property.Data -match '\\(\d{4})$' -and (Test-Path "$DISPLAY_ADAPTER_CLASS\$($Matches[1])")) { $Matches[1] }
+    }
 }
 
 function Show-GPUMenu {
-    $script:GpuSessionStarted = $false
-    try {
-    Invoke-MenuLoop -Title "GPU-Specific Tweaks" -Items @(
-        "1 › NVIDIA",
-        "2 › AMD",
-        "3 › Both (Hybrid Laptop)",
-        "---",
-        "4 › Back to menu"
-    ) -Actions @{
-        "1" = {
-            $null = Invoke-TweakApply -Category "NVIDIA GPU" -CollectBlock { $null = Invoke-NvidiaTweaks } -SessionStarted ([ref]$script:GpuSessionStarted)
-        }
-        "2" = {
-            $null = Invoke-TweakApply -Category "AMD GPU" -CollectBlock { $null = Invoke-AMDTweaks } -SessionStarted ([ref]$script:GpuSessionStarted)
-        }
-        "3" = {
-            # Collect both GPU brands before showing the preview table
-            $script:CollectMode = $true
-            try {
-                $script:DesiredStateCategory = "NVIDIA GPU"
-                $null = Invoke-NvidiaTweaks -NoExit
-                $script:DesiredStateCategory = "AMD GPU"
-                $null = Invoke-AMDTweaks -NoExit
-            } finally { $script:CollectMode = $false }
-            if (Show-AuditTable) {
-                if (-not $script:GpuSessionStarted -and -not $script:TweakSessionStarted) {
-                    New-SafeRestorePoint; Start-TweakSession
-                    $script:GpuSessionStarted = $true; $script:TweakSessionStarted = $true
-                }
-                Invoke-AuditedApply
-            } else { Clear-AuditQueue }
-        }
-    } -ExitKey "4" -OnExit {
-        if ($script:GpuSessionStarted) { Save-TweakBackup; Save-DesiredState }
-        $script:GpuSessionStarted = $false
+    $vendors = @()
+    foreach ($index in @(Get-DisplayAdapterIndices)) {
+        $provider = (Get-ItemProperty "$DISPLAY_ADAPTER_CLASS\$index" -ErrorAction SilentlyContinue).ProviderName
+        if ($provider -match 'NVIDIA') { $vendors += 'NVIDIA' }
+        elseif ($provider -match '\bAMD\b|\bATI\b|Advanced Micro Devices') { $vendors += 'AMD' }
     }
-    } finally {
-        if ($script:GpuSessionStarted) { Save-TweakBackup; Save-DesiredState }
-    }
+    $items = @()
+    if ($vendors -contains 'NVIDIA') { $items += 'N › Review NVIDIA Preset             ›' }
+    if ($vendors -contains 'AMD') { $items += 'A › Review AMD Preset                ›' }
+    $items += @('G › GPU Scheduling & Preemption       ›', 'D › DirectX Preset                    ›', '---', '0 › Back')
+    Invoke-MenuLoop -Title 'GPU Tweaks' -Items $items -Actions @{
+        'N' = { Show-WinriftGpuPreset NVIDIA }
+        'A' = { Show-WinriftGpuPreset AMD }
+        'G' = { Show-WinriftTweakSelection 'GPU Scheduling & Preemption — compatibility varies' { Invoke-GPUTweaks } }
+        'D' = { Show-WinriftGpuPreset DirectX }
+    } -ExitKey '0' -HideKeys
 }
 
+function Show-WinriftGpuPreset {
+    param([ValidateSet('NVIDIA','AMD','DirectX')][string]$Vendor)
+    $collector = switch ($Vendor) {
+        'NVIDIA' { { $null = Invoke-NvidiaTweaks -NoExit } }
+        'AMD' { { $null = Invoke-AMDTweaks -NoExit } }
+        'DirectX' { { Invoke-DirectXTweaks } }
+    }
+    Clear-AuditQueue; $script:CollectMode=$true
+    try { & $collector } finally { $script:CollectMode=$false }
+    $entries = @($script:AuditQueue.ToArray())
+    Clear-AuditQueue
+    if (-not $entries.Count) { Write-Log 'No applicable preset for detected hardware.'; Wait-ForUser; return }
+    $choice = Show-InteractiveMenu -Title "Review $Vendor Preset" -Items @(
+        "$($entries.Count) registry writes. Driver/version compatibility must be verified.",
+        'May change stability, power use or rendering behavior. No guaranteed performance gain.',
+        $(if ($Vendor -eq 'NVIDIA') { 'One logical per-CPU DPC action, written to five locations.' } elseif ($Vendor -eq 'DirectX') { 'Existing 14-action preset; complete target-system validation is still required.' } else { 'All 30 names/types/values match the retrieved Melody source; driver compatibility is unverified.' }),
+        '---', 'Y › Apply Preset', 'V › View Details', 'I › Individual Tweaks', 'N › Back'
+    )
+    if ($choice -eq 'V') {
+        Show-InfoBox "$Vendor Preset Details" @($entries | ForEach-Object { "$($_.Path)\$($_.Name) = $($_.Value) ($($_.Type))" })
+        Wait-ForUser; Show-WinriftGpuPreset $Vendor; return
+    }
+    if ($choice -eq 'I') {
+        if($Vendor -eq 'NVIDIA'){
+            $selection=@(Show-MultiSelect -Title 'NVIDIA Individual Tweaks' -Items @('DPC › Per-CPU DPC preset (five writes, one action)'))
+            if($selection -notcontains 'DPC'){return}
+            $choice='Y'
+        }else{Show-WinriftTweakSelection "$Vendor Individual Tweaks" $collector;return}
+    }
+    if ($choice -ne 'Y') { return }
+    foreach ($entry in $entries) { $script:AuditQueue.Add($entry) }
+    Invoke-AuditedApply; Save-TweakBackup; Save-DesiredState
+    Write-Log 'Preset operations finished. Review individual results; restart may be required.'
+    Wait-ForUser
+}
 function Invoke-NvidiaTweaks {
     param (
         [switch]$NoExit
@@ -90,7 +103,7 @@ function Invoke-AMDTweaks {
     foreach ($idx in (Get-DisplayAdapterIndices)) {
         $devPath = "$DISPLAY_ADAPTER_CLASS\$idx"
         $provider = (Get-ItemProperty -Path $devPath -Name "ProviderName" -ErrorAction SilentlyContinue).ProviderName
-        if ($provider -match "AMD|ATI|Advanced Micro Devices") {
+        if ($provider -match "\bAMD\b|\bATI\b|Advanced Micro Devices") {
             $amdPath = $devPath
             break
         }

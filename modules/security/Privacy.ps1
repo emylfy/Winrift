@@ -391,7 +391,7 @@ function Invoke-PrivacyHardening {
         @{ Path = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer"; Name = "NoWebServices"; Value = 1 }
     )
     $script:DesiredStateCategory = "Privacy"
-    foreach ($r in $registryTweaks) {
+    foreach ($r in ($registryTweaks | Where-Object { -not (Test-WinriftUpdaterPolicy $_) -and (Test-WinriftPrivacyEntry $_) })) {
         $t = $r.Type ?? "DWord"
         Set-RegistryValue -Path $r.Path -Name $r.Name -Type $t -Value $r.Value -Message "Privacy: $($r.Name)"
     }
@@ -416,11 +416,12 @@ function Invoke-PrivacyHardening {
         "gupdate", "gupdatem", "AdobeARMservice", "adobeupdateservice",
         "dbupdate", "dbupdatem", "WMPNetworkSvc", "edgeupdate", "edgeupdatem",
         "mrxsmb10", "XblGameSave", "XboxNetApiSvc", "XblAuthManager", "MapsBroker", "RetailDemo"
-    ) | ForEach-Object {
+    ) | Where-Object { -not (Test-WinriftUpdaterName $_) } | ForEach-Object {
         $svc = Get-Service -Name $_ -ErrorAction SilentlyContinue
         if (-not $svc) { return }
-        if ($svc.Status -eq 'Running') { Stop-Service -Name $_ -Force }
-        Set-Service -Name $_ -StartupType Disabled
+        $currentState = Get-WinriftSystemValue ('Service.' + $svc.Name)
+        $delay = ($currentState.Split('|'))[2]
+        Add-WinriftSystemAction -Id ('Service.' + $svc.Name) -Value "Disabled|Stopped|$delay" -Message "Disable privacy service $($svc.Name)"
     }
 
     Write-Host "  Disabling scheduled tasks..."
@@ -453,7 +454,7 @@ function Invoke-PrivacyHardening {
         "NvTmRepOnLogon_{B2FE1952-0186-46C3-BAEC-A80AA35AC5B8}",
         "\Mozilla\Firefox Default Browser Agent 308046B0AF4A39CB",
         "\Mozilla\Firefox Default Browser Agent D2CEEC440E2074BD"
-    ) | ForEach-Object { Disable-ScheduledTask -TaskName $_ -ErrorAction SilentlyContinue }
+    ) | Where-Object { -not (Test-WinriftUpdaterName $_) } | ForEach-Object { Add-WinriftSystemAction -Id ('Task.' + $_) -Value $false -Message "Disable privacy task $_" }
 
     Write-Host "  Removing bloatware apps..."
     @(
@@ -464,9 +465,10 @@ function Invoke-PrivacyHardening {
         "Microsoft.BingFinance", "Microsoft.MicrosoftOfficeHub", "Microsoft.WindowsPhone",
         "Microsoft.CommsPhone", "Microsoft.Windows.Holographic.FirstRun",
         "Microsoft.Windows.ParentalControls", "Microsoft.WindowsFeedback", "Windows.CBSPreview"
-    ) | ForEach-Object {
+    ) | Where-Object { $_ -ne 'Microsoft.549981C3F5F10' } | ForEach-Object {
         Get-AppxPackage -Name $_ -AllUsers | Remove-AppxPackage -AllUsers
-        Get-AppxProvisionedPackage -Online | Where-Object { $_.PackageName -like "*$_*" } | Remove-AppxProvisionedPackage -Online
+        $appName = $_
+        Get-AppxProvisionedPackage -Online | Where-Object { $_.DisplayName -eq $appName -or $_.PackageName -like "$appName`_*" } | Remove-AppxProvisionedPackage -Online
         $deprovKey = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Appx\AppxAllUserStore\Deprovisioned\${_}_cw5n1h2txyewy"
         if (-not (Test-Path $deprovKey)) { New-Item -Path $deprovKey -Force | Out-Null }
     }
@@ -477,11 +479,11 @@ function Invoke-PrivacyHardening {
         "TelnetClient", "TFTP", "SMB1Protocol", "SMB1Protocol-Client",
         "SMB1Protocol-Server", "ScanManagementConsole", "FaxServicesClientPackage",
         "Xps-Foundation-Xps-Viewer"
-    ) | ForEach-Object { Disable-WindowsOptionalFeature -Online -FeatureName $_ -NoRestart | Out-Null }
+    ) | ForEach-Object { Add-WinriftSystemAction -Id ('Feature.'+$_) -Value Disabled -Message "Disable Windows feature $_" }
 
     Write-Host "  Setting environment variables..."
-    [System.Environment]::SetEnvironmentVariable("DOTNET_CLI_TELEMETRY_OPTOUT", "1", "Machine")
-    [System.Environment]::SetEnvironmentVariable("POWERSHELL_TELEMETRY_OPTOUT", "1", "Machine")
+    Add-WinriftSystemAction -Id Environment.DOTNET_CLI_TELEMETRY_OPTOUT -Value '1' -Message 'Set machine .NET telemetry opt-out'
+    Add-WinriftSystemAction -Id Environment.POWERSHELL_TELEMETRY_OPTOUT -Value '1' -Message 'Set machine PowerShell telemetry opt-out'
 
     Write-Host "  Blocking telemetry domains..."
     $hostsFile = "$env:SystemRoot\System32\drivers\etc\hosts"
@@ -510,7 +512,12 @@ function Invoke-PrivacyHardening {
         }
     }
     if ($newEntries.Count -gt 0) {
-        Add-Content -Path $hostsFile -Value ($newEntries -join "`n")
+        $stage=Join-Path (Get-WinriftStateRoot) ('staging\hosts-'+[guid]::NewGuid().ToString('N')+'.txt')
+        [IO.Directory]::CreateDirectory((Split-Path $stage -Parent))|Out-Null
+        try{
+            [IO.File]::WriteAllText($stage,$hostsContent.TrimEnd()+"`r`n"+($newEntries -join "`r`n")+"`r`n",[Text.UTF8Encoding]::new($false))
+            Copy-WinriftJournaledFile -Source $stage -Destination $hostsFile -Label 'Privacy hosts entries'
+        }finally{if(Test-Path -LiteralPath $stage){Remove-Item -LiteralPath $stage}}
     }
 
     Write-Host "  Blocking telemetry executables..."
@@ -531,20 +538,10 @@ function Invoke-PrivacyHardening {
         & rundll32.exe "$nvDir\NVI2.DLL,UninstallPackage NvTelemetry" 2>$null
     }
 
-    Write-Host "  Disabling VS Code telemetry..."
-    $vsCodeSettings = "$env:APPDATA\Code\User\settings.json"
-    if (Test-Path $vsCodeSettings) {
-        $json = Get-Content $vsCodeSettings -Raw | ConvertFrom-Json
-        $json | Add-Member -NotePropertyName "telemetry.enableTelemetry" -NotePropertyValue $false -Force
-        $json | Add-Member -NotePropertyName "telemetry.enableCrashReporter" -NotePropertyValue $false -Force
-        $json | Add-Member -NotePropertyName "workbench.enableExperiments" -NotePropertyValue $false -Force
-        $json | ConvertTo-Json -Depth 10 | Set-Content $vsCodeSettings -Encoding UTF8
-    }
-
     Write-Host "  Applying miscellaneous hardening..."
     & net user defaultuser0 /delete 2>$null
     & dism.exe /online /Remove-DefaultAppAssociations 2>$null
-    & sc.exe config lanmanworkstation depend= bowser/mrxsmb20/nsi 2>$null
+    Add-WinriftSystemAction -Id ServiceDependencies.lanmanworkstation -Value 'bowser/mrxsmb20/nsi' -Message 'Set Workstation service dependencies (legacy compatibility required)'
     $key = 'HKLM:SYSTEM\CurrentControlSet\services\NetBT\Parameters\Interfaces'
     Get-ChildItem $key | ForEach-Object { Set-ItemProperty -Path "$key\$($_.PSChildName)" -Name NetbiosOptions -Value 2 }
 
@@ -664,23 +661,103 @@ function Invoke-PrivacyHardening {
     Save-DesiredState
 }
 
-function Show-PrivacyMenu {
-    Initialize-Logging -ModuleName "privacy"
-    $Host.UI.RawUI.WindowTitle = "Privacy Hardening"
-    $confirm = Show-InteractiveMenu -Title "Privacy Hardening" -HideKeys -Items @(
-        "Applies ~200 privacy and security settings.",
-        "Disables telemetry, tracking, bloatware, AI features.",
-        "Based on privacy.sexy standard preset.",
-        "---",
-        "Y › Run privacy hardening",
-        "N › Cancel"
-    )
-    if ($confirm -ne "Y") { return }
+function Test-WinriftPrivacyEntry {
+    param($Entry)
+    # Browser policy ownership belongs to the external Browser Privacy flow.
+    if($Entry.Path -match '\\(Google\\Chrome|Mozilla\\Firefox|Microsoft\\(Edge|MicrosoftEdge))(\\|$)'){return $false}
+    if($Entry.Path -match 'Cortana' -or $Entry.Name -match 'Cortana'){return $false}
+    # Legacy IE / EdgeHTML values only remain applicable when their key exists.
+    if($Entry.Path -match 'Internet Explorer|AppContainer\\Storage\\microsoft.microsoftedge'){
+        return Test-Path -LiteralPath $Entry.Path
+    }
+    return $true
+}
+function Test-WinriftUpdaterName {
+    param([string]$Name)
+    return $Name -match '^(gupdate|gupdatem|GoogleUpdater.*|AdobeARMservice|adobeupdateservice|dbupdate|dbupdatem|edgeupdate|edgeupdatem|Adobe Acrobat Update Task|DropboxUpdateTask.*|GoogleUpdateTask.*|MicrosoftEdgeUpdateTask.*)$'
+}
 
-    Clear-Host
+function Test-WinriftUpdaterPolicy {
+    param($Entry)
+    return $Entry.Path -match '\\(EdgeUpdate|Google\\Update)(\\|$)'
+}
+
+function Get-WinriftPrivacyManifest {
+    # Read literal data from the same implementation that Apply will execute.
+    # SafeGetValue rejects executable expressions; the preview never runs it.
+    $ast = [Management.Automation.Language.Parser]::ParseFile($PSCommandPath, [ref]$null, [ref]$null)
+    $function = $ast.Find({param($n) $n -is [Management.Automation.Language.FunctionDefinitionAst] -and $n.Name -eq 'Invoke-PrivacyHardening'}, $true)
+    $arrays = @($function.FindAll({param($n) $n -is [Management.Automation.Language.ArrayExpressionAst]}, $true))
+    return @{
+        Registry = @($arrays[0].SafeGetValue() | Where-Object { -not (Test-WinriftUpdaterPolicy $_) -and (Test-WinriftPrivacyEntry $_) })
+        RegistryDeletes = @($arrays[1].SafeGetValue())
+        Services = @($arrays[2].SafeGetValue() | Where-Object { -not (Test-WinriftUpdaterName $_) })
+        Tasks = @($arrays[3].SafeGetValue() | Where-Object { -not (Test-WinriftUpdaterName $_) })
+        Apps = @($arrays[4].SafeGetValue() | Where-Object { $_ -ne 'Microsoft.549981C3F5F10' })
+        Features = @($arrays[5].SafeGetValue())
+        Hosts = @($arrays[6].SafeGetValue())
+        HistoryKeys = @($arrays[10].SafeGetValue())
+        Files = @($arrays[11].SafeGetValue())
+        UpdaterPolicies = @($arrays[0].SafeGetValue() | Where-Object { Test-WinriftUpdaterPolicy $_ })
+    }
+}
+
+function Show-WinriftAppUpdates {
+    . "$PSScriptRoot\..\system\Tweaks.Universal.ps1"
+    Show-WinriftTweakSelection -Title 'App Auto-Updates — opt in; security updates may stop' -CollectBlock {
+        foreach ($service in @(Get-Service -ErrorAction SilentlyContinue | Where-Object { Test-WinriftUpdaterName $_.Name })) {
+            try {
+                $current=Get-WinriftSystemValue ('Service.'+$service.Name)
+                $delay=($current.Split('|'))[2]
+                Add-WinriftSystemAction -Id ('Service.'+$service.Name) -Value "Disabled|Stopped|$delay" -Message "Disable updater service $($service.Name)"
+            } catch { Write-Log "Updater service unavailable: $($service.Name)" -Level WARNING }
+        }
+        foreach ($task in @(Get-ScheduledTask -ErrorAction SilentlyContinue | Where-Object { Test-WinriftUpdaterName $_.TaskName })) {
+            Add-WinriftSystemAction -Id ('Task.'+$task.TaskPath+$task.TaskName) -Value $false -Message "Disable updater task $($task.TaskPath)$($task.TaskName)"
+        }
+        $manifest=Get-WinriftPrivacyManifest
+        foreach ($entry in $manifest.UpdaterPolicies) {
+            # Apply the old Edge updater policy scope only when Edge updater exists.
+            if (Test-Path 'HKLM:\SOFTWARE\Microsoft\EdgeUpdate') {
+                $type=if ($entry.Type) { $entry.Type } else { 'DWord' }
+                Set-RegistryValue -Path $entry.Path -Name $entry.Name -Type $type -Value $entry.Value -Message "Updater policy $($entry.Name)"
+            }
+        }
+    }
+}
+function Show-PrivacyMenu {
+    Initialize-Logging -ModuleName privacy
+    $manifest = Get-WinriftPrivacyManifest
+    $items = @(
+        'Privacy Setup is one operation. Review its complete scope below.',
+        'Registry changes may affect permissions, telemetry, search, features and application policies.',
+        'App removals affect all users and provisioning for new users.',
+        'App/file/history deletion and external changes are not universally reversible.',
+        'App updater controls are separate. Editor configuration is handled under Configure Your Apps.',
+        'Browser policies are handled by Browser Privacy; Windows AI removal uses the external Remove Windows AI flow.',
+        '--- Registry values ---'
+    )
+    $items += @($manifest.Registry | ForEach-Object { "$($_.Path)\$($_.Name) = $($_.Value)" })
+    $items += '--- Registry values removed ---'
+    $items += @($manifest.RegistryDeletes | ForEach-Object { "$($_.Path)\$($_.Name)" })
+    foreach ($section in @('Services','Tasks','Apps','Features','Hosts','HistoryKeys','Files')) {
+        $items += "--- $section ---"; $items += @($manifest[$section])
+    }
+    $items += @(
+        '--- Other material operations ---',
+        'Set machine DOTNET_CLI_TELEMETRY_OPTOUT and POWERSHELL_TELEMETRY_OPTOUT.',
+        'Stop CompatTelRunner, DeviceCensus and software_reporter_tool; set executable restrictions.',
+        'Remove NVIDIA telemetry packages when their installer is present.',
+        'Browser policies use Browser Privacy; retained browser cache and log cleanup paths are listed above.',
+        'Remove defaultuser0; reset default app associations; change Workstation dependencies and NetBIOS options.',
+        'Set DTLS 1.2/TLS 1.3 protocol values. Older policies may be unavailable on this Windows version.',
+        'Cleanup includes Windows/application logs and MRU data; these deletions cannot be undone.',
+        '---', 'Y › Apply Privacy Setup', 'N › Back'
+    )
+    $choice = Show-InteractiveMenu -Title 'Privacy Setup — Review Changes' -Items $items -HideKeys
+    if ($choice -ne 'Y') { return }
     Invoke-PrivacyHardening
-    Write-Host ""
-    Write-Log -Message "Privacy hardening completed." -Level SUCCESS
+    Write-Log 'Privacy operations finished. Inspect individual errors and unsupported items in the log.'
     Wait-ForUser
 }
 

@@ -6,15 +6,12 @@
 
 # Named Constants
 # Accessibility flag values (Windows accessibility registry format)
-$STICKY_KEYS_DISABLED      = "506"  # StickyKeys off — prevents popup on 5x Shift
-$TOGGLE_KEYS_DISABLED      = "58"   # ToggleKeys audio indicator off
-$FILTER_KEYS_DISABLED      = "122"  # FilterKeys off with all response optimizations active
-# Input buffer sizes (smaller = faster processing, default is 100)
+# Input buffer sizes (optional overrides; effect depends on workload, default is 100)
 $INPUT_QUEUE_SIZE           = "20"
 # Network
 $NETWORK_THROTTLING_OFF     = "4294967295"  # 0xFFFFFFFF — disables network throttling
 # CPU multimedia scheduler
-$LAZY_MODE_TIMEOUT_MS       = "25000"  # 25ms lazy mode timeout for MMCSS
+$LAZY_MODE_TIMEOUT_100NS       = "25000"  # 25000 x 100ns = 2.5ms (MMCSS)
 # Process priority — short interval, variable length, high foreground boost (2:1)
 $PRIORITY_SEPARATION        = "0x00000024"
 # UI timeouts (milliseconds)
@@ -24,236 +21,68 @@ $LOW_LEVEL_HOOKS_TIMEOUT_MS = "1000"
 $MENU_SHOW_DELAY_MS         = "0"
 $WAIT_KILL_SVC_TIMEOUT_MS   = "2000"
 
-function Invoke-TweakWizard {
-    param(
-        [hashtable]$TweakMap,
-        [hashtable]$CategoryNames,
-        [ref]$SessionStarted
-    )
-
-    $wizardCategories = @("1","2","3","4","5","6","7","8","9","10","11","12","13")
-    $categoryDescriptions = @{
-        "1"  = "Interrupt steering, timer serialization"
-        "2"  = "Mouse/keyboard buffer sizes, accessibility shortcuts"
-        "3"  = "TRIM, disable defrag and prefetch (SSD/NVMe)"
-        "4"  = "Hardware-Accelerated GPU Scheduling (HAGS)"
-        "5"  = "Disable network throttling for maximum throughput"
-        "6"  = "MMCSS lazy mode timeout, multimedia CPU scheduling"
-        "7"  = "Disable power throttling and energy estimation"
-        "8"  = "Process priority separation, IRQ priorities"
-        "9"  = "Startup delay removal, desktop switch latency"
-        "10" = "App/service termination timeouts, menu delay"
-        "11" = "Large system cache, disable page combining (16 GB+ recommended)"
-        "12" = "Disable auto-maintenance, I/O counting, RPC (advanced — disables background maintenance)"
-        "13" = "D3D11/D3D12 multithreading, deferred contexts, command buffer reuse (advanced — may cause GPU artifacts)"
-    }
-
-    $selections = @{}
-    $step  = 0
-    $total = $wizardCategories.Count
-
-    while ($step -lt $total) {
-        $key     = $wizardCategories[$step]
-        $catName = $CategoryNames[$key]
-        $catDesc = $categoryDescriptions[$key]
-
-        $dots = @()
-        for ($i = 0; $i -lt $total; $i++) {
-            if ($i -lt $step) {
-                $dk    = $wizardCategories[$i]
-                $dots += $selections[$dk] ? "$Green●$Reset" : "$Dim○$Reset"
-            } elseif ($i -eq $step) {
-                $dots += "$Cyan●$Reset"
-            } else {
-                $dots += "$Dim·$Reset"
-            }
-        }
-        $progressLine = $dots -join " "
-
-        $stateHint = if ($selections.ContainsKey($key)) {
-            if ($selections[$key]) { "  $Green✓ selected$Reset" } else { "  $Dim– skipped$Reset" }
-        } else { "" }
-
-        Clear-Host
-        Write-Host ""
-        Write-Host "  $progressLine"
-        Write-Host ""
-        Write-Host "  $Cyan[$($step + 1)/$total]$Reset  $catName$stateHint"
-        Write-Host "  $Dim$catDesc$Reset"
-        Write-Host ""
-        Write-Host "  $Green[Y]$Reset Apply    $Dim[N]$Reset Skip    $Yellow[B]$Reset Back    $Dim[Esc]$Reset Exit wizard"
-        Write-Host ""
-
-        $keyInfo = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
-        $char    = $keyInfo.Character.ToString().ToUpper()
-        $vk      = [int]$keyInfo.VirtualKeyCode
-
-        if ($vk -eq 27) { return }
-
-        switch ($char) {
-            "Y" { $selections[$key] = $true;  $step++ }
-            "N" { $selections[$key] = $false; $step++ }
-            "B" { if ($step -gt 0) { $step-- } }
-        }
-    }
-
-    $selectedKeys = @($wizardCategories | Where-Object { $selections[$_] -eq $true })
-    if ($selectedKeys.Count -eq 0) {
-        Clear-Host
-        Write-Log -Message "No categories selected." -Level INFO
-        Wait-ForUser
-        return
-    }
-
+function Show-WinriftTweakSelection {
+    param([string]$Title, [scriptblock]$CollectBlock)
+    Clear-AuditQueue
     $script:CollectMode = $true
-    try {
-        foreach ($k in $selectedKeys) {
-            if ($TweakMap.ContainsKey($k)) {
-                $script:DesiredStateCategory = $CategoryNames[$k]
-                & $TweakMap[$k]
-            }
-        }
-    } finally { $script:CollectMode = $false }
-
-    if (-not (Show-AuditTable)) {
-        Clear-AuditQueue
-        return
+    try { & $CollectBlock } finally { $script:CollectMode = $false }
+    $entries = @($script:AuditQueue.ToArray())
+    if (-not $entries.Count) { Write-Log 'No applicable actions found.'; Wait-ForUser; return }
+    $selectionId=[Convert]::ToHexString([Security.Cryptography.SHA256]::HashData([Text.Encoding]::UTF8.GetBytes($Title)))
+    $selectionPath=Join-Path (Get-WinriftStateRoot) ("ui\tweaks-$selectionId.json")
+    $saved=@()
+    if(Test-Path -LiteralPath $selectionPath){try{$saved=@((Read-WinriftJson $selectionPath).selected)}catch{Write-Log 'Saved tweak selection is unreadable; original state preserved.' -Level WARNING}}
+    $tokens=@($entries|ForEach-Object{if($_.Kind -eq 'System'){$_.Id}else{"$($_.Path)|$($_.Name)"}})
+    $defaults=@()
+    $items = @(); $disabled = @(); $markers = @(); $details = @{}
+    for ($i = 0; $i -lt $entries.Count; $i++) {
+        $entry = $entries[$i]
+        $changed = Test-WinriftQueuedChange $entry
+        $unsupported = $entry.Kind -eq 'System' -and -not $entry.Supported
+        $items += "$i › $($entry.Message): $($entry.Value)"
+        $disabled += (-not $changed)
+        $defaults += ($changed -and $tokens[$i] -in $saved)
+        $markers += $(if ($unsupported) { '–' } elseif (-not $changed) { '✓' } else { '' })
+        $details[$i] = @("Current: $($entry.Current)", "Proposed: $($entry.Value) ($($entry.Type))", $(if ($entry.Path) { "$($entry.Path)\$($entry.Name)" } else { $entry.Id }), $entry.Reason, 'Configuration state is checked; performance improvement is not guaranteed.')
     }
-
-    if (-not $SessionStarted.Value) {
-        New-SafeRestorePoint
-        Start-TweakSession
-        $SessionStarted.Value = $true
-    }
-
-    Invoke-AuditedApply
-
-    Write-Host ""
-    Write-Host "$Yellow  A system restart is recommended for all changes to take effect.$Reset"
-    Write-Host ""
-    Write-Host "$Cyan Press any key to return to the tweaks menu...$Reset"
-    $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
+    $changedSelection={param($keys) $values=@($keys|ForEach-Object{$tokens[[int]$_]});Write-WinriftAtomicJson -Path $selectionPath -Value @{schemaVersion=1;selected=$values}}
+    $selected = @(Show-MultiSelect -Title $Title -Items $items -Disabled $disabled -Markers $markers -Descriptions $details -Defaults $defaults -OnSelectionChanged $changedSelection)
+    $script:AuditQueue.Clear()
+    foreach ($key in $selected) { $script:AuditQueue.Add($entries[[int]$key]) }
+    if ($script:AuditQueue.Count -and (Show-AuditTable)) {
+        Invoke-AuditedApply
+        Save-TweakBackup; Save-DesiredState
+        Write-Log 'Selected operations finished. Review individual results; restart where required.'
+        Wait-ForUser
+    } else { Clear-AuditQueue }
 }
 
 function Invoke-UniversalTweaks {
-    $tweakMap = @{
-        "1"  = { Invoke-SystemLatencyTweaks }
-        "2"  = { Invoke-InputDeviceTweaks }
-        "3"  = { Invoke-SSDTweaks }
-        "4"  = { Invoke-GPUTweaks }
-        "5"  = { Invoke-NetworkTweaks }
-        "6"  = { Invoke-CPUTweaks }
-        "7"  = { Invoke-PowerTweaks }
-        "8"  = { Invoke-SystemResponsivenessTweaks }
-        "9"  = { Invoke-BootOptimizationTweaks }
-        "10" = { Invoke-UIResponsivenessTweaks }
-        "11" = { Invoke-MemoryTweaks }
-        "12" = { Invoke-SystemMaintenanceTweaks }
-        "13" = { Invoke-DirectXTweaks }
-    }
-
-    $categoryNames = @{
-        "1" = "System Latency"; "2" = "Input Device Optimization"; "3" = "SSD/NVMe Performance"
-        "4" = "GPU Hardware Scheduling"; "5" = "Network Optimization"; "6" = "CPU Performance"
-        "7" = "Power Management"; "8" = "System Responsiveness"; "9" = "Boot Optimization"
-        "10" = "UI Responsiveness"; "11" = "Memory Optimization"
-        "12" = "System Maintenance"; "13" = "DirectX Enhancements"
-    }
-
-    $sessionStarted = $false
-    try {
-    while ($true) {
-        $mode = Show-InteractiveMenu -Title "Universal Tweaks" -Items @(
-            "1 › Pick categories (arrows + space)",
-            "2 › Apply ALL safe tweaks (1-11)",
-            "3 › Step-by-step wizard",
-            "---",
-            "4 › Back to menu"
-        )
-
-        if ($null -eq $mode -or $mode -eq "4") { break }
-
-        if ($mode -eq "3") {
-            Invoke-TweakWizard -TweakMap $tweakMap -CategoryNames $categoryNames -SessionStarted ([ref]$sessionStarted)
-            continue
-        }
-
-        $selectedKeys = @()
-        if ($mode -eq "2") {
-            $confirm = Show-InteractiveMenu -Title "Apply ALL Safe Tweaks" -HideKeys -Items @(
-                "Applies 11 tweak categories to your system.",
-                "A restore point will be created before changes.",
-                "---",
-                "Y › Continue",
-                "N › Cancel"
-            )
-            if ($confirm -ne "Y") { continue }
-            $selectedKeys = @("1","2","3","4","5","6","7","8","9","10","11")
-        } else {
-            $picks = Show-MultiSelect -NoBox -Title "Select tweak categories" -Items @(
-                "1 › System Latency",
-                "2 › Input Device Optimization",
-                "3 › SSD/NVMe Performance",
-                "4 › GPU Hardware Scheduling",
-                "5 › Network Optimization",
-                "6 › CPU Performance",
-                "7 › Power Management",
-                "8 › System Responsiveness",
-                "9 › Boot Optimization",
-                "10 › UI Responsiveness",
-                "11 › Memory Optimization",
-                "--- Advanced (opt-in, not in Apply ALL) ---",
-                "12 › System Maintenance~Disables auto-maintenance including disk optimization and security scans.",
-                "13 › DirectX Enhancements~UNSAFE_COMMAND_BUFFER_REUSE may cause GPU artifacts on some hardware."
-            )
-            if (-not $picks -or $picks.Count -eq 0) { continue }
-            $selectedKeys = @($picks)
-        }
-
-        # Collect phase — run all tweak functions in collect mode so
-        # Set-RegistryValue queues entries instead of writing to registry
-        $script:CollectMode = $true
-        try {
-            foreach ($key in $selectedKeys) {
-                if ($tweakMap.ContainsKey($key)) {
-                    $script:DesiredStateCategory = $categoryNames[$key]
-                    & $tweakMap[$key]
-                }
-            }
-        } finally { $script:CollectMode = $false }
-
-        # Show preview table — apply only if user confirms
-        if (-not (Show-AuditTable)) {
-            Clear-AuditQueue
-            continue
-        }
-
-        if (-not $sessionStarted -and -not $script:TweakSessionStarted) {
-            New-SafeRestorePoint
-            Start-TweakSession
-            $sessionStarted = $true
-            $script:TweakSessionStarted = $true
-        }
-
-        Invoke-AuditedApply
-
-        Write-Host ""
-        Write-Host "$Yellow  A system restart is recommended for all changes to take effect.$Reset"
-        Write-Host ""
-        Write-Host "$Cyan Press any key to return to the tweaks menu...$Reset"
-        $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
-    }
-    } finally {
-        if ($sessionStarted) {
-            Save-TweakBackup
-            Save-DesiredState
-            if ($script:LogFile) {
-                Write-Host "$Green  Log saved to: $script:LogFile$Reset"
-            }
-        }
+    Show-WinriftTweakSelection -Title 'All Tweaks' -CollectBlock {
+        Invoke-SystemLatencyTweaks; Invoke-InputDeviceTweaks; Invoke-SSDTweaks
+        Invoke-GPUTweaks; Invoke-NetworkTweaks; Invoke-CPUTweaks; Invoke-PowerTweaks
+        Invoke-SystemResponsivenessTweaks; Invoke-BootOptimizationTweaks
+        Invoke-UIResponsivenessTweaks; Invoke-MemoryTweaks
+        Invoke-SystemMaintenanceTweaks; Invoke-DirectXTweaks
     }
 }
 
+function Invoke-AccessibilityShortcutTweaks {
+    foreach($part in @('StickyKeys','ToggleKeys','Keyboard Response')){
+        try{
+            $flags=Get-WinriftSystemValue ('Accessibility.'+$part)
+            Add-WinriftSystemAction -Id ('Accessibility.'+$part) -Value ([int]$flags -band (-bnot 4)) -Message "Disable $part activation shortcut (preserve other settings)"
+        }catch{Write-Log "Accessibility shortcut unavailable: $part" -Level WARNING}
+    }
+}
+function Invoke-RecommendedTweaks {
+    Show-WinriftTweakSelection -Title 'Review Recommended Preset' -CollectBlock {
+        Invoke-AccessibilityShortcutTweaks
+        Add-WinriftSystemAction -Id MenuDelay -Value ([int]$MENU_SHOW_DELAY_MS) -Message 'Menu display delay (preference)'
+        Add-WinriftSystemAction -Id 'Trim.NTFS' -Value 0 -Message 'Enable NTFS TRIM notifications'
+        Add-WinriftSystemAction -Id 'Trim.ReFS' -Value 0 -Message 'Enable ReFS TRIM notifications'
+    }
+}
 function Invoke-SystemLatencyTweaks {
 
     # Changing Interrupts behavior for lower latency
@@ -272,65 +101,26 @@ function Invoke-InputDeviceTweaks {
     Set-RegistryValue -Path "HKLM:\SYSTEM\CurrentControlSet\Services\kbdclass\Parameters" -Name "KeyboardDataQueueSize" -Type "DWord" -Value $INPUT_QUEUE_SIZE -Message "Optimized keyboard input buffer size"
 
     # Accessibility and keyboard response settings
-    Set-RegistryValue -Path "HKCU:\Control Panel\Accessibility" -Name "StickyKeys" -Type "String" -Value $STICKY_KEYS_DISABLED -Message "Disabled StickyKeys for better gaming experience"
-    Set-RegistryValue -Path "HKCU:\Control Panel\Accessibility\ToggleKeys" -Name "Flags" -Type "String" -Value $TOGGLE_KEYS_DISABLED -Message "Modified ToggleKeys behavior"
+    Invoke-AccessibilityShortcutTweaks
     Set-RegistryValue -Path "HKCU:\Control Panel\Accessibility\Keyboard Response" -Name "DelayBeforeAcceptance" -Type "String" -Value "0" -Message "Removed keyboard input delay"
     Set-RegistryValue -Path "HKCU:\Control Panel\Accessibility\Keyboard Response" -Name "AutoRepeatRate" -Type "String" -Value "0" -Message "Optimized key repeat rate"
     Set-RegistryValue -Path "HKCU:\Control Panel\Accessibility\Keyboard Response" -Name "AutoRepeatDelay" -Type "String" -Value "0" -Message "Removed key repeat delay"
-    Set-RegistryValue -Path "HKCU:\Control Panel\Accessibility\Keyboard Response" -Name "Flags" -Type "String" -Value $FILTER_KEYS_DISABLED -Message "Modified keyboard response flags"
 }
 
 function Invoke-SSDTweaks {
-
-    $hasSSD = Get-PhysicalDisk | Where-Object { $_.MediaType -eq 'SSD' -or $_.BusType -eq 'NVMe' } | Measure-Object | Select-Object -ExpandProperty Count
-    if ($hasSSD -gt 0) {
-        if (-not $script:CollectMode) {
-            try {
-                fsutil behavior set DisableDeleteNotify 0 | Out-Null
-                Write-Log -Message "Enabled TRIM for SSD" -Level SUCCESS
-            } catch {
-                Write-Log -Message "Failed to configure TRIM: $($_.Exception.Message)" -Level ERROR
-            }
-
-            try {
-                Disable-ScheduledTask -TaskName "\Microsoft\Windows\Defrag\ScheduledDefrag" | Out-Null
-                Write-Log -Message "Disabled defragmentation for SSDs" -Level SUCCESS
-            } catch {
-                Write-Log -Message "Failed to disable defrag task: $($_.Exception.Message)" -Level ERROR
-            }
-
-            try {
-                fsutil behavior set disablelastaccess 1 | Out-Null
-                Write-Log -Message "Disabled NTFS last access time updates" -Level SUCCESS
-            } catch {
-                Write-Log -Message "Failed to configure last access time: $($_.Exception.Message)" -Level ERROR
-            }
-        }
-
-        Set-RegistryValue -Path "HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem" -Name "NtfsDisable8dot3NameCreation" -Type "DWord" -Value "1" -Message "Disabled legacy 8.3 filename creation for better SSD performance"
-
-        # Disable ApplicationPreLaunch & Prefetch - not needed on SSD
-        if (-not $script:CollectMode) {
-            try {
-                Disable-MMAgent -ApplicationPreLaunch
-                Write-Log -Message "Disabled application pre-launch" -Level SUCCESS
-            } catch {
-                Write-Log -Message "Failed to disable ApplicationPreLaunch: $($_.Exception.Message)" -Level WARNING
-            }
-        }
-
-        Set-RegistryValue -Path "HKLM:\System\CurrentControlSet\Control\Session Manager\Memory Management\PrefetchParameters" -Name "EnablePrefetcher" -Type "DWord" -Value "0" -Message "Disabled prefetcher for better SSD performance"
-        Set-RegistryValue -Path "HKLM:\System\CurrentControlSet\Control\Session Manager\Memory Management\PrefetchParameters" -Name "SfTracingState" -Type "DWord" -Value "0" -Message "Disabled superfetch tracing"
-    } else {
-        Write-Host "No SSD or NVMe detected. Skipping tweaks."
-    }
+    Add-WinriftSystemAction 'Trim.NTFS' 0 'Enable NTFS TRIM notifications'
+    Add-WinriftSystemAction 'Trim.ReFS' 0 'Enable ReFS TRIM notifications'
+    Add-WinriftSystemAction 'LastAccess' 1 'Disable NTFS last-access updates (restart required)'
+    Set-RegistryValue -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem' -Name NtfsDisable8dot3NameCreation -Type DWord -Value 1 -Message 'Disable 8.3 name creation'
+    Add-WinriftSystemAction 'MMAgent.ApplicationPreLaunch' $false 'Disable Application Prelaunch'
+    Set-RegistryValue -Path 'HKLM:\System\CurrentControlSet\Control\Session Manager\Memory Management\PrefetchParameters' -Name EnablePrefetcher -Type DWord -Value 0 -Message 'Disable Prefetch'
+    # SfTracingState deferred pending target-version verification.
 }
-
 function Invoke-GPUTweaks {
 
     # HwSchMode - Hardware Accelerated GPU Scheduling, reduces latency
     Set-RegistryValue -Path "HKLM:\SYSTEM\CurrentControlSet\Control\GraphicsDrivers" -Name "HwSchMode" -Type "DWord" -Value "2" -Message "Optimized GPU hardware scheduling"
-    Set-RegistryValue -Path "HKLM:\SYSTEM\CurrentControlSet\Control\GraphicsDrivers\Scheduler" -Name "EnablePreemption" -Type "DWord" -Value "0" -Message "Disabled GPU preemption for better performance"
+    Set-RegistryValue -Path "HKLM:\SYSTEM\CurrentControlSet\Control\GraphicsDrivers\Scheduler" -Name "EnablePreemption" -Type "DWord" -Value "0" -Message "Disable GPU preemption (compatibility not verified)"
 }
 
 function Invoke-NetworkTweaks {
@@ -338,23 +128,24 @@ function Invoke-NetworkTweaks {
     # Disable network throttling - especially helpful with gigabit networks
     # source - https://youtu.be/EmdosMT5TtA
     Set-RegistryValue -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile" -Name "NetworkThrottlingIndex" -Type "DWord" -Value $NETWORK_THROTTLING_OFF -Message "Disabled network throttling for maximum network performance"
-    Set-RegistryValue -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile" -Name "NoLazyMode" -Type "DWord" -Value "1" -Message "Disabled lazy mode for network operations"
 }
 
 function Invoke-CPUTweaks {
+    # Existing NoLazyMode is retained; upstream currently uses LazyMode=0.
+    Set-RegistryValue -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile" -Name "NoLazyMode" -Type "DWord" -Value "1" -Message "NoLazyMode override (effect unverified; upstream differs)"
 
     # source - https://youtu.be/FxpRL7wheGc
-    Set-RegistryValue -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile" -Name "LazyModeTimeout" -Type "DWord" -Value $LAZY_MODE_TIMEOUT_MS -Message "Set optimal lazy mode timeout for better CPU responsiveness"
-    Set-RegistryValue -Path "HKLM:\SYSTEM\CurrentControlSet\Services\MMCSS" -Name "Start" -Type "DWord" -Value "2" -Message "Configured Multimedia Class Scheduler Service for better performance"
+    Set-RegistryValue -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile" -Name "LazyModeTimeout" -Type "DWord" -Value $LAZY_MODE_TIMEOUT_100NS -Message "MMCSS lazy-mode timeout: 2.5ms"
+    Set-RegistryValue -Path "HKLM:\SYSTEM\CurrentControlSet\Services\MMCSS" -Name "Start" -Type "DWord" -Value "2" -Message "Configured Multimedia Class Scheduler Service (effect depends on hardware and workload)"
 }
 
 function Invoke-PowerTweaks {
 
     # Disable Power Throttling - removes background throttling overhead
-    Set-RegistryValue -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Power\PowerThrottling" -Name "PowerThrottlingOff" -Type "DWord" -Value "1" -Message "Disabled power throttling for maximum performance"
+    Set-RegistryValue -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Power\PowerThrottling" -Name "PowerThrottlingOff" -Type "DWord" -Value "1" -Message "Disabled power throttling (may increase power use)"
 
     # Disable energy estimation overhead
-    Set-RegistryValue -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Power" -Name "EnergyEstimationEnabled" -Type "DWord" -Value "0" -Message "Disabled energy estimation for better performance"
+    Set-RegistryValue -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Power" -Name "EnergyEstimationEnabled" -Type "DWord" -Value "0" -Message "Disabled energy estimation (effect depends on hardware and workload)"
     Set-RegistryValue -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Power" -Name "EventProcessorEnabled" -Type "DWord" -Value "0" -Message "Disabled power event processor"
 
     # Tagged Energy Logging - source https://www.youtube.com/watch?v=5omPOfsJNSo
@@ -367,7 +158,7 @@ function Invoke-SystemResponsivenessTweaks {
 
     # Set Priority For Programs Instead Of Background Services
     # source - https://youtu.be/bqDMG1ZS-Yw
-    Set-RegistryValue -Path "HKLM:\SYSTEM\CurrentControlSet\Control\PriorityControl" -Name "Win32PrioritySeparation" -Type "DWord" -Value $PRIORITY_SEPARATION -Message "Optimized process priority for better responsiveness"
+    Set-RegistryValue -Path "HKLM:\SYSTEM\CurrentControlSet\Control\PriorityControl" -Name "Win32PrioritySeparation" -Type "DWord" -Value $PRIORITY_SEPARATION -Message "Optimized process priority (effect not guaranteed)"
     Set-RegistryValue -Path "HKLM:\SYSTEM\CurrentControlSet\Control\PriorityControl" -Name "IRQ8Priority" -Type "DWord" -Value "1" -Message "Set IRQ8 priority for better system response"
     Set-RegistryValue -Path "HKLM:\SYSTEM\CurrentControlSet\Control\PriorityControl" -Name "IRQ16Priority" -Type "DWord" -Value "2" -Message "Set IRQ16 priority for better system response"
 }
@@ -380,12 +171,9 @@ function Invoke-BootOptimizationTweaks {
 
 function Invoke-SystemMaintenanceTweaks {
 
-    Set-RegistryValue -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Schedule\Maintenance" -Name "MaintenanceDisabled" -Type "DWord" -Value "1" -Message "Disabled automatic maintenance for better performance"
+    Set-RegistryValue -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Schedule\Maintenance" -Name "MaintenanceDisabled" -Type "DWord" -Value "1" -Message "Disabled automatic maintenance (effect depends on hardware and workload)"
 
     # source - https://www.youtube.com/watch?v=5omPOfsJNSo
-    Set-RegistryValue -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\I/O System" -Name "CountOperations" -Type "DWord" -Value "0" -Message "Disabled I/O operation counting"
-    Set-RegistryValue -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\fssProv" -Name "EncryptProtocol" -Type "DWord" -Value "0" -Message "Disabled FSS provider encryption"
-    Set-RegistryValue -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Schedule" -Name "DisableRpcOver" -Type "DWord" -Value "1" -Message "Disabled RPC over Scheduler"
 }
 
 function Invoke-UIResponsivenessTweaks {
@@ -394,21 +182,16 @@ function Invoke-UIResponsivenessTweaks {
     Set-RegistryValue -Path "HKCU:\Control Panel\Desktop" -Name "AutoEndTasks" -Type "String" -Value "1" -Message "Enabled automatic ending of tasks"
     Set-RegistryValue -Path "HKCU:\Control Panel\Desktop" -Name "HungAppTimeout" -Type "String" -Value $HUNG_APP_TIMEOUT_MS -Message "Reduced hung application timeout"
     Set-RegistryValue -Path "HKCU:\Control Panel\Desktop" -Name "WaitToKillAppTimeout" -Type "String" -Value $WAIT_KILL_APP_TIMEOUT_MS -Message "Reduced wait time for killing applications"
-    Set-RegistryValue -Path "HKCU:\Control Panel\Desktop" -Name "LowLevelHooksTimeout" -Type "String" -Value $LOW_LEVEL_HOOKS_TIMEOUT_MS -Message "Reduced low level hooks timeout"
+    Set-RegistryValue -Path "HKCU:\Control Panel\Desktop" -Name "LowLevelHooksTimeout" -Type "String" -Value $LOW_LEVEL_HOOKS_TIMEOUT_MS -Message "Hook execution timeout (not input acceleration)"
     Set-RegistryValue -Path "HKCU:\Control Panel\Desktop" -Name "MenuShowDelay" -Type "String" -Value $MENU_SHOW_DELAY_MS -Message "Removed menu show delay"
     Set-RegistryValue -Path "HKLM:\SYSTEM\CurrentControlSet\Control" -Name "WaitToKillServiceTimeout" -Type "String" -Value $WAIT_KILL_SVC_TIMEOUT_MS -Message "Reduced wait time for killing services"
 }
 
 function Invoke-MemoryTweaks {
 
-    $totalRamGB = [math]::Round((Get-CimInstance Win32_ComputerSystem).TotalPhysicalMemory / 1GB, 0)
-    if ($totalRamGB -lt 16) {
-        Write-Log -Message "WARNING: Your system has ${totalRamGB}GB RAM. DisablePagingExecutive and LargeSystemCache are risky on systems with less than 16GB and may cause instability under load." -Level WARNING
-    }
-
-    # source - https://github.com/SanGraphic/QuickBoost/blob/main/v2/MemoryTweaks.bat
-    Set-RegistryValue -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Memory Management" -Name "LargeSystemCache" -Type "DWord" -Value "1" -Message "Enabled large system cache for better performance"
-    Set-RegistryValue -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Memory Management" -Name "DisablePagingCombining" -Type "DWord" -Value "1" -Message "Disabled memory page combining"
+    # Optional memory behavior; no RAM-size recommendation.
+    Set-RegistryValue -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Memory Management" -Name "LargeSystemCache" -Type "DWord" -Value "1" -Message "Enabled large system cache (effect depends on hardware and workload)"
+    Add-WinriftSystemAction 'MMAgent.PageCombining' $false 'Disable memory page combining'
     Set-RegistryValue -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Memory Management" -Name "DisablePagingExecutive" -Type "DWord" -Value "1" -Message "Disabled paging of kernel and drivers"
 }
 
