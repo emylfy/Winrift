@@ -13,7 +13,7 @@ function Install-Pwsh {
     Write-Host ""
 
     $arch = if ([Environment]::Is64BitOperatingSystem) {
-        if ($env:PROCESSOR_ARCHITECTURE -eq "ARM64") { "arm64" } else { "x64" }
+        if ($env:PROCESSOR_ARCHITECTURE -eq "ARM64" -or $env:PROCESSOR_ARCHITEW6432 -eq "ARM64") { "arm64" } else { "x64" }
     } else { "x86" }
 
     # Resolve the latest stable PS7 from GitHub; fall back to a known-good pin
@@ -31,11 +31,25 @@ function Install-Pwsh {
 
     try {
         Write-Host "  Downloading..." -ForegroundColor Cyan
-        Start-BitsTransfer -Source $zipUrl -Destination $zipPath -DisplayName "PowerShell 7" -ErrorAction Stop
+        # BITS may be unavailable or denied. HTTPS download does not require
+        # the BITS service and keeps first launch usable on those systems.
+        try {
+            Start-BitsTransfer -Source $zipUrl -Destination $zipPath -DisplayName "PowerShell 7" -ErrorAction Stop
+        } catch {
+            Write-Host "  BITS unavailable; retrying direct HTTPS download..." -ForegroundColor Yellow
+            [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+            Invoke-WebRequest -Uri $zipUrl -OutFile $zipPath -UseBasicParsing -TimeoutSec 180 -ErrorAction Stop
+        }
 
         Write-Host "  Extracting..." -ForegroundColor Cyan
         $ProgressPreference = 'SilentlyContinue'
-        if (Test-Path $destDir) { Remove-Item $destDir -Recurse -Force -ErrorAction SilentlyContinue }
+        if (Test-Path -LiteralPath $destDir) {
+            $runtimeRoot=[IO.Path]::GetFullPath((Join-Path $env:LOCALAPPDATA 'Winrift')).TrimEnd('\')+'\'
+            $resolved=[IO.Path]::GetFullPath($destDir)
+            $preserved=$resolved+'.previous-'+[guid]::NewGuid().ToString('N')
+            if(-not $resolved.StartsWith($runtimeRoot,[StringComparison]::OrdinalIgnoreCase) -or -not $preserved.StartsWith($runtimeRoot,[StringComparison]::OrdinalIgnoreCase)) { throw 'Portable runtime path escaped the Winrift directory.' }
+            Move-Item -LiteralPath $resolved -Destination $preserved -ErrorAction Stop
+        }
         Expand-Archive -Path $zipPath -DestinationPath $destDir -Force
         Remove-Item $zipPath -Force -ErrorAction SilentlyContinue
 

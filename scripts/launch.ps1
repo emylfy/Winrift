@@ -1,4 +1,4 @@
-# PS7 requirement gate — auto-install portable and relaunch in pwsh.
+﻿# PS7 requirement gate — auto-install portable and relaunch in pwsh.
 # launch.ps1 runs via irm|iex so $PSScriptRoot is empty — inline the installer.
 # Portable zip goes to %LOCALAPPDATA%\Winrift\pwsh — no admin needed.
 if ($PSVersionTable.PSVersion.Major -lt 7) {
@@ -15,7 +15,7 @@ if ($PSVersionTable.PSVersion.Major -lt 7) {
         Write-Host ""
         Write-Host "  Winrift requires PowerShell 7. Downloading portable (~50MB)..." -ForegroundColor Yellow
         $arch = if ([Environment]::Is64BitOperatingSystem) {
-            if ($env:PROCESSOR_ARCHITECTURE -eq "ARM64") { "arm64" } else { "x64" }
+            if ($env:PROCESSOR_ARCHITECTURE -eq "ARM64" -or $env:PROCESSOR_ARCHITEW6432 -eq "ARM64") { "arm64" } else { "x64" }
         } else { "x86" }
         # Resolve latest stable PS7 from GitHub; fall back to a known-good pin
         # if the API is unreachable so the bootstrap never breaks over time.
@@ -30,7 +30,8 @@ if ($PSVersionTable.PSVersion.Major -lt 7) {
         $destDir = "$env:LOCALAPPDATA\Winrift\pwsh"
         try {
             Write-Host "  Downloading..." -ForegroundColor Cyan
-            Start-BitsTransfer -Source $zipUrl -Destination $zipPath -DisplayName "PowerShell 7" -ErrorAction Stop
+            try { Start-BitsTransfer -Source $zipUrl -Destination $zipPath -DisplayName "PowerShell 7" -ErrorAction Stop }
+            catch { Invoke-WebRequest -Uri $zipUrl -OutFile $zipPath -UseBasicParsing -TimeoutSec 180 -ErrorAction Stop }
             Write-Host "  Extracting..." -ForegroundColor Cyan
             $ProgressPreference = 'SilentlyContinue'
             if (Test-Path $destDir) { Remove-Item $destDir -Recurse -Force -ErrorAction SilentlyContinue }
@@ -159,8 +160,10 @@ Write-Host @"
 $winriftPath = "$extractPath\Winrift.ps1"
 $pwshPath = (Get-Process -Id $PID).Path
 if (-not $pwshPath -or -not (Test-Path $pwshPath)) { $pwshPath = 'pwsh.exe' }
-if (Get-Command wt -ErrorAction SilentlyContinue) {
-    wt $pwshPath -NoExit -ExecutionPolicy Bypass -File $winriftPath
-} else {
-    Start-Process $pwshPath -ArgumentList "-NoExit", "-ExecutionPolicy", "Bypass", "-File", $winriftPath
-}
+# Preserve the complete path through ShellExecute, including portable hosts.
+$inner='& '''+$winriftPath.Replace("'","''")+''''
+$innerEncoded=[Convert]::ToBase64String([Text.Encoding]::Unicode.GetBytes($inner))
+$bridge='& '''+$pwshPath.Replace("'","''")+''' -NoProfile -ExecutionPolicy Bypass -EncodedCommand '''+$innerEncoded+''''
+$bridgeEncoded=[Convert]::ToBase64String([Text.Encoding]::Unicode.GetBytes($bridge))
+$inbox=Join-Path $env:SystemRoot 'System32\WindowsPowerShell\v1.0\powershell.exe'
+Start-Process -FilePath $inbox -ArgumentList @('-NoProfile','-EncodedCommand',$bridgeEncoded) -Verb RunAs

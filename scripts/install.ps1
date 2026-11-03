@@ -4,8 +4,11 @@ $startMenuPath = [System.Environment]::GetFolderPath('Programs')
 $shortcutPath = Join-Path -Path $startMenuPath -ChildPath "Winrift.lnk"
 $wshShell = New-Object -ComObject WScript.Shell
 $shortcut = $wshShell.CreateShortcut($shortcutPath)
-$shortcut.TargetPath = "pwsh.exe"
+$shortcut.TargetPath = Join-Path $env:SystemRoot 'System32\WindowsPowerShell\v1.0\powershell.exe'
 $shortcut.Arguments = '-NoProfile -ExecutionPolicy Bypass -Command "irm https://raw.githubusercontent.com/emylfy/winrift/main/scripts/launch.ps1 | iex"'
+if($PSScriptRoot -and (Test-Path -LiteralPath (Join-Path $PSScriptRoot 'Start-Winrift.ps1'))){
+    $shortcut.Arguments='-NoProfile -ExecutionPolicy Bypass -File "'+(Join-Path $PSScriptRoot 'Start-Winrift.ps1')+'"'
+}
 $shortcut.Description = "Launch Winrift"
 $shortcut.WorkingDirectory = $env:USERPROFILE
 

@@ -30,33 +30,16 @@ if ($PSVersionTable.PSVersion.Major -lt 7) {
         if (-not $pwsh) { exit 1 }
     }
 
-    # Launch Main.ps1 in pwsh with admin elevation
-    $mainPath = "$PSScriptRoot\scripts\Main.ps1"
-    $extraArgs = @()
-    if ($DryRun)    { $extraArgs += "-DryRun" }
-    if ($NoConfirm) { $extraArgs += "-NoConfirm" }
-    if ($Uninstall) { $extraArgs += "-Uninstall" }
-    if ($Apply)     { $extraArgs += @("-Apply", $Apply) }
-
-    $pwshArgString = "-ExecutionPolicy Bypass -File `"$mainPath`" $($extraArgs -join ' ')".Trim()
-
-    if ($isAdmin) {
-        $hasWT = [bool](Get-Command wt.exe -ErrorAction SilentlyContinue)
-        if ($hasWT) {
-            & wt.exe $pwsh $pwshArgString.Split(' ')
-        } else {
-            & $pwsh @($pwshArgString.Split(' '))
-        }
-        exit $LASTEXITCODE
-    }
-
-    $hasWT = [bool](Get-Command wt.exe -ErrorAction SilentlyContinue)
-    if ($hasWT) {
-        Start-Process "wt.exe" -ArgumentList "$pwsh $pwshArgString" -Verb RunAs
-    } else {
-        Start-Process $pwsh -ArgumentList $pwshArgString -Verb RunAs
-    }
-    exit 0
+    # Preserve argument boundaries. Main.ps1 handles elevation using this exact
+    # PowerShell executable, including portable installations outside PATH.
+    $mainPath = Join-Path $PSScriptRoot 'scripts\Main.ps1'
+    $forwardArgs = @('-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', $mainPath)
+    if ($DryRun)    { $forwardArgs += '-DryRun' }
+    if ($NoConfirm) { $forwardArgs += '-NoConfirm' }
+    if ($Uninstall) { $forwardArgs += '-Uninstall' }
+    if ($Apply)     { $forwardArgs += @('-Apply', $Apply) }
+    & $pwsh @forwardArgs
+    exit $LASTEXITCODE
 }
 
 # Already running PS7+ — call Main.ps1 directly in the same process
