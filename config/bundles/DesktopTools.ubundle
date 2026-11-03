@@ -1,0 +1,41 @@
+{
+  "export_version": 3,
+  "packages": [
+    {
+      "Id": "glzr-io.glazewm",
+      "Name": "GlazeWM",
+      "ManagerName": "Winget",
+      "Source": "winget"
+    },
+    {
+      "Id": "glzr-io.zebar",
+      "Name": "Zebar",
+      "ManagerName": "Winget",
+      "Source": "winget"
+    },
+    {
+      "Id": "AmN.yasb",
+      "Name": "YASB",
+      "ManagerName": "Winget",
+      "Source": "winget"
+    },
+    {
+      "Id": "Flow-Launcher.Flow-Launcher",
+      "Name": "Flow Launcher",
+      "ManagerName": "Winget",
+      "Source": "winget"
+    },
+    {
+      "Id": "RamenSoftware.Windhawk",
+      "Name": "Windhawk",
+      "ManagerName": "Winget",
+      "Source": "winget"
+    },
+    {
+      "Id": "Rainmeter.Rainmeter",
+      "Name": "Rainmeter",
+      "ManagerName": "Winget",
+      "Source": "winget"
+    }
+  ]
+}

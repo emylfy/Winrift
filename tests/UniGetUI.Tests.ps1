@@ -31,7 +31,7 @@ Describe 'Get-InstalledAndBrokenIds' {
         $broken.Contains('Git.Git')    | Should -BeFalse
     }
 
-    It 'classifies a package with Unknown version as both installed and broken' {
+    It 'classifies a package with Unknown version as installed without inferring breakage' {
         Mock winget {
             return @(
                 'Name                      Id                           Version',
@@ -41,7 +41,7 @@ Describe 'Get-InstalledAndBrokenIds' {
         }
         $installed, $broken = Get-InstalledAndBrokenIds
         $installed.Contains('Broken.App') | Should -BeTrue
-        $broken.Contains('Broken.App')    | Should -BeTrue
+        $broken.Contains('Broken.App')    | Should -BeFalse
     }
 
     It 'ignores lines that do not contain a package ID pattern' {
