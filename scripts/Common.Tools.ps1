@@ -123,6 +123,7 @@ function Invoke-Tool {
         return $false
     }
 
+    if ($env:WINRIFT_DRY_RUN -eq '1') { Write-Log "[DRY-RUN] External tool handoff: $($tool.name)"; return $false }
     $effectiveType = $tool.type
     if ($tool.interactive -eq $true -and $effectiveType -eq "irm") { $effectiveType = "irm-interactive" }
 
@@ -222,10 +223,11 @@ function Install-WingetPackage {
         [switch]$ShowProgress
     )
 
+    if ($env:WINRIFT_DRY_RUN -eq '1') { Write-Log "[DRY-RUN] Install $PackageId"; return $false }
     if (-not (Assert-WingetAvailable)) { return $false }
 
     try {
-        $wingetArgs = @($PackageId, "--accept-package-agreements", "--accept-source-agreements", "--disable-interactivity")
+        $wingetArgs = @('--id', $PackageId, '--exact', "--accept-package-agreements", "--accept-source-agreements", "--disable-interactivity")
         if (-not $ShowProgress) { $wingetArgs += "--silent" }
         if ($Source -ne "") { $wingetArgs += @("--source", $Source) }
 

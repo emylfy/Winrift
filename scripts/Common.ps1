@@ -1,29 +1,15 @@
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
 $ProgressPreference = 'SilentlyContinue'
 
-# ANSI color palette. Truecolor (24-bit) when the terminal supports it
-# (Windows Terminal, VS Code, any COLORTERM=truecolor terminal); falls back
-# to 256-color for legacy ConHost / cmd sessions.
-$Bold  = "$([char]0x1b)[1m"
-$Reset = "$([char]0x1b)[0m"
-$_tc = [bool]$env:WT_SESSION -or ($env:COLORTERM -match 'truecolor|24bit') -or ($env:TERM_PROGRAM -eq 'vscode')
-if ($_tc) {
-    $Dim    = "$([char]0x1b)[38;2;90;90;100m"
-    $Red    = "$([char]0x1b)[38;2;232;65;65m"
-    $Green  = "$([char]0x1b)[38;2;80;200;120m"
-    $Yellow = "$([char]0x1b)[38;2;250;200;75m"
-    $Cyan   = "$([char]0x1b)[38;2;0;175;255m"
-    $Ice    = "$([char]0x1b)[38;2;200;230;255m"
-} else {
-    $Dim    = "$([char]0x1b)[38;5;240m"
-    $Red    = "$([char]0x1b)[0;31m"
-    $Green  = "$([char]0x1b)[0;32m"
-    $Yellow = "$([char]0x1b)[0;33m"
-    $Cyan   = "$([char]0x1b)[38;5;39m"
-    $Ice    = "$([char]0x1b)[38;5;195m"
-}
-Remove-Variable _tc
-
+# Match Macrift's dark renderer palette; foreground/background belong to the host.
+$Bold   = "$([char]0x1b)[1m"
+$Dim    = "$([char]0x1b)[2m"
+$Reset  = "$([char]0x1b)[0m"
+$Red    = "$([char]0x1b)[0;31m"
+$Green  = "$([char]0x1b)[0;32m"
+$Yellow = "$([char]0x1b)[0;33m"
+$Cyan   = "$([char]0x1b)[38;5;39m"
+$Ice    = "$([char]0x1b)[38;5;195m"
 # Winget exit code for "package already installed"
 $WINGET_ALREADY_INSTALLED = -1978335189
 
@@ -193,5 +179,8 @@ function Initialize-Logging {
 
 # Sub-modules — dot-sourced so all functions share the caller's scope
 . "$PSScriptRoot\Common.TUI.ps1"
+. "$PSScriptRoot\Common.State.ps1"
+. "$PSScriptRoot\Common.Files.ps1"
+. "$PSScriptRoot\Common.SystemActions.ps1"
 . "$PSScriptRoot\Common.Registry.ps1"
 . "$PSScriptRoot\Common.Tools.ps1"

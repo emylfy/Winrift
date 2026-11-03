@@ -1,6 +1,10 @@
 BeforeAll {
+    $script:PreviousStateRoot = $env:WINRIFT_STATE_ROOT
+    $env:WINRIFT_STATE_ROOT = Join-Path $TestDrive 'state'
     . (Join-Path (Join-Path (Split-Path $PSScriptRoot -Parent) 'scripts') 'Common.ps1')
+    $script:TweakBackupDir = Join-Path $TestDrive 'tweaks'
 }
+AfterAll { $env:WINRIFT_STATE_ROOT = $script:PreviousStateRoot }
 
 Describe 'Color variables' {
     It '<name> is defined and non-empty' -ForEach @(
@@ -116,6 +120,8 @@ Describe 'Tweak Backup System' {
     }
 
     It 'Restore-TweakBackup handles missing backup directory gracefully' -Skip:(-not $IsWindows -or $env:CI) {
+        $script:TweakBackupDir = Join-Path $TestDrive 'missing'
+        Mock Wait-ForUser { }
         { Restore-TweakBackup 6>&1 | Out-Null } | Should -Not -Throw
     }
 }
