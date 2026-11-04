@@ -154,193 +154,113 @@ irm https://raw.githubusercontent.com/emylfy/winrift/main/scripts/apply.ps1 | ie
     $xml.Save($XmlPath)
 }
 
+function Add-WinriftSavedSetupToMedia {
+    param([string]$MediaRoot,[string]$SetupPath,[ValidateSet('amd64','arm64','x86')][string]$Architecture)
+    . "$PSScriptRoot\..\profile\Profile.ps1"
+    $setup=Read-WinriftSetup $SetupPath
+    Test-WinriftSetupContent $setup
+    $repository=Split-Path (Split-Path $PSScriptRoot -Parent) -Parent
+    $payload=Join-Path $MediaRoot 'sources\$OEM$\$$\Setup\Scripts\Winrift'
+    [IO.Directory]::CreateDirectory($payload)|Out-Null
+    foreach($name in @('Winrift.ps1','scripts','modules','config')){Copy-Item -LiteralPath (Join-Path $repository $name) -Destination $payload -Recurse -Force -ErrorAction Stop}
+    Write-WinriftAtomicJson -Path (Join-Path $payload 'setup.json') -Value $setup
+    $answerPath=Join-Path $MediaRoot 'autounattend.xml'
+    $xml=[Xml.XmlDocument]::new();$xml.XmlResolver=$null
+    if(Test-Path -LiteralPath $answerPath){$xml.Load($answerPath)}else{$xml.LoadXml('<unattend xmlns="urn:schemas-microsoft-com:unattend" />')}
+    $nsUri='urn:schemas-microsoft-com:unattend';$wcm='http://schemas.microsoft.com/WMIConfig/2002/State'
+    $ns=[Xml.XmlNamespaceManager]::new($xml.NameTable);$ns.AddNamespace('u',$nsUri)
+    $settings=$xml.SelectSingleNode('/u:unattend/u:settings[@pass="oobeSystem"]',$ns)
+    if(-not $settings){$settings=$xml.CreateElement('settings',$nsUri);$settings.SetAttribute('pass','oobeSystem');[void]$xml.DocumentElement.AppendChild($settings)}
+    $component=$settings.SelectSingleNode("u:component[@name='Microsoft-Windows-Shell-Setup' and @processorArchitecture='$Architecture']",$ns)
+    if(-not $component){
+        $component=$xml.CreateElement('component',$nsUri)
+        foreach($pair in @{name='Microsoft-Windows-Shell-Setup';processorArchitecture=$Architecture;publicKeyToken='31bf3856ad364e35';language='neutral';versionScope='nonSxS'}.GetEnumerator()){$component.SetAttribute($pair.Key,$pair.Value)}
+        [void]$settings.AppendChild($component)
+    }
+    $commands=$component.SelectSingleNode('u:FirstLogonCommands',$ns)
+    if(-not $commands){$commands=$xml.CreateElement('FirstLogonCommands',$nsUri);[void]$component.AppendChild($commands)}
+    $maximum=0
+    foreach($order in $commands.SelectNodes('u:SynchronousCommand/u:Order',$ns)){$number=0;if([int]::TryParse($order.InnerText,[ref]$number)){$maximum=[math]::Max($maximum,$number)}}
+    $command=$xml.CreateElement('SynchronousCommand',$nsUri);$command.SetAttribute('action',$wcm,'add')
+    $order=$xml.CreateElement('Order',$nsUri);$order.InnerText=[string]($maximum+1);[void]$command.AppendChild($order)
+    $line=$xml.CreateElement('CommandLine',$nsUri)
+    $line.InnerText='cmd.exe /d /c powershell.exe -NoProfile -ExecutionPolicy Bypass -File "%WINDIR%\Setup\Scripts\Winrift\Winrift.ps1" -Apply "%WINDIR%\Setup\Scripts\Winrift\setup.json" -NoConfirm'
+    [void]$command.AppendChild($line);[void]$commands.AppendChild($command)
+    $xml.Save($answerPath)
+}
+
 function Build-WinriftISO {
-    $oscdimg = Get-OscdimgPath
-    if (-not $oscdimg) {
-        Wait-ForUser
-        return
+    param([Parameter(Mandatory)][string]$ISOPath,[string]$AnswerFile,[string]$SetupPath,[Parameter(Mandatory)][string]$OutputPath)
+    if(-not(Test-Path -LiteralPath $ISOPath -PathType Leaf)){throw 'Select an existing Windows ISO.'}
+    if(Test-Path -LiteralPath $OutputPath){throw 'The output file already exists. Choose a new output path.'}
+    if($SetupPath){. "$PSScriptRoot\..\profile\Profile.ps1";$setup=Read-WinriftSetup $SetupPath;Test-WinriftSetupContent $setup}
+    if($AnswerFile){$xml=[Xml.XmlDocument]::new();$xml.XmlResolver=$null;$xml.Load($AnswerFile)}
+    if($env:WINRIFT_DRY_RUN -eq '1'){Write-Log "[DRY-RUN] Build $ISOPath -> $OutputPath; answer file: $AnswerFile; saved setup: $SetupPath";return}
+    $oscdimg=Get-OscdimgPath
+    if(-not $oscdimg){return}
+    $scratchParent=Join-Path ([IO.Path]::GetTempPath()) 'Winrift'
+    $scratch=Join-Path $scratchParent ('iso-'+[guid]::NewGuid().ToString('N'))
+    $mountedHere=$false
+    try{
+        [IO.Directory]::CreateDirectory($scratch)|Out-Null
+        $image=Get-DiskImage -ImagePath $ISOPath -ErrorAction SilentlyContinue
+        if(-not $image -or -not $image.Attached){$image=Mount-DiskImage -ImagePath $ISOPath -PassThru -ErrorAction Stop;$mountedHere=$true}
+        $volume=$image|Get-Volume|Select-Object -First 1
+        if(-not $volume.DriveLetter){throw 'Mounted ISO has no accessible volume.'}
+        $drive="$($volume.DriveLetter):\"
+        $install=Join-Path $drive 'sources\install.wim'
+        if(-not(Test-Path -LiteralPath $install)){$install=Join-Path $drive 'sources\install.esd'}
+        if(-not(Test-Path -LiteralPath $install)){throw 'The ISO contains no Windows install.wim or install.esd.'}
+        $imageInfo=Get-WindowsImage -ImagePath $install -Index 1 -ErrorAction Stop
+        $architecture=switch([int]$imageInfo.Architecture){9{'amd64'}12{'arm64'}0{'x86'}default{throw 'Unsupported image architecture.'}}
+        Get-ChildItem -LiteralPath $drive -Force|Copy-Item -Destination $scratch -Recurse -Force -ErrorAction Stop
+        if($AnswerFile){Copy-Item -LiteralPath $AnswerFile -Destination (Join-Path $scratch 'autounattend.xml') -Force -ErrorAction Stop}
+        if($SetupPath){Add-WinriftSavedSetupToMedia -MediaRoot $scratch -SetupPath $SetupPath -Architecture $architecture}
+        $bios=Join-Path $scratch 'boot\etfsboot.com';$efi=Join-Path $scratch 'efi\microsoft\boot\efisys.bin'
+        if(-not(Test-Path -LiteralPath $efi)){throw 'UEFI boot image is missing; refusing to produce an unverified boot layout.'}
+        $boot=if(Test-Path -LiteralPath $bios){"-bootdata:2#p0,e,b`"$bios`"#pEF,e,b`"$efi`""}else{"-bootdata:1#pEF,e,b`"$efi`""}
+        $PSNativeCommandArgumentPassing='Legacy'
+        & $oscdimg '-m' '-o' '-u2' '-udfver102' $boot $scratch $OutputPath
+        if($LASTEXITCODE -ne 0 -or -not(Test-Path -LiteralPath $OutputPath)){throw "oscdimg failed (exit code $LASTEXITCODE)."}
+        Write-Log "ISO file created: $OutputPath. Boot/install cycle has not been verified." -Level SUCCESS
+    }finally{
+        if($mountedHere){Dismount-DiskImage -ImagePath $ISOPath -ErrorAction SilentlyContinue|Out-Null}
+        $resolved=[IO.Path]::GetFullPath($scratch);$boundary=[IO.Path]::GetFullPath($scratchParent).TrimEnd('\')+'\'
+        if($resolved.StartsWith($boundary,[StringComparison]::OrdinalIgnoreCase) -and (Test-Path -LiteralPath $resolved)){Remove-Item -LiteralPath $resolved -Recurse -Force}
     }
-
-    # Pick ISO
-    Write-Log -Message "Select a Windows 11 ISO file..." -Level INFO -LogFile $script:LogFile
-    $isoPath = Select-ISOFile
-    if (-not $isoPath) {
-        Write-Log -Message "No ISO selected." -Level WARNING -LogFile $script:LogFile
-        Wait-ForUser
-        return
-    }
-    Write-Log -Message "Selected: $isoPath" -Level INFO -LogFile $script:LogFile
-
-    # Prepare scratch directory
-    $scratchDir = Join-Path $env:TEMP "winrift-iso"
-    if (Test-Path $scratchDir) {
-        Remove-Item $scratchDir -Recurse -Force | Out-Null
-    }
-    New-Item -ItemType Directory -Path $scratchDir -Force | Out-Null
-
-    $mountResult = $null
-    try {
-        # Mount ISO
-        Write-Log -Message "Mounting ISO..." -Level INFO -LogFile $script:LogFile
-        $mountResult = Mount-DiskImage -ImagePath $isoPath -PassThru
-        $driveLetter = ($mountResult | Get-Volume | Select-Object -First 1).DriveLetter
-
-        if (-not $driveLetter) {
-            Write-Log -Message "Failed to mount ISO." -Level ERROR -LogFile $script:LogFile
-            Wait-ForUser
-            return
-        }
-        $drivePath = "${driveLetter}:\"
-        Write-Log -Message "Mounted at $drivePath" -Level SUCCESS -LogFile $script:LogFile
-
-        # Validate this is a Windows installation ISO before copying multi-GB content
-        $hasInstallWim = (Test-Path "${drivePath}sources\install.wim") -or (Test-Path "${drivePath}sources\install.esd")
-        if (-not $hasInstallWim) {
-            Write-Log -Message "The selected ISO does not appear to be a Windows 11 installation ISO (missing sources\install.wim or sources\install.esd). Please select a valid Windows 11 ISO." -Level ERROR -LogFile $script:LogFile
-            Wait-ForUser
-            return
-        }
-
-        # Copy ISO contents
-        Write-Log -Message "Copying ISO contents (this may take a few minutes)..." -Level INFO -LogFile $script:LogFile
-        Copy-Item -Path "$drivePath*" -Destination $scratchDir -Recurse -Force | Out-Null
-        Write-Log -Message "Copy complete." -Level SUCCESS -LogFile $script:LogFile
-
-        # Choose autounattend.xml
-        $defaultXml = Join-Path $scriptRoot "config\autounattend.xml"
-
-        $xmlChoice = Show-InteractiveMenu -Title "Answer File (autounattend.xml)" -Items @(
-            "This file automates Windows 11 installation:",
-            "  - Removes 25 bloatware apps (Cortana, Teams, News...)",
-            "  - Disables telemetry, Copilot, and OneDrive auto-install",
-            "  - Cleans taskbar, shows file extensions, opens to This PC",
-            "  - Bypasses TPM/SecureBoot/RAM checks",
-            "  - Creates Winrift desktop shortcut",
-            "---",
-            "1 › Use Winrift default answer file",
-            "2 › Use your own autounattend.xml",
-            "3 › Cancel"
-        )
-
-        $xmlSource = $null
-        switch ($xmlChoice) {
-            "1" {
-                if (-not (Test-Path $defaultXml)) {
-                    Write-Log -Message "Default autounattend.xml not found at $defaultXml" -Level ERROR -LogFile $script:LogFile
-                    Wait-ForUser
-                    return
-                }
-                $xmlSource = $defaultXml
-                Write-Log -Message "Using Winrift default: $defaultXml" -Level INFO -LogFile $script:LogFile
-            }
-            "2" {
-                Add-Type -AssemblyName System.Windows.Forms
-                $xmlDialog = New-Object System.Windows.Forms.OpenFileDialog
-                $xmlDialog.Title = "Select your autounattend.xml"
-                $xmlDialog.Filter = "XML files (*.xml)|*.xml"
-                if ($xmlDialog.ShowDialog() -eq "OK") {
-                    $xmlSource = $xmlDialog.FileName
-                    Write-Log -Message "Using custom: $xmlSource" -Level INFO -LogFile $script:LogFile
-                } else {
-                    Write-Log -Message "No file selected." -Level WARNING -LogFile $script:LogFile
-                    Wait-ForUser
-                    return
-                }
-            }
-            default { return }
-        }
-
-        # Validate XML well-formedness before copying — a malformed autounattend.xml
-        # produces a working ISO that fails silently at Windows Setup time.
-        try {
-            $null = [xml](Get-Content $xmlSource -Raw -ErrorAction Stop)
-        } catch {
-            Write-Log -Message "autounattend.xml is not valid XML: $($_.Exception.Message)" -Level ERROR -LogFile $script:LogFile
-            Wait-ForUser
-            return
-        }
-
-        Copy-Item -Path $xmlSource -Destination "$scratchDir\autounattend.xml" -Force | Out-Null
-        Write-Log -Message "Embedded autounattend.xml into ISO root." -Level SUCCESS -LogFile $script:LogFile
-
-        # Optionally bake a Winrift profile so the installed machine configures
-        # itself at first logon (system + apps + configs) with zero clicks.
-        $bakeChoice = Show-InteractiveMenu -Title "Bake a Winrift profile?" -Items @(
-            "Embed a profile so the new machine self-configures at first logon:",
-            "  tweaks, privacy, apps and configs applied in one pass, no clicks.",
-            "---",
-            "Y › Pick a profile to bake in",
-            "N › No, just the answer file"
-        )
-        if ($bakeChoice -eq "Y") {
-            $profileFile = Select-ProfileFile
-            if ($profileFile) {
-                try {
-                    Add-WinriftProfileToAnswerFile -XmlPath "$scratchDir\autounattend.xml" -ProfilePath $profileFile
-                    Write-Log -Message "Baked profile into answer file: $profileFile" -Level SUCCESS -LogFile $script:LogFile
-                } catch {
-                    Write-Log -Message "Failed to bake profile: $($_.Exception.Message). Building ISO without it." -Level WARNING -LogFile $script:LogFile
-                }
-            } else {
-                Write-Log -Message "No profile selected — building ISO without a baked profile." -Level INFO -LogFile $script:LogFile
-            }
-        }
-
-        # Build ISO
-        $outputDir = [Environment]::GetFolderPath("Desktop")
-        $outputPath = Join-Path $outputDir "winrift-win11.iso"
-
-        # Avoid overwriting existing file
-        $counter = 1
-        while (Test-Path $outputPath) {
-            $outputPath = Join-Path $outputDir "winrift-win11-$counter.iso"
-            $counter++
-        }
-
-        Write-Log -Message "Building ISO (this may take several minutes)..." -Level INFO -LogFile $script:LogFile
-
-        $bootBios = "$scratchDir\boot\etfsboot.com"
-        $bootEfi = "$scratchDir\efi\microsoft\boot\efisys.bin"
-        # PS 7.3+ Standard argument passing re-wraps args containing embedded
-        # quotes, producing ""path"" which oscdimg rejects. Force Legacy for
-        # this call so the -bootdata: quoting reaches oscdimg intact.
-        $PSNativeCommandArgumentPassing = 'Legacy'
-        & $oscdimg -m -o -u2 -udfver102 -bootdata:"2#p0,e,b`"$bootBios`"#pEF,e,b`"$bootEfi`"" "$scratchDir" "$outputPath"
-
-        if ($LASTEXITCODE -eq 0) {
-            $sizeMB = [math]::Round((Get-Item $outputPath).Length / 1MB)
-            Write-Log -Message "ISO created: $outputPath ($sizeMB MB)" -Level SUCCESS -LogFile $script:LogFile
-        }
-        else {
-            Write-Log -Message "oscdimg failed with exit code $LASTEXITCODE." -Level ERROR -LogFile $script:LogFile
-        }
-    }
-    catch {
-        Write-Log -Message "Error: $($_.Exception.Message)" -Level ERROR -LogFile $script:LogFile
-    }
-    finally {
-        # Unmount ISO
-        if ($mountResult) {
-            Dismount-DiskImage -ImagePath $isoPath -ErrorAction SilentlyContinue | Out-Null
-            Write-Log -Message "ISO unmounted." -Level INFO -LogFile $script:LogFile
-        }
-
-        # Cleanup scratch directory
-        if (Test-Path $scratchDir) {
-            Write-Log -Message "Cleaning up temporary files..." -Level INFO -LogFile $script:LogFile
-            Remove-Item $scratchDir -Recurse -Force -ErrorAction SilentlyContinue | Out-Null
-        }
-    }
-
-    Wait-ForUser
 }
 
-if ($MyInvocation.InvocationName -ne '.') {
-    Clear-Host
-    Invoke-MenuLoop -Title "Winrift ISO Builder" -Items @(
-        "1 › Build ISO - embed autounattend.xml into Windows 11 ISO",
-        "2 › Back"
+function Show-WinriftMediaMenu {
+    $media=@{ISOPath=$null;AnswerFile=$null;SetupPath=$null;OutputPath=$null}
+    Invoke-MenuLoop -Title 'Create Windows Installation Media' -Items @(
+        '1 › Select Windows ISO               ›','2 › Windows Installation Options     ›',
+        '3 › Include Saved Setup              ›','4 › Review & Build                   ›','---','0 › Back'
     ) -Actions @{
-        "1" = { Build-WinriftISO }
-    } -ExitKey "2"
+        '1'={$path=Select-ISOFile;if($path){$media.ISOPath=$path}}
+        '2'={
+            $choice=Show-InteractiveMenu -Title 'Windows Installation Options' -Items @('S › Standard interactive Windows Setup','C › Choose a custom answer file','---','B › Back')
+            if($choice -eq 'S'){$media.AnswerFile=$null}
+            elseif($choice -eq 'C'){$path=Read-Host 'Custom autounattend.xml (full path)';if($path){$xml=[Xml.XmlDocument]::new();$xml.XmlResolver=$null;$xml.Load($path);$media.AnswerFile=$path}}
+        }
+        '3'={
+            $choice=Show-InteractiveMenu -Title 'Include Saved Setup' -Items @('Y › Choose a saved setup','N › Do not include a setup','B › Back')
+            if($choice -eq 'N'){$media.SetupPath=$null}
+            elseif($choice -eq 'Y'){
+                $path=Select-ProfileFile
+                if($path){. "$PSScriptRoot\..\profile\Profile.ps1";$setup=Read-WinriftSetup $path;Test-WinriftSetupContent $setup;$media.SetupPath=$path}
+            }
+        }
+        '4'={
+            if(-not $media.ISOPath){Write-Log 'Select Windows ISO first.';Wait-ForUser;return}
+            $path=Read-Host 'New output ISO file (full path)'
+            if(-not $path){return};$media.OutputPath=$path
+            $rows=@("Source ISO: $($media.ISOPath)","Output: $path",$(if($media.AnswerFile){"Custom installation options: $($media.AnswerFile)"}else{'Standard interactive Windows installation.'}))
+            if($media.SetupPath){. "$PSScriptRoot\..\profile\Profile.ps1";$setup=Read-WinriftSetup $media.SetupPath;$rows+=@(Get-WinriftSetupPreview $setup @('Windows','Apps','Configurations'));$rows+='The saved setup applies at first logon using the included Winrift code. App/PowerShell downloads may require network access.'}
+            $rows+='Full installation validation remains separate from ISO creation.'
+            $choice=Show-InteractiveMenu -Title 'Review & Build' -Items ($rows+@('---','Y › Build ISO','N › Back'))
+            if($choice -eq 'Y'){try{Build-WinriftISO @media}catch{Write-Log "ISO build failed: $($_.Exception.Message)" -Level ERROR};Wait-ForUser}
+        }
+    } -ExitKey '0' -HideKeys
 }
+
+if($MyInvocation.InvocationName -ne '.'){Show-WinriftMediaMenu}

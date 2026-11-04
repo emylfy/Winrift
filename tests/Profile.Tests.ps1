@@ -8,10 +8,10 @@ BeforeAll {
 Describe 'Read-WinriftProfile' {
     It 'parses the bundled example profile' {
         $p = Read-WinriftProfile -Path $script:examplePath
-        $p.name | Should -Be 'example'
-        @($p.tweaks).Count | Should -BeGreaterThan 0
-        @($p.apps).Count | Should -BeGreaterThan 0
-        @($p.configs) | Should -Contain 'terminal'
+        $p.kind | Should -Be 'Winrift.Setup'
+        @($p.sections.Windows).Count | Should -BeGreaterThan 0
+        @($p.sections.Apps).Count | Should -BeGreaterThan 0
+        @($p.sections.Configurations).Id | Should -Contain 'terminal'
     }
 
     It 'throws on a missing file' {
@@ -41,12 +41,12 @@ Describe 'Invoke-DesiredStateApply (dry-run)' {
     BeforeAll { $env:WINRIFT_DRY_RUN = '1' }
     AfterAll { Remove-Item Env:\WINRIFT_DRY_RUN -ErrorAction SilentlyContinue }
 
-    It 'returns the count of entries and writes nothing in dry-run' {
+    It 'does not count previewed entries as applied and writes nothing in dry-run' {
         $entries = @(
             [PSCustomObject]@{ Path = 'HKCU:\Software\WinriftTestDoesNotExist'; Name = 'X'; Value = 1; Type = 'DWord'; Category = 'Test' }
         )
         $count = Invoke-DesiredStateApply -Entries $entries
-        $count | Should -Be 1
+        $count | Should -Be 0
         Test-Path 'HKCU:\Software\WinriftTestDoesNotExist' | Should -BeFalse
     }
 }
@@ -69,7 +69,7 @@ Describe 'Invoke-WinriftProfileApply (dry-run)' {
             apps    = @()
             configs = @()
         }
-        Invoke-WinriftProfileApply -ProfileObject $p 6>&1 | Out-Null
+        { Invoke-WinriftProfileApply -ProfileObject $p 6>&1 | Out-Null } | Should -Throw
         Test-Path $bogus | Should -BeFalse
     }
 }
