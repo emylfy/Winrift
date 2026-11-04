@@ -1,34 +1,15 @@
-$Host.UI.RawUI.WindowTitle = "Winrift - Uninstall"
-
-Write-Host ""
-Write-Host "  Uninstalling Winrift..." -ForegroundColor Yellow
-Write-Host ""
-
-$removed = 0
-
-$shortcut = Join-Path ([Environment]::GetFolderPath('StartMenu')) "Programs\Winrift.lnk"
-if (Test-Path $shortcut) {
-    Remove-Item $shortcut -Force
-    Write-Host "  Removed Start Menu shortcut" -ForegroundColor Green
-    $removed++
-}
-
-$dataDir = Join-Path $env:LOCALAPPDATA "Winrift"
-if (Test-Path $dataDir) {
-    Remove-Item $dataDir -Recurse -Force
-    Write-Host "  Removed data directory: $dataDir" -ForegroundColor Green
-    $removed++
-}
-
-try {
-    Unregister-ScheduledTask -TaskName "Winrift-DriftCheck" -Confirm:$false -ErrorAction Stop
-    Write-Host "  Removed drift check scheduled task" -ForegroundColor Green
-    $removed++
-} catch { $null = $_ }
-
-if ($removed -eq 0) {
-    Write-Host "  Nothing to remove — Winrift is not installed." -ForegroundColor DarkGray
-} else {
-    Write-Host ""
-    Write-Host "  Winrift uninstalled." -ForegroundColor Green
-}
+. "$PSScriptRoot\Common.ps1"
+$choice=Show-InteractiveMenu -Title 'Uninstall Winrift' -Items @(
+    'Remove the Start Menu shortcut and Winrift-DriftCheck task, if present.',
+    'Keep all backups, history, saved setups, logs and source files.',
+    'Uninstall does not undo system changes.', '---','Y › Uninstall','N › Back'
+)
+if($choice -ne 'Y'){return}
+if($env:WINRIFT_DRY_RUN -eq '1'){Write-Log '[DRY-RUN] Uninstall shortcut and Winrift task; retain backups.';return}
+$shortcut=Join-Path ([Environment]::GetFolderPath('Programs')) 'Winrift.lnk'
+try{
+    if(Test-Path -LiteralPath $shortcut){Remove-Item -LiteralPath $shortcut -ErrorAction Stop}
+    $task=Get-ScheduledTask -TaskPath '\' -TaskName 'Winrift-DriftCheck' -ErrorAction SilentlyContinue
+    if($task){Unregister-ScheduledTask -TaskPath '\' -TaskName 'Winrift-DriftCheck' -Confirm:$false -ErrorAction Stop}
+    Write-Log 'Uninstall operations completed. Backups and history retained.'
+}catch{Write-Log "Uninstall incomplete: $($_.Exception.Message)" -Level ERROR}

@@ -16,545 +16,139 @@ function _Exit-RawUI {
     try { [Console]::CursorVisible = $State.Visible } catch { $null = $_ }
 }
 
-function _Draw-InteractiveBox {
-    # Renders a box frame seamlessly without flicker.
-    # Builds the entire frame as a single string in a StringBuilder, then writes
-    # it in one call wrapped in BSU (synchronized output ANSI codes), so the
-    # terminal renders the new frame atomically. On non-first frames, the cursor
-    # is repositioned upward by $PrevLines lines and each line ends with `e[K
-    # so leftover content from a longer prior frame is cleared cleanly.
-    #
-    # Viewport scrolling: if the scrollable portion of the item list doesn't
-    # fit on the terminal, a fixed-height viewport scrolls through the items
-    # with ▲/▼ indicators showing when more is hidden. Items after the LAST
-    # plain `---` divider are treated as a **pinned footer** — always visible
-    # below the scroll zone (e.g. "A › Apply all", "B › Back").
-    #
-    # $VpTop is a [ref] tracked by the caller between frames so cursor position
-    # in the pinned zone doesn't reset the scrollable viewport.
-    #
-    # Returns the number of terminal lines this frame occupies — caller stores
-    # it and passes back as $PrevLines on the next call.
+function ConvertTo-WinriftLine {
+    param([string]$Text, [int]$Width)
+    $plain = ($Text -replace '\x1b\][^\x07]*(?:\x07|\x1b\\)', '') -replace '\x1b\[[0-9;?]*[A-Za-z]', ''
+    $plain = ($plain.Replace("`t",'  ')) -replace '[\x00-\x1f\x7f]', ''
+    if($Width -le 0){return ''}
+    $elements=[Collections.Generic.List[object]]::new();$total=0
+    $enumerator=[Globalization.StringInfo]::GetTextElementEnumerator($plain)
+    while($enumerator.MoveNext()){
+        $element=[string]$enumerator.Current;$code=[char]::ConvertToUtf32($element,0)
+        $wide=($code -ge 0x1100 -and $code -le 0x115f) -or ($code -ge 0x2e80 -and $code -le 0xa4cf) -or ($code -ge 0xac00 -and $code -le 0xd7a3) -or ($code -ge 0xf900 -and $code -le 0xfaff) -or ($code -ge 0xfe10 -and $code -le 0xfe6f) -or ($code -ge 0xff00 -and $code -le 0xff60) -or ($code -ge 0xffe0 -and $code -le 0xffe6) -or ($code -ge 0x1f000 -and $code -le 0x1faff) -or ($code -ge 0x20000 -and $code -le 0x3fffd)
+        $cells=if($wide){2}else{1}
+        $elements.Add(@{Text=$element;Width=$cells});$total+=$cells
+    }
+    if($total -le $Width){return $plain}
+    if($Width -eq 1){return '…'}
+    $builder=[Text.StringBuilder]::new();$used=0
+    foreach($element in $elements){if($used+$element.Width -gt $Width-1){break};[void]$builder.Append($element.Text);$used+=$element.Width}
+    return $builder.ToString()+'…'
+}
+function Get-WinriftMenuFrame {
+    # Pure layout: terminal dimensions are supplied by the console adapter.
     param(
-        [string]$Title,
-        [string[]]$Items,
-        [int]$HighlightIndex = -1,
-        [bool[]]$Checked = $null,
-        [int]$PrevLines = 0,
-        [ref]$VpTop,
-        [switch]$NoBox,
-        [string]$Hint = $null,
-        [switch]$HideKeys,
-        [hashtable]$Descriptions = $null,
-        [int]$SplitAt = 0,
-        [string]$TitleRight = $null
+        [string]$Title, [string[]]$Items, [int]$HighlightIndex = -1,
+        [bool[]]$Checked, [string[]]$Markers, [hashtable]$Descriptions, [string]$Hint,
+        [int]$Width = 80, [int]$Height = 25, [int]$Top = 0
     )
-
-    $hasVpTop = $PSBoundParameters.ContainsKey('VpTop')
-    $hasSplit = ($null -ne $Descriptions -and $SplitAt -gt 0 -and -not $NoBox)
-    $splitRightW = 0
-    $inPinned = $false
-
-    $ESC = [char]0x1b
-    $h  = [string][char]0x2500
-    $v  = [string][char]0x2502
-    $tl = [string][char]0x256D
-    $tr = [string][char]0x256E
-    $bl = [string][char]0x2570
-    $br = [string][char]0x256F
-    $EOL = "$ESC[K"
-
-    # Width calculation
-    $titlePlain = $Title -replace '\x1b\[[0-9;]*m', ''
-    $maxLen = $titlePlain.Length + 2
-    foreach ($item in $Items) {
+    $widthBudget = [math]::Max(1, [math]::Min(68, $Width - 4))
+    $rows = [System.Collections.Generic.List[string]]::new()
+    $rows.Add('')
+    $rows.Add("    ${Bold}${Ice}$(ConvertTo-WinriftLine $Title ([math]::Max(1,$widthBudget - 1)))$Reset")
+    $rows.Add('')
+    # Reserve title, context, hint and a final console row to avoid wrapping.
+    $visible = [math]::Max(1, $Height - 9)
+    $topLimit = [math]::Max(0, $Items.Count - $visible)
+    $Top = [math]::Clamp($Top, 0, $topLimit)
+    if ($HighlightIndex -ge 0) {
+        if ($HighlightIndex -lt $Top) { $Top = $HighlightIndex }
+        if ($HighlightIndex -ge $Top + $visible) { $Top = $HighlightIndex - $visible + 1 }
+    }
+    # Labels and their muted trailing glyphs share a column, as in Macrift.
+    $labelWidth = 1
+    foreach ($entry in $Items) {
+        if ($entry -like '---*') { continue }
+        $plainLabel = (($entry -replace '^\s*[^\s]+\s*[›>]\s*', '') -split '~',2)[0]
+        $plainLabel = ($plainLabel -replace '\s+[›↗]\s*$','').TrimEnd()
+        $labelWidth = [math]::Max($labelWidth, $plainLabel.Length)
+    }
+    if ($null -ne $Checked) { $labelWidth += 2 }
+    $labelWidth = [math]::Min($labelWidth, [math]::Max(1,$widthBudget - 6))
+    $last = [math]::Min($Items.Count, $Top + $visible)
+    for ($i = $Top; $i -lt $last; $i++) {
+        $item = $Items[$i]
+        if ($item -eq '---' -or $item -match '^---\s+-+\s*$') { $rows.Add(''); continue }
         if ($item -match '^---\s+(.+?)\s*-*$') {
-            $len = ("  $($Matches[1].TrimEnd('- '))").Length
-        } elseif ($item -ne "---") {
-            $len = ($item -replace '\x1b\[[0-9;]*m', '').Length + 2
-            if ($Checked) { $len += 4 }
-        } else { $len = 0 }
-        if ($len -gt $maxLen) { $maxLen = $len }
-    }
-    if ($null -ne $Checked) {
-        $hintLen = ("Space: toggle  A: all  Enter: confirm  Esc: cancel").Length + 2
-        if ($hintLen -gt $maxLen) { $maxLen = $hintLen }
-    }
-    # In NoBox mode the hint may be longer than any item, so it must also
-    # bound the minimum width so its inline ANSI codes don't force wrap.
-    if ($NoBox -and $Hint) {
-        $hLen = ($Hint -replace '\x1b\[[0-9;]*m', '').Length + 2
-        if ($hLen -gt $maxLen) { $maxLen = $hLen }
-    }
-    $consoleW = try { [Console]::WindowWidth - 4 } catch { 100 }
-    $maxAllowed = [math]::Min($consoleW, 100)
-    $w = [math]::Min([math]::Max($maxLen + 3, 30), $maxAllowed)
-    # Inner item content width differs between box and boxless modes:
-    # box:    │ ▸ …content… │  → 5 chars of chrome (│ + space + ptr + space + │)
-    # boxless:   ▸ …content…   → 2 chars of left indent, no right chrome
-    if ($NoBox) {
-        $itemInnerW = $w - 2
-    } elseif ($hasSplit) {
-        $itemInnerW = $SplitAt - 5
-    } else {
-        $itemInnerW = $w - 5
-    }
-    if ($null -ne $Checked) { $itemInnerW -= 4 }
-
-    $BP = "$Bold$Dim"
-    if ($hasSplit) {
-        $splitMinW = $SplitAt + 3 + 38
-        if ($w -lt $splitMinW) { $w = $splitMinW }
-        $splitRightW = $w - $SplitAt - 3
-    }
-    $rightPlain = $TitleRight ? ($TitleRight -replace '\x1b\[[0-9;]*m', '') : $null
-    $topFill = $w - ("$h $titlePlain ").Length
-    if ($topFill -lt 0) { $topFill = 0 }
-
-    # Pinned footer detection
-    # Find the LAST plain `---` divider. Items after it are pinned footer
-    # (always visible). Section-header style `--- Title ---` does not count.
-    $pinnedStart = -1
-    for ($i = $Items.Count - 1; $i -ge 0; $i--) {
-        if ($Items[$i] -eq "---") { $pinnedStart = $i + 1; break }
-    }
-    if ($pinnedStart -lt 0 -or $pinnedStart -ge $Items.Count) {
-        $pinnedStart = $Items.Count
-        $scrollableEnd = $Items.Count
-    } else {
-        # The `---` divider at $pinnedStart - 1 is the separator — not rendered
-        # as a row; it marks the boundary between the scroll zone and footer.
-        $scrollableEnd = $pinnedStart - 1
-    }
-    $pinnedCount = $Items.Count - $pinnedStart
-
-    # Count how many terminal lines a single item occupies (section headers
-    # take 2: blank + colored text). We need this to compute the viewport
-    # height correctly.
-    $getItemHeight = {
-        param($idx)
-        if ($Items[$idx] -match '^---\s+(.+?)\s*-*$') {
-            if ($Matches[1].TrimEnd('- ').Length -gt 0) { return 2 } else { return 1 }
+            $rows.Add("    $Dim$(ConvertTo-WinriftLine $Matches[1].TrimEnd('- ') ($widthBudget - 2))$Reset")
+            continue
         }
-        if ($Items[$idx] -match '~') { return 2 }
-        return 1
+        $label = $item -replace '^\s*[^\s]+\s*[›>]\s*', ''
+        $label = ($label -split '~', 2)[0]
+        $glyph = ''
+        if ($label -match '\s+([›↗])\s*$') { $glyph = $Matches[1]; $label = $label -replace '\s+[›↗]\s*$', '' }
+        $label = $label.TrimEnd()
+        $marker = ''
+        if ($null -ne $Checked -and $i -lt $Checked.Count) {
+            $marker = if ($Checked[$i]) { '● ' } elseif ($Markers -and $Markers[$i]) { $Markers[$i] + ' ' } else { '○ ' }
+        }
+        $label = ConvertTo-WinriftLine ($marker + $label) $labelWidth
+        $tail = if ($glyph) { ' ' * [math]::Max(1,$labelWidth - $label.Length + 1) + "$Dim$glyph$Reset" } else { '' }
+        if ($i -eq $HighlightIndex) {
+            $rows.Add("   ${Bold}${Cyan}▌${Reset} ${Bold}$label${Reset}$tail")
+        } else { $rows.Add("     $label$tail") }
     }
-
-    # Count total scrollable rows (items can be 1 or 2 rows each)
-    $scrollableRows = 0
-    for ($i = 0; $i -lt $scrollableEnd; $i++) { $scrollableRows += (& $getItemHeight $i) }
-
-    # Count pinned footer rows
-    $pinnedRows = 0
-    for ($i = $pinnedStart; $i -lt $Items.Count; $i++) { $pinnedRows += (& $getItemHeight $i) }
-
-    # Viewport sizing
-    # Box chrome: blank + top border + top pad + bottom pad + bottom border = 5
-    #             multi-select adds hint + extra pad = +2
-    # NoBox chrome: blank + title + blank + blank = 4
-    #               hint row adds +2 (blank before + hint line)
-    # Scroll indicators reserve 2 rows when scrolling is active
-    $termHeight = try { [Console]::WindowHeight } catch { 24 }
-    if ($NoBox) {
-        $chrome = 4
-        if ($null -ne $Checked -or $Hint) { $chrome += 2 }
-    } else {
-        $chrome = 5
-        if ($null -ne $Checked) { $chrome += 2 }
+    $rows.Add('')
+    $context = ''
+    if ($Descriptions -and $Descriptions.ContainsKey($HighlightIndex)) {
+        $context = @($Descriptions[$HighlightIndex]) -join ' '
+    } elseif ($HighlightIndex -ge 0 -and $Items[$HighlightIndex] -like '*~*') {
+        $context = ($Items[$HighlightIndex] -split '~', 2)[1]
     }
-    $chrome += $pinnedRows
-    $available = $termHeight - $chrome - 1  # -1 for breathing room
-
-    $needsScroll = $scrollableRows -gt $available
-    if ($needsScroll) {
-        $visibleRows = [math]::Max($available - 2, 3)  # -2 for up/down rows
-    } else {
-        $visibleRows = $scrollableRows
+    if ($Top -gt 0 -or $last -lt $Items.Count) {
+        $context = "↑↓ $($Top + 1)–$last / $($Items.Count)  $context"
     }
-
-    # Determine vp_top (scroll position)
-    $currentVp = $hasVpTop ? [int]$VpTop.Value : 0
-
-    # Compute cursor row coordinates (used both for adjustment and safety check)
-    $cursorRow = 0
-    $cursorItemHeight = 1
-    $cursorInScroll = ($HighlightIndex -ge 0 -and $HighlightIndex -lt $scrollableEnd)
-    if ($cursorInScroll) {
-        for ($i = 0; $i -lt $HighlightIndex; $i++) { $cursorRow += (& $getItemHeight $i) }
-        $cursorItemHeight = & $getItemHeight $HighlightIndex
+    $rows.Add("     $Dim$(ConvertTo-WinriftLine $context ([math]::Max(1,$widthBudget - 2)))$Reset")
+    $rows.Add('')
+    if (-not $Hint) {
+        $Hint = if ($null -ne $Checked) { 'Space: toggle  A: applicable  ?: details  Enter: review  Esc: back' } else { '↑↓ move · →/↵ select · ←/Esc back' }
     }
-
-    if ($needsScroll -and $cursorInScroll) {
-        $vpTopRow = 0
-        for ($i = 0; $i -lt $currentVp; $i++) { $vpTopRow += (& $getItemHeight $i) }
-
-        if ($cursorRow -lt $vpTopRow) {
-            $currentVp = $HighlightIndex
-        } elseif (($cursorRow + $cursorItemHeight) -gt ($vpTopRow + $visibleRows)) {
-            # Walk vp_top forward item-by-item until cursor fits
-            $rowsAbove = $cursorRow + $cursorItemHeight - $visibleRows
-            $currentVp = 0
-            $acc = 0
-            while ($currentVp -lt $HighlightIndex -and $acc -lt $rowsAbove) {
-                $acc += (& $getItemHeight $currentVp)
-                $currentVp++
-            }
+    $rows.Add("  $Dim$(ConvertTo-WinriftLine $Hint ([math]::Max(1,$Width - 3)))$Reset")
+    # Very short windows still show the active row; no negative dimensions.
+    if ($Height -lt 9) {
+        $rows.Clear()
+        if ($HighlightIndex -ge 0) {
+            $label = $Items[$HighlightIndex] -replace '^\s*[^\s]+\s*[›>]\s*', ''
+            $rows.Add("${Cyan}▌${Reset} $(ConvertTo-WinriftLine $label ([math]::Max(1, $Width - 3)))")
         }
     }
-
-    # Section-header pull-back: if the item directly above $currentVp is a
-    # section header, walk back to include it so the user sees the category
-    # for the first visible item. Applied conditionally — only if pulling back
-    # still keeps the cursor within the visible window (otherwise it would
-    # push the cursor off-screen when scrolled near the bottom).
-    if ($currentVp -gt 0 -and $Items[$currentVp - 1] -match '^---\s+') {
-        $candidateVp = $currentVp
-        while ($candidateVp -gt 0 -and $Items[$candidateVp - 1] -match '^---\s+') {
-            $candidateVp--
-        }
-        if (-not ($needsScroll -and $cursorInScroll)) {
-            # No viewport constraint, pull back freely
-            $currentVp = $candidateVp
-        } else {
-            # Check if cursor still fits after pull-back
-            $candidateVpTopRow = 0
-            for ($i = 0; $i -lt $candidateVp; $i++) { $candidateVpTopRow += (& $getItemHeight $i) }
-            $cursorEnd = $cursorRow + $cursorItemHeight
-            if (($candidateVpTopRow + $visibleRows) -ge $cursorEnd) {
-                $currentVp = $candidateVp
-            }
-        }
-    }
-
-    # Clamp to valid range
-    if ($currentVp -lt 0) { $currentVp = 0 }
-    if ($currentVp -gt $scrollableEnd) { $currentVp = $scrollableEnd }
-
-    if ($hasVpTop) { $VpTop.Value = $currentVp }
-
-    # Helper: build rendered lines for a single item
-    # Two flavors: box mode wraps each row in │ … │ chrome with right-pad
-    # to keep border alignment. NoBox mode just emits indented content.
-    $buildItemLines = {
-        param([int]$idx)
-        $out = [System.Collections.Generic.List[string]]::new()
-        $item = $Items[$idx]
-        $isCur = ($idx -eq $HighlightIndex)
-
-        if ($item -match '^---\s+(.+?)\s*-*$') {
-            $sec = $Matches[1].TrimEnd('- ')
-            if ($NoBox) {
-                if ($idx -ne $currentVp) { $out.Add("") }
-                if ($sec.Length -gt 0) { $out.Add("  $Cyan$sec$Reset") }
-            } elseif ($hasSplit -and -not $inPinned) {
-                $out.Add("$BP $v$Reset$(' ' * $SplitAt)")
-                if ($sec.Length -gt 0) {
-                    $sp = [math]::Max(0, $SplitAt - 2 - $sec.Length)
-                    $out.Add("$BP $v$Reset  $Cyan$sec$Reset$(' ' * $sp)")
-                }
-            } else {
-                $out.Add("$BP $v$Reset$(" " * $w)$BP$v$Reset")
-                if ($sec.Length -gt 0) {
-                    $pad = $w - ("  $sec").Length; if ($pad -lt 0) { $pad = 0 }
-                    $out.Add("$BP $v$Reset  $Cyan$sec$Reset$(" " * $pad)$BP$v$Reset")
-                }
-            }
-            return $out
-        }
-        if ($item -eq "---") {
-            if ($NoBox) {
-                $out.Add("")
-            } elseif ($hasSplit -and -not $inPinned) {
-                $out.Add("$BP $v$Reset$(' ' * $SplitAt)")
-            } else {
-                $out.Add("$BP $v$Reset$(" " * $w)$BP$v$Reset")
-            }
-            return $out
-        }
-
-        $displayItem = $item
-        $warnText = ""
-        if ($displayItem -match '^(.+?)~(.+)$') {
-            $displayItem = $Matches[1].TrimEnd()
-            $warnText = $Matches[2]
-        }
-        if ($null -ne $Checked -and $displayItem -match '^\s*[^\s]+\s*[›>]\s*(.+)$') {
-            $displayItem = $Matches[1]
-        }
-        # In split mode: strip " - description" from left column (shown in right panel)
-        if ($hasSplit -and -not $inPinned -and $displayItem -match '^(.+?)\s+-\s+.+$') {
-            $displayItem = $Matches[1]
-        }
-        $plain = $displayItem -replace '\x1b\[[0-9;]*m', ''
-        # When HideKeys strips the "X › " prefix, pad against the label only
-        # so the right border stays aligned with non-selectable info lines.
-        if ($HideKeys -and $plain -match '^(\s*)([^\s]+)\s*[›>]\s*(.+)$') {
-            $plain = "$($Matches[1])$($Matches[3])"
-        }
-
-        if ($plain.Length -gt $itemInnerW) {
-            $displayItem = $plain.Substring(0, [math]::Max($itemInnerW - 1, 1)) + [char]0x2026
-            $plain = $displayItem
-        }
-
-        $chk = ""
-        if ($null -ne $Checked) {
-            $chk = $Checked[$idx] ? "$Green[x]$Reset " : "$Dim[ ]$Reset "
-            $plain = "    $plain"
-        }
-        $ptr = $isCur ? "$Bold$Ice$([char]0x25B8)$Reset " : "  "
-        $plainFull = "  $plain"
-        $pad = ($w - 1) - $plainFull.Length; if ($pad -lt 0) { $pad = 0 }
-
-        if ($isCur) {
-            # When HideKeys is on, strip the "X › " prefix so the highlight only
-            # covers the human-readable label (no bold cyan letter).
-            if ($HideKeys -and $displayItem -match '^(\s*)([^\s]+)(\s*[›>]\s*)(.+)$') {
-                $rendered = "$Bold$Ice$($Matches[4])$Reset"
-            } else {
-                $renderedItem = $displayItem -replace '(\s)>(\s)', "`$1$([char]0x203A)`$2"
-                $rendered = "$Bold$Ice$renderedItem$Reset"
-            }
-        } elseif ($null -eq $Checked -and $displayItem -match '^(\s*)([^\s]+)(\s*[›>]\s*)(.+)$') {
-            if ($HideKeys) {
-                $rendered = "$($Matches[1])$($Matches[4])"
-            } else {
-                $rendered = "$($Matches[1])$Cyan$($Matches[2])$Reset $Dim$([char]0x203A)$Reset $($Matches[4])"
-            }
-        } else {
-            $rendered = $displayItem
-        }
-        if ($NoBox) {
-            $out.Add("  $ptr$chk$rendered")
-        } elseif ($hasSplit -and -not $inPinned) {
-            # Surrogate pairs (Nerd Font supplemental chars U+F0000+) = 2 .NET chars but 1 display column.
-            # $plain.Length overcounts by 1 per pair → add surrogateCount back to splitPad.
-            $surrogateCount = 0
-            for ($ci = 0; $ci -lt $plain.Length - 1; $ci++) {
-                if ([char]::IsHighSurrogate($plain[$ci]) -and [char]::IsLowSurrogate($plain[$ci + 1])) {
-                    $surrogateCount++; $ci++
-                }
-            }
-            $splitPad = [math]::Max(0, $SplitAt - 3 - $plain.Length + $surrogateCount)
-            $out.Add("$BP $v$Reset $ptr$chk$rendered$(' ' * $splitPad)")
-        } else {
-            $out.Add("$BP $v$Reset $ptr$chk$rendered$(" " * $pad)$BP$v$Reset")
-        }
-
-        # Warning line for label~warning items (always 2 rows to keep layout stable)
-        if ($warnText -ne "") {
-            if ($isCur) {
-                $warnLine = "      $Yellow$([char]0x21) $warnText$Reset"
-                $warnPlain = "      ! $warnText"
-                if ($NoBox) {
-                    $out.Add($warnLine)
-                } elseif ($hasSplit -and -not $inPinned) {
-                    $wp = [math]::Max(0, $SplitAt - 1 - $warnPlain.Length)
-                    $out.Add("$BP $v$Reset $warnLine$(' ' * $wp)")
-                } else {
-                    $warnPad = [math]::Max(0, $w - 1 - $warnPlain.Length)
-                    $out.Add("$BP $v$Reset $warnLine$(" " * $warnPad)$BP$v$Reset")
-                }
-            } else {
-                if ($NoBox) { $out.Add("") }
-                elseif ($hasSplit -and -not $inPinned) { $out.Add("$BP $v$Reset$(' ' * $SplitAt)") }
-                else { $out.Add("$BP $v$Reset$(" " * $w)$BP$v$Reset") }
-            }
-        }
-
-        return $out
-    }
-
-    # Helper: build a scroll indicator row (▲/▼ ···)
-    $buildScrollIndicator = {
-        param([string]$direction)  # 'up' or 'down'
-        $arrow = $direction -eq 'up' ? [char]0x25B2 : [char]0x25BC  # ▲ / ▼
-        $label = "$arrow $([char]0x00B7)$([char]0x00B7)$([char]0x00B7)"  # "▲ ···"
-        $labelLen = 5
-        $leftPad = [math]::Max(0, [math]::Floor(($w - $labelLen) / 2))
-        if ($NoBox) {
-            return "$(" " * $leftPad)$Dim$label$Reset"
-        }
-        $rightPad = [math]::Max(0, $w - $labelLen - $leftPad)
-        return "$BP $v$Reset$(" " * $leftPad)$Dim$label$Reset$(" " * $rightPad)$BP$v$Reset"
-    }
-    $buildEmptyRow = {
-        if ($NoBox) { return "" }
-        "$BP $v$Reset$(" " * $w)$BP$v$Reset"
-    }
-
-    # Build frame
-    $lines = [System.Collections.Generic.List[string]]::new()
-
-    $lines.Add("")
-    if ($NoBox) {
-        # Bold+ice title, just indented, no surrounding chrome
-        $lines.Add("  $Bold$Ice$Title$Reset")
-        $lines.Add("")
-    } else {
-        if ($rightPlain -and $topFill -gt $rightPlain.Length + 4) {
-            $midFill = $topFill - $rightPlain.Length - 3
-            $lines.Add("$BP $tl$h $Bold$Ice$Title$BP $($h * $midFill) $Dim$TitleRight$Reset $BP$h$tr$Reset")
-        } else {
-            $lines.Add("$BP $tl$h $Bold$Ice$Title$BP $($h * $topFill)$tr$Reset")
-        }
-        $lines.Add((& $buildEmptyRow))
-    }
-
-    # Pre-compute right column description lines for split mode
-    $descLines = @()
-    $_splitDescIdx = 0
-    if ($hasSplit -and $Descriptions -and $Descriptions.ContainsKey($HighlightIndex)) {
-        $descW = $splitRightW - 2
-        $tempDesc = [System.Collections.Generic.List[string]]::new()
-        foreach ($dl in @($Descriptions[$HighlightIndex])) {
-            $dlPlain = $dl -replace '\x1b\[[0-9;]*m', ''
-            if ($dlPlain.Length -le $descW) {
-                $tempDesc.Add($dl)
-            } else {
-                $cur = ''
-                foreach ($word in ($dlPlain -split ' ')) {
-                    $cand = $cur ? "$cur $word" : $word
-                    if ($cand.Length -le $descW) { $cur = $cand }
-                    else { if ($cur) { $tempDesc.Add($cur) }; $cur = $word }
-                }
-                if ($cur) { $tempDesc.Add($cur) }
-            }
-        }
-        $totalRightRows = $visibleRows + ($needsScroll ? 2 : 0)
-        $pad = [math]::Max(0, [math]::Floor(($totalRightRows - $tempDesc.Count) / 3))
-        if ($pad -gt 0) {
-            for ($p = 0; $p -lt $pad; $p++) { $tempDesc.Insert(0, "") }
-        }
-        $descLines = $tempDesc.ToArray()
-    }
-
-    # Scroll-up indicator
-    if ($needsScroll) {
-        if ($hasSplit) {
-            $upLeft = if ($currentVp -gt 0) {
-                $lbl = "$([char]0x25B2) $([char]0xB7)$([char]0xB7)$([char]0xB7)"
-                $lp = [math]::Max(0,[math]::Floor(($SplitAt-5)/2))
-                "$BP $v$Reset$(' '*$lp)$Dim$lbl$Reset$(' '*([math]::Max(0,$SplitAt-5-$lp)))"
-            } else { "$BP $v$Reset$(' '*$SplitAt)" }
-            $_src = $_splitDescIdx -lt $descLines.Count ? $descLines[$_splitDescIdx] : ""
-            $_srp = [math]::Max(0, $splitRightW - ($_src -replace '\x1b\[[0-9;]*m','').Length)
-            $lines.Add("$upLeft $Dim$v$Reset $_src$(' '*$_srp)$BP$v$Reset")
-            $_splitDescIdx++
-        } elseif ($currentVp -gt 0) {
-            $lines.Add((& $buildScrollIndicator 'up'))
-        } else {
-            $lines.Add((& $buildEmptyRow))
-        }
-    }
-
-    # Render scrollable items within the viewport
-    $rendered = 0
-    $i = $currentVp
-    while ($i -lt $scrollableEnd -and $rendered -lt $visibleRows) {
-        $itemLines = & $buildItemLines $i
-        foreach ($line in $itemLines) {
-            if ($rendered -lt $visibleRows) {
-                if ($hasSplit) {
-                    $_src = $_splitDescIdx -lt $descLines.Count ? $descLines[$_splitDescIdx] : ""
-                    $_srp = [math]::Max(0, $splitRightW - ($_src -replace '\x1b\[[0-9;]*m','').Length)
-                    $lines.Add("$line $Dim$v$Reset $_src$(' '*$_srp)$BP$v$Reset")
-                    $_splitDescIdx++
-                } else { $lines.Add($line) }
-                $rendered++
-            }
-        }
-        $i++
-    }
-    $lastRenderedScrollable = $i  # exclusive end of what we drew
-
-    # Fill remaining viewport rows with empty lines to keep box height stable
-    while ($rendered -lt $visibleRows) {
-        if ($hasSplit) {
-            $_src = $_splitDescIdx -lt $descLines.Count ? $descLines[$_splitDescIdx] : ""
-            $_srp = [math]::Max(0, $splitRightW - ($_src -replace '\x1b\[[0-9;]*m','').Length)
-            $lines.Add("$BP $v$Reset$(' '*$SplitAt) $Dim$v$Reset $_src$(' '*$_srp)$BP$v$Reset")
-            $_splitDescIdx++
-        } else { $lines.Add((& $buildEmptyRow)) }
-        $rendered++
-    }
-
-    # Scroll-down indicator
-    if ($needsScroll) {
-        if ($hasSplit) {
-            $dnLeft = if ($lastRenderedScrollable -lt $scrollableEnd) {
-                $lbl = "$([char]0x25BC) $([char]0xB7)$([char]0xB7)$([char]0xB7)"
-                $lp = [math]::Max(0,[math]::Floor(($SplitAt-5)/2))
-                "$BP $v$Reset$(' '*$lp)$Dim$lbl$Reset$(' '*([math]::Max(0,$SplitAt-5-$lp)))"
-            } else { "$BP $v$Reset$(' '*$SplitAt)" }
-            $_src = $_splitDescIdx -lt $descLines.Count ? $descLines[$_splitDescIdx] : ""
-            $_srp = [math]::Max(0, $splitRightW - ($_src -replace '\x1b\[[0-9;]*m','').Length)
-            $lines.Add("$dnLeft $Dim$v$Reset $_src$(' '*$_srp)$BP$v$Reset")
-            $_splitDescIdx++
-        } elseif ($lastRenderedScrollable -lt $scrollableEnd) {
-            $lines.Add((& $buildScrollIndicator 'down'))
-        } else {
-            $lines.Add((& $buildEmptyRow))
-        }
-    }
-
-    # Pinned footer (always full width, no split)
-    $inPinned = $true
-    for ($i = $pinnedStart; $i -lt $Items.Count; $i++) {
-        $itemLines = & $buildItemLines $i
-        foreach ($line in $itemLines) { $lines.Add($line) }
-    }
-    $inPinned = $false
-
-    $lines.Add((& $buildEmptyRow))
-
-    # Hint line — caller-provided $Hint takes priority. Otherwise, multi-select
-    # auto-generates the standard hint. NoBox mode uses indented dim text;
-    # box mode wraps inside │ … │ chrome.
-    $hintText = $null
-    if ($Hint) {
-        $hintText = $Hint
-    } elseif ($null -ne $Checked) {
-        $hintText = "Space: toggle  A: all  Enter: confirm  Esc: cancel"
-    }
-    if ($hintText) {
-        if ($NoBox) {
-            $lines.Add("  $Dim$hintText$Reset")
-        } else {
-            $hPlain = $hintText -replace '\x1b\[[0-9;]*m', ''
-            $hPad = $w - $hPlain.Length - 1; if ($hPad -lt 0) { $hPad = 0 }
-            $lines.Add("$BP $v$Reset $Dim$hintText$Reset$(" " * $hPad)$BP$v$Reset")
-            $lines.Add((& $buildEmptyRow))
-        }
-    }
-    if (-not $NoBox) {
-        $lines.Add("$BP $bl$($h * $w)$br$Reset")
-    }
-
-    $newLines = $lines.Count
-
-    # Assemble the frame: BSU begin + reposition + content + leftover wipe + BSU end
-    $sb = [System.Text.StringBuilder]::new(2048 + ($newLines * 64))
-    $null = $sb.Append("$ESC[?2026h")
-    if ($PrevLines -gt 0) {
-        $null = $sb.Append("$ESC[${PrevLines}A`r")
-    }
-    foreach ($line in $lines) {
-        $null = $sb.Append($line).Append($EOL).Append("`n")
-    }
-    # If the new frame is shorter than the prior one, erase the leftover lines below
-    if ($PrevLines -gt $newLines) {
-        $extra = $PrevLines - $newLines
-        for ($i = 0; $i -lt $extra; $i++) {
-            $null = $sb.Append($EOL).Append("`n")
-        }
-    }
-    $null = $sb.Append("$ESC[?2026l")
-
-    [Console]::Write($sb.ToString())
-    return $newLines
+    return @{ Lines = $rows.ToArray(); Top = $Top }
 }
 
+function _Draw-InteractiveBox {
+    # Compatibility adapter for existing callers; all routes render frameless.
+    param(
+        [string]$Title, [string[]]$Items, [int]$HighlightIndex = -1,
+        [bool[]]$Checked = $null, [string[]]$Markers, [int]$PrevLines = 0, [ref]$VpTop,
+        [switch]$NoBox, [string]$Hint, [switch]$HideKeys,
+        [hashtable]$Descriptions, [int]$SplitAt = 0, [string]$TitleRight
+    )
+    $width = try { [math]::Max(4, [Console]::WindowWidth) } catch { 80 }
+    $height = try { [math]::Max(2, [Console]::WindowHeight) } catch { 25 }
+    $top = if ($null -ne $VpTop) { $VpTop.Value } else { 0 }
+    $frame = Get-WinriftMenuFrame -Title $Title -Items $Items -HighlightIndex $HighlightIndex -Checked $Checked -Markers $Markers -Descriptions $Descriptions -Hint $Hint -Width $width -Height $height -Top $top
+    if ($null -ne $VpTop) { $VpTop.Value = $frame.Top }
+    $esc = [char]27
+    $sb = [Text.StringBuilder]::new()
+    [void]$sb.Append("$esc[?2026h")
+    if ($PrevLines -ge $height) { [void]$sb.Append("$esc[H$esc[J") }
+    elseif ($PrevLines -gt 0) { [void]$sb.Append("$esc[${PrevLines}A`r") }
+    foreach ($line in $frame.Lines) { [void]$sb.Append("$line$esc[K`n") }
+    [void]$sb.Append("$esc[J$esc[?2026l")
+    [Console]::Write($sb.ToString())
+    return $frame.Lines.Count
+}
+function Read-WinriftMenuKey {
+    $width = [Console]::WindowWidth
+    $height = [Console]::WindowHeight
+    while (-not $Host.UI.RawUI.KeyAvailable) {
+        Start-Sleep -Milliseconds 50
+        if ([Console]::WindowWidth -ne $width -or [Console]::WindowHeight -ne $height) {
+            return [pscustomobject]@{ VirtualKeyCode = 0; Character = [char]0 }
+        }
+    }
+    return $Host.UI.RawUI.ReadKey('NoEcho,IncludeKeyDown')
+}
 function Invoke-MenuLoop {
     # Persistent menu loop — executes action callbacks and stays open until exit.
     # Intentional differences from Show-InteractiveMenu and Show-MultiSelect:
@@ -572,7 +166,8 @@ function Invoke-MenuLoop {
         [hashtable]$Descriptions = $null,
         [int]$SplitAt = 0,
         [scriptblock]$TitleSuffix = $null,
-        [switch]$HideKeys
+        [switch]$HideKeys,
+        [scriptblock]$OnTab, [scriptblock]$HintProvider
     )
 
     # Parse selectable items
@@ -599,8 +194,9 @@ function Invoke-MenuLoop {
 
     try {
         while ($true) {
+            $drawHint = if ($HintProvider) { & $HintProvider } else { $null }
             $drawRight = $TitleSuffix ? (& $TitleSuffix) : $null
-            $prevLines = _Draw-InteractiveBox -Title $Title -Items $Items -HighlightIndex $selectIdx[$cursor] -PrevLines $prevLines -VpTop ([ref]$vpTop) -Descriptions $Descriptions -SplitAt $SplitAt -TitleRight $drawRight -HideKeys:$HideKeys
+            $prevLines = _Draw-InteractiveBox -Title $Title -Items $Items -HighlightIndex $selectIdx[$cursor] -PrevLines $prevLines -VpTop ([ref]$vpTop) -Descriptions $Descriptions -SplitAt $SplitAt -TitleRight $drawRight -HideKeys:$HideKeys -Hint $drawHint
 
             # Wait for keypress. When TitleSuffix is set, poll periodically to
             # redraw live stats. Otherwise just block on ReadKey (no CPU waste).
@@ -609,16 +205,22 @@ function Invoke-MenuLoop {
                 while (-not $Host.UI.RawUI.KeyAvailable) {
                     Start-Sleep -Milliseconds 500
                     $drawRight = & $TitleSuffix
-                    $prevLines = _Draw-InteractiveBox -Title $Title -Items $Items -HighlightIndex $selectIdx[$cursor] -PrevLines $prevLines -VpTop ([ref]$vpTop) -Descriptions $Descriptions -SplitAt $SplitAt -TitleRight $drawRight -HideKeys:$HideKeys
+                    $prevLines = _Draw-InteractiveBox -Title $Title -Items $Items -HighlightIndex $selectIdx[$cursor] -PrevLines $prevLines -VpTop ([ref]$vpTop) -Descriptions $Descriptions -SplitAt $SplitAt -TitleRight $drawRight -HideKeys:$HideKeys -Hint $drawHint
                 }
             }
-            $k = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
+            $k = Read-WinriftMenuKey
             [Console]::TreatControlCAsInput = $_ui.CtrlC
             $vk = $k.VirtualKeyCode
 
             # Ctrl+C → treat as "back" (same as Escape)
             if ($k.Character -eq [char]3) {
                 if ($ExitKey) { if ($OnExit) { & $OnExit }; return }
+                continue
+            }
+
+            if ($vk -eq 9 -and $OnTab) {
+                & $OnTab
+                Clear-Host; $prevLines=0; $vpTop=0
                 continue
             }
 
@@ -691,8 +293,8 @@ function Show-InteractiveMenu {
     for ($i = 0; $i -lt $Items.Count; $i++) {
         $t = $Items[$i]
         if ($t -ne "---" -and $t -notmatch '^---\s+') {
+            $selectIdx.Add($i)
             if ($t -match '^\s*([^\s]+)\s*[›>]') {
-                $selectIdx.Add($i)
                 $keyMap[$i] = $Matches[1]
             }
         }
@@ -720,7 +322,7 @@ function Show-InteractiveMenu {
             }
 
             [Console]::TreatControlCAsInput = $true
-            $k = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
+            $k = Read-WinriftMenuKey
             [Console]::TreatControlCAsInput = $_ui.CtrlC
             $vk = $k.VirtualKeyCode
 
@@ -737,7 +339,8 @@ function Show-InteractiveMenu {
             }
 
             if ($vk -eq 13 -or $vk -eq 39) {  # Enter or Right
-                return $keyMap[$selectIdx[$cursor]]
+                if ($keyMap.ContainsKey($selectIdx[$cursor])) { return $keyMap[$selectIdx[$cursor]] }
+                continue
             }
             if ($vk -eq 27 -or $vk -eq 37) {  # Escape or Left
                 return $null
@@ -769,7 +372,9 @@ function Show-MultiSelect {
         [string]$Title,
         [string[]]$Items,
         [bool[]]$Defaults = $null,
-        [switch]$NoBox
+        [bool[]]$Disabled, [string[]]$Markers, [hashtable]$Descriptions,
+        [switch]$NoBox,
+        [scriptblock]$OnSelectionChanged
     )
 
     $selectIdx = [System.Collections.Generic.List[int]]::new()
@@ -777,7 +382,7 @@ function Show-MultiSelect {
     for ($i = 0; $i -lt $Items.Count; $i++) {
         if ($Items[$i] -ne "---" -and $Items[$i] -notmatch '^---\s+') {
             $selectIdx.Add($i)
-            if ($Defaults -and $i -lt $Defaults.Count) { $checked[$i] = $Defaults[$i] }
+            if ($Defaults -and $i -lt $Defaults.Count -and -not ($Disabled -and $Disabled[$i])) { $checked[$i] = $Defaults[$i] }
         }
     }
     if ($selectIdx.Count -eq 0) { return @() }
@@ -791,13 +396,13 @@ function Show-MultiSelect {
     try {
         while ($true) {
             if ($NoBox) {
-                $prevLines = _Draw-InteractiveBox -Title $Title -Items $Items -HighlightIndex $selectIdx[$cursor] -Checked $checked -PrevLines $prevLines -VpTop ([ref]$vpTop) -NoBox
+                $prevLines = _Draw-InteractiveBox -Title $Title -Items $Items -HighlightIndex $selectIdx[$cursor] -Checked $checked -Markers $Markers -Descriptions $Descriptions -PrevLines $prevLines -VpTop ([ref]$vpTop) -NoBox
             } else {
-                $prevLines = _Draw-InteractiveBox -Title $Title -Items $Items -HighlightIndex $selectIdx[$cursor] -Checked $checked -PrevLines $prevLines -VpTop ([ref]$vpTop)
+                $prevLines = _Draw-InteractiveBox -Title $Title -Items $Items -HighlightIndex $selectIdx[$cursor] -Checked $checked -Markers $Markers -Descriptions $Descriptions -PrevLines $prevLines -VpTop ([ref]$vpTop)
             }
 
             [Console]::TreatControlCAsInput = $true
-            $k = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
+            $k = Read-WinriftMenuKey
             [Console]::TreatControlCAsInput = $_ui.CtrlC
             $vk = $k.VirtualKeyCode
             $ch = $k.Character
@@ -809,16 +414,32 @@ function Show-MultiSelect {
             if ($vk -eq 40 -and $cursor -lt $selectIdx.Count - 1) { $cursor++; continue }
 
             if ($vk -eq 32) {  # Space — toggle
-                $checked[$selectIdx[$cursor]] = -not $checked[$selectIdx[$cursor]]
+                if (-not ($Disabled -and $Disabled[$selectIdx[$cursor]])) { $checked[$selectIdx[$cursor]] = -not $checked[$selectIdx[$cursor]] }
+                if ($OnSelectionChanged) {
+                    $keys = @()
+                    foreach ($index in $selectIdx) { if ($checked[$index] -and $Items[$index] -match '^\s*([^\s]+)\s*[›>]') { $keys += $Matches[1] } }
+                    & $OnSelectionChanged $keys
+                }
                 continue
             }
 
             if ($ch -eq 'a' -or $ch -eq 'A') {  # Toggle all
                 $allOn = ($selectIdx | ForEach-Object { $checked[$_] }) -notcontains $false
-                foreach ($si in $selectIdx) { $checked[$si] = -not $allOn }
+                foreach ($si in $selectIdx) { if (-not ($Disabled -and $Disabled[$si])) { $checked[$si] = $true } }
+                if ($OnSelectionChanged) {
+                    $keys = @()
+                    foreach ($index in $selectIdx) { if ($checked[$index] -and $Items[$index] -match '^\s*([^\s]+)\s*[›>]') { $keys += $Matches[1] } }
+                    & $OnSelectionChanged $keys
+                }
                 continue
             }
 
+            if ($ch -eq '?' -and $Descriptions -and $Descriptions.ContainsKey($selectIdx[$cursor])) {
+                Show-InfoBox -Title 'Current / Proposed / Details' -Items @($Descriptions[$selectIdx[$cursor]])
+                Wait-ForUser
+                Clear-Host; $prevLines = 0
+                continue
+            }
             if ($vk -eq 13) {  # Enter — confirm
                 $result = @()
                 foreach ($si in $selectIdx) {
@@ -830,7 +451,7 @@ function Show-MultiSelect {
                 return $result
             }
 
-            if ($vk -eq 27) { return @() }  # Escape — cancel
+            if ($vk -eq 27 -or $vk -eq 37) { return @() }  # Escape — cancel
         }
     } finally {
         _Exit-RawUI $_ui

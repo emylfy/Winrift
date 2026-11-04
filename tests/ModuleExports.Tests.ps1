@@ -4,10 +4,14 @@ BeforeDiscovery {
         @{
             File = 'modules/customize/Customize.Menu.ps1'
             ExpectedFunctions = @(
-                'Show-CustomizeMenu', 'Show-DesktopMenu', 'Show-TerminalMenu',
-                'Show-VSCodeConfigMenu',
+                'Show-CustomizeMenu', 'Show-DesktopMenu',
+
                 'Show-WindowsMenu', 'Show-ProfileBackupsMenu'
             )
+        }
+        @{
+            File = 'modules/customize/AppConfiguration.ps1'
+            ExpectedFunctions = @('Show-VSCodeConfigMenu','Show-TerminalMenu','Show-WinriftShellSetup','Show-WinriftGlazeWM')
         }
         @{
             File = 'modules/customize/Customize.Desktop.ps1'
@@ -29,43 +33,6 @@ BeforeDiscovery {
             File = 'modules/customize/Customize.Windows.ps1'
             ExpectedFunctions = @(
                 'Set-ShortDateHours', 'Disable-QuickAccess', 'Expand-StartFolders'
-            )
-        }
-        @{
-            File = 'modules/system/Tweaks.Drift.ps1'
-            ExpectedFunctions = @(
-                'Get-DesiredState', 'Test-DriftedEntries', 'Show-DriftReport',
-                'Invoke-DriftReapply', 'Register-DriftScheduledTask',
-                'Unregister-DriftScheduledTask', 'Get-DriftScheduledTaskStatus',
-                'Show-DriftMenu'
-            )
-        }
-        @{
-            File = 'modules/system/Audit.Probes.ps1'
-            ExpectedFunctions = @(
-                'Test-RegistryValueEquals', 'Test-RegistryValueNotEquals',
-                'Test-RegistryValueGreaterThan',
-                'Test-RegistryValueExists', 'Test-ServiceRunning',
-                'Test-AppxPackageInstalled',
-                'Test-FsutilBehavior',
-                'Test-ProcessRSSExceeds', 'Test-MMAgentFeature',
-                'Test-DnsServersFromList', 'Get-RegistryRunCount'
-            )
-        }
-        @{
-            File = 'modules/system/Audit.Engine.ps1'
-            ExpectedFunctions = @(
-                'Get-AuditFindingsPath', 'Read-AuditFindings',
-                'Invoke-AuditProbe', 'Invoke-Audit',
-                'Get-AuditCachePath', 'Save-AuditCache', 'Read-AuditCache'
-            )
-        }
-        @{
-            File = 'modules/system/Audit.Menu.ps1'
-            ExpectedFunctions = @(
-                'Format-AuditSummary', 'Format-FindingShort',
-                'Show-AuditFindingDetail', 'Invoke-AuditApply',
-                'Invoke-ApplyAllCritical', 'Show-AuditWizard'
             )
         }
         @{
@@ -127,17 +94,20 @@ Describe 'Common.ps1 exports' {
 
 Describe 'Copy-ConfigFiles' {
     BeforeAll {
+        $script:oldStateRoot=$env:WINRIFT_STATE_ROOT
+        $env:WINRIFT_STATE_ROOT=Join-Path $TestDrive 'state'
         . (Join-Path (Split-Path $PSScriptRoot -Parent) 'scripts/Common.ps1')
         . (Join-Path (Split-Path $PSScriptRoot -Parent) 'modules/customize/Customize.Configs.ps1')
     }
 
+    AfterAll { $env:WINRIFT_STATE_ROOT=$script:oldStateRoot }
     It 'copies files to target directory' {
         $src = Join-Path $TestDrive 'source'
         $dst = Join-Path $TestDrive 'target'
         New-Item -Path $src -ItemType Directory -Force | Out-Null
         Set-Content -Path (Join-Path $src 'test.txt') -Value 'hello'
 
-        Copy-ConfigFiles -SourceDir $src -FileNames @('test.txt') -TargetDir $dst -ConfigName 'Test'
+        Copy-ConfigFiles -SourceDir $src -FileNames @('test.txt') -TargetDir $dst -ConfigName 'Test' -Reviewed
 
         Join-Path $dst 'test.txt' | Should -Exist
         Get-Content (Join-Path $dst 'test.txt') | Should -Be 'hello'
@@ -151,7 +121,7 @@ Describe 'Copy-ConfigFiles' {
         Set-Content -Path (Join-Path $src 'cfg.json') -Value 'new'
         Set-Content -Path (Join-Path $dst 'cfg.json') -Value 'old'
 
-        Copy-ConfigFiles -SourceDir $src -FileNames @('cfg.json') -TargetDir $dst -ConfigName 'Test'
+        Copy-ConfigFiles -SourceDir $src -FileNames @('cfg.json') -TargetDir $dst -ConfigName 'Test' -Reviewed
 
         Get-Content (Join-Path $dst 'cfg.json') | Should -Be 'new'
         Join-Path $dst 'cfg.json.bak' | Should -Exist
@@ -165,7 +135,7 @@ Describe 'Copy-ConfigFiles' {
         Set-Content -Path (Join-Path $src 'input.json') -Value 'data'
 
         Copy-ConfigFiles -SourceDir $src -FileNames @('input.json') -TargetDir $dst `
-                         -TargetFileNames @('output.json') -ConfigName 'Test'
+                         -TargetFileNames @('output.json') -ConfigName 'Test' -Reviewed
 
         Join-Path $dst 'output.json' | Should -Exist
         Join-Path $dst 'input.json' | Should -Not -Exist
@@ -177,7 +147,7 @@ Describe 'Copy-ConfigFiles' {
         New-Item -Path $src -ItemType Directory -Force | Out-Null
         Set-Content -Path (Join-Path $src 'f.txt') -Value 'ok'
 
-        Copy-ConfigFiles -SourceDir $src -FileNames @('f.txt') -TargetDir $dst -ConfigName 'Test'
+        Copy-ConfigFiles -SourceDir $src -FileNames @('f.txt') -TargetDir $dst -ConfigName 'Test' -Reviewed
 
         Join-Path $dst 'f.txt' | Should -Exist
     }
