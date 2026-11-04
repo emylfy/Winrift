@@ -26,26 +26,11 @@ function Install-GlazeWM {
 }
 
 function Copy-GlazeWMConfig {
-    $configSource = "$PSScriptRoot\config\glazewm"
-    $configTarget = "$env:USERPROFILE\.glzr\glazewm"
-
-    if (-not (Test-Path $configSource)) {
-        Write-Log -Message "GlazeWM config not found in project. Skipping config copy." -Level WARNING
-        return
-    }
-
-    if (-not (Test-Path $configTarget)) {
-        New-Item -Path $configTarget -ItemType Directory -Force | Out-Null
-    }
-
-    try {
-        Copy-Item -Path "$configSource\*" -Destination $configTarget -Recurse -Force
-        Write-Log -Message "GlazeWM configuration applied." -Level SUCCESS
-    } catch {
-        Write-Log -Message "Failed to copy GlazeWM config: $($_.Exception.Message)" -Level ERROR
-    }
+    $source=Join-Path $PSScriptRoot 'config\glazewm'
+    $target=Join-Path $env:USERPROFILE '.glzr\glazewm'
+    $files=@(Get-ChildItem -LiteralPath $source -File -Recurse | ForEach-Object { [IO.Path]::GetRelativePath($source,$_.FullName) })
+    Copy-ConfigFiles -SourceDir $source -FileNames $files -TargetDir $target -ConfigName GlazeWM
 }
-
 function Install-StatusBar {
     $choice = Show-InteractiveMenu -Title "Status Bar" -Items @(
         "Add a customizable status bar to your desktop.",
@@ -60,7 +45,7 @@ function Install-StatusBar {
             $null = Install-WingetPackage "glzr-io.zebar" "Zebar"
         }
         "2" {
-            $null = Install-WingetPackage "amnweb.yasb" "YASB"
+            $null = Install-WingetPackage "AmN.yasb" "YASB"
         }
         default { return }
     }

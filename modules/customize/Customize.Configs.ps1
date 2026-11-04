@@ -1,52 +1,29 @@
 function Copy-ConfigFiles {
-    param (
-        [string]$SourceDir,
-        [string[]]$FileNames,
-        [string]$TargetDir,
-        [string[]]$TargetFileNames,
-        [string]$ConfigName
-    )
-
-    try {
-        if (-not (Test-Path $TargetDir)) {
-            New-Item -Path $TargetDir -ItemType Directory -Force | Out-Null
-        }
-        $backedUp = $false
-        for ($i = 0; $i -lt $FileNames.Count; $i++) {
-            $src = Join-Path $SourceDir $FileNames[$i]
-            if ($TargetFileNames -and $i -lt $TargetFileNames.Count) {
-                $dst = Join-Path $TargetDir $TargetFileNames[$i]
-            } else {
-                $dst = Join-Path $TargetDir $FileNames[$i]
-            }
-            if (Test-Path $dst) {
-                # Preserve the original backup — only create .bak if one doesn't already exist
-                if (-not (Test-Path "$dst.bak")) {
-                    Copy-Item -Path $dst -Destination "$dst.bak" -Force
-                }
-                $backedUp = $true
-            }
-            Copy-Item -Path $src -Destination $dst -Force
-        }
-        $backupNote = $backedUp ? " Previous config backed up as .bak." : ""
-        Write-Log -Message "$ConfigName configuration applied.$backupNote" -Level SUCCESS
-    } catch {
-        Write-Log -Message "Failed to copy $ConfigName configuration: $($_.Exception.Message)" -Level ERROR
+    param([string]$SourceDir,[string[]]$FileNames,[string]$TargetDir,[string[]]$TargetFileNames,[string]$ConfigName,[switch]$Reviewed)
+    $script:LastConfigResults=@()
+    $operations=@()
+    for($i=0;$i -lt $FileNames.Count;$i++){
+        $name=if($TargetFileNames -and $i -lt $TargetFileNames.Count){$TargetFileNames[$i]}else{$FileNames[$i]}
+        $source=[IO.Path]::GetFullPath((Join-Path $SourceDir $FileNames[$i]))
+        $target=[IO.Path]::GetFullPath((Join-Path $TargetDir $name))
+        $sourceRoot=[IO.Path]::GetFullPath($SourceDir).TrimEnd('\')+'\'
+        $targetRoot=[IO.Path]::GetFullPath($TargetDir).TrimEnd('\')+'\'
+        if(-not $source.StartsWith($sourceRoot,[StringComparison]::OrdinalIgnoreCase) -or -not $target.StartsWith($targetRoot,[StringComparison]::OrdinalIgnoreCase)){throw 'Configuration path escapes its selected directory.'}
+        if(-not(Test-Path -LiteralPath $source -PathType Leaf)){throw "Missing configuration source: $source"}
+        $operations+=@{Source=$source;Target=$target}
     }
+    if(-not $Reviewed -and $env:WINRIFT_NO_CONFIRM -ne '1'){
+        $choice=Show-InteractiveMenu -Title "Review $ConfigName Configuration" -Items (@($operations|ForEach-Object{"$($_.Source) -> $($_.Target)"})+@('Versioned backups are created before replacement.','---','Y › Apply','N › Back'))
+        if($choice -ne 'Y'){return}
+    }
+    foreach($operation in $operations){Copy-WinriftJournaledFile -Source $operation.Source -Destination $operation.Target -Label "$ConfigName configuration";$script:LastConfigResults+=@{File=$operation.Target;Status=$script:LastFileResult.Status}}
 }
-
 function Set-VSCodeConfig {
     param (
         [string]$targetPath,
+        [string]$EditorCli,
         [switch]$IncludeProductJson
     )
-
-    if (-not (Test-Path $targetPath)) {
-        Write-Log -Message "Target directory not found: $targetPath" -Level ERROR
-        Write-Log -Message "Make sure the editor is installed before applying configs." -Level WARNING
-        Wait-ForUser
-        return
-    }
 
     $files = @("settings.json")
     if ($IncludeProductJson) {
@@ -61,10 +38,17 @@ function Set-VSCodeConfig {
     # Offer to install extensions
     $extFile = Join-Path $PSScriptRoot "config\vscode\extensions.txt"
     if (Test-Path $extFile) {
-        $editorCli = $null
-        foreach ($cmd in @("code", "cursor", "windsurf", "codium")) {
-            if (Get-Command $cmd -ErrorAction SilentlyContinue) { $editorCli = $cmd; break }
+        # Bind extensions to the selected editor; never fall back to another CLI.
+        if (-not $EditorCli) {
+            $EditorCli = switch -Regex ($targetPath) {
+                '\\Code\\User$' {'code';break}
+                '\\Cursor\\User$' {'cursor';break}
+                '\\Windsurf\\User$' {'windsurf';break}
+                '\\VSCodium\\User$' {'codium';break}
+                '\\Trae\\User$' {'trae';break}
+            }
         }
+        if ($EditorCli -and -not (Test-Path -LiteralPath $EditorCli)) { $EditorCli=Resolve-WinriftEditorCli $EditorCli }
         if ($editorCli) {
             $ans = Show-InteractiveMenu -Title "Install extensions via $editorCli?" -HideKeys -Items @(
                 "Y › Yes",
@@ -74,10 +58,11 @@ function Set-VSCodeConfig {
                 $extensions = Get-Content $extFile | Where-Object { $_.Trim() -ne "" }
                 foreach ($ext in $extensions) {
                     Write-Host -NoNewline "  $Dim$ext$Reset..."
+                    if ($env:WINRIFT_DRY_RUN -eq '1') { Write-Host ' [DRY-RUN]'; continue }
                     & $editorCli --install-extension $ext --force 2>&1 | Out-Null
-                    Write-Host " $Green ok$Reset"
+                    if ($LASTEXITCODE -eq 0) { Write-Host " $Green ok$Reset" } else { Write-Host " $Red failed ($LASTEXITCODE)$Reset" }
                 }
-                Write-Log -Message "Extensions installed ($($extensions.Count) total)." -Level SUCCESS
+                Write-Log -Message "Extension operations finished ($($extensions.Count) requested). Check individual results." -Level INFO
             }
         }
     }
@@ -124,11 +109,13 @@ function Set-WinTermConfig {
                 $downloadUrl = "https://github.com/ryanoasis/nerd-fonts/releases/latest/download/FiraCode.zip"
                 $sourceUrl = "https://github.com/ryanoasis/nerd-fonts"
                 Write-Log -Message "Source: $sourceUrl" -Level INFO
+                if($env:WINRIFT_DRY_RUN -eq '1'){Write-Log '[DRY-RUN] Hand off font download';Wait-ForUser;return}
                 Start-Process $downloadUrl
                 Write-Log -Message "Download started in browser." -Level INFO
                 Write-Log -Message "After download: extract zip, select all .ttf files, right-click > Install." -Level INFO
                 Write-Log -Message "Then restart Windows Terminal." -Level INFO
-                $fontInstalled = $true
+                $fontInstalled = $false
+                Write-Log 'Font download handed off. Installation has not been verified; return after installing the font.'
             }
             "2" {
                 if (-not (Get-Command scoop -ErrorAction SilentlyContinue)) {
@@ -139,6 +126,7 @@ function Set-WinTermConfig {
                     return
                 }
                 Write-Log -Message "Adding nerd-fonts bucket..." -Level INFO
+                if ($env:WINRIFT_DRY_RUN -eq '1') { Write-Log '[DRY-RUN] Install Maple Mono NF using scoop'; return }
                 & scoop bucket add nerd-fonts 2>$null
                 Write-Log -Message "Installing Maple Mono NF..." -Level INFO
                 & scoop install nerd-fonts/Maple-Mono-NF
@@ -175,7 +163,7 @@ function Set-WinTermConfig {
             Remove-Item $tempConfig -Force -ErrorAction SilentlyContinue
         } else {
             if (-not $fontInstalled -and $installFont) {
-                Write-Log -Message "Font installation was cancelled. Skipping config." -Level WARNING
+                Write-Log -Message "Font installation is unverified. Configuration was not applied." -Level WARNING
                 Wait-ForUser
                 return
             }
@@ -194,10 +182,14 @@ function Set-WinTermConfig {
 }
 
 function Set-PwshConfig {
-    if (-not (Get-Module -ListAvailable -Name Terminal-Icons)) {
+    $review=Show-InteractiveMenu -Title 'Review PowerShell Profile' -Items @('Replace the PowerShell 7 and Windows PowerShell profiles with bundled configuration.','Versioned backups are preserved. Terminal-Icons is offered if missing.','---','Y › Apply','N › Back')
+    if($review -ne 'Y'){return}
+    if ($env:WINRIFT_DRY_RUN -ne '1' -and -not (Get-Module -ListAvailable -Name Terminal-Icons)) {
         try {
             Write-Log -Message "Installing Terminal-Icons module..." -Level INFO
-            Install-Module -Name Terminal-Icons -Scope CurrentUser -Force
+            $offer=Show-InteractiveMenu -Title 'Terminal-Icons Dependency' -Items @('Y › Install Terminal-Icons','N › Continue without installing','B › Back')
+            if($offer -eq 'B'){return}
+            if($offer -eq 'Y'){Install-Module -Name Terminal-Icons -Scope CurrentUser -Force -ErrorAction Stop}
         } catch {
             Write-Log -Message "Failed to install Terminal-Icons: $($_.Exception.Message)" -Level ERROR
         }
@@ -253,6 +245,7 @@ function Set-OhMyPoshConfig {
                      -FileNames @("zen.toml") `
                      -TargetDir "$env:USERPROFILE\.config\ohmyposh" `
                      -ConfigName "Oh My Posh"
+    if($script:LastConfigResults.Count -gt 0 -and -not @($script:LastConfigResults|Where-Object Status -EQ Failed).Count){Set-WinriftPromptProfile -Engine OhMyPosh}
     Wait-ForUser
 }
 
@@ -280,16 +273,45 @@ function Install-Starship {
         }
     }
 
-    $docsDir = [Environment]::GetFolderPath('MyDocuments')
-    Write-Host ""
-    Write-Log -Message "To activate Starship, add this to your PowerShell profile:" -Level INFO
-    Write-Host "  Invoke-Expression (&starship init powershell)"
-    Write-Host ""
-    Write-Log -Message "PS 5.1 profile: $docsDir\WindowsPowerShell\Microsoft.PowerShell_profile.ps1" -Level INFO
-    if (Get-Command pwsh -ErrorAction SilentlyContinue) {
-        Write-Log -Message "PS 7+  profile: $docsDir\PowerShell\Microsoft.PowerShell_profile.ps1" -Level INFO
-    }
+    Set-WinriftPromptProfile -Engine Starship
     Wait-ForUser
+}
+
+function Set-WinriftPromptProfile {
+    param([ValidateSet('Starship','OhMyPosh')][string]$Engine,[string]$DocumentsRoot=[Environment]::GetFolderPath('MyDocuments'))
+    $profiles=@((Join-Path $DocumentsRoot 'PowerShell\Microsoft.PowerShell_profile.ps1'),(Join-Path $DocumentsRoot 'WindowsPowerShell\Microsoft.PowerShell_profile.ps1'))
+    $choice=Show-InteractiveMenu -Title 'Review Prompt Configuration' -Items (@("Prompt: $Engine",'Update the managed prompt block; preserve other profile content.')+$profiles+@('---','Y > Apply','N > Back'))
+    if($choice -ne 'Y'){return}
+    if($env:WINRIFT_DRY_RUN -eq '1'){Write-Log "[DRY-RUN] Configure $Engine in PowerShell profiles";return}
+    $body=if($Engine -eq 'Starship'){
+@'
+if (Get-Command starship -ErrorAction SilentlyContinue) {
+    Invoke-Expression (&starship init powershell)
+}
+'@
+    }else{
+@'
+if (Get-Command oh-my-posh -ErrorAction SilentlyContinue) {
+    oh-my-posh init pwsh --config "$env:USERPROFILE\.config\ohmyposh\zen.toml" | Invoke-Expression
+}
+'@
+    }
+    $known=@'
+if (Get-Command oh-my-posh -ErrorAction SilentlyContinue) {
+    oh-my-posh init pwsh --config "$env:USERPROFILE\.config\ohmyposh\zen.toml" | Invoke-Expression
+}
+'@
+    $newline=[Environment]::NewLine
+    foreach($profilePath in $profiles){
+        $content=if(Test-Path -LiteralPath $profilePath){[IO.File]::ReadAllText($profilePath)}else{''}
+        $content=$content -replace '(?ms)^# Winrift prompt begin\r?\n.*?^# Winrift prompt end\r?\n?',''
+        $content=$content.Replace(($known -replace '\r?\n',$newline),'').Replace(($known -replace '\r?\n',[string][char]10),'')
+        $new=$content.TrimEnd()+$newline+$newline+'# Winrift prompt begin'+$newline+($body -replace '\r?\n',$newline)+$newline+'# Winrift prompt end'+$newline
+        $stage=Join-Path (Get-WinriftStateRoot) ('staging\prompt-'+[guid]::NewGuid().ToString('N')+'.ps1')
+        [IO.Directory]::CreateDirectory((Split-Path $stage -Parent))|Out-Null
+        try{[IO.File]::WriteAllText($stage,$new,[Text.UTF8Encoding]::new($false));Copy-WinriftJournaledFile $stage $profilePath "$Engine prompt"}
+        finally{if(Test-Path -LiteralPath $stage){Remove-Item -LiteralPath $stage}}
+    }
 }
 
 function Set-FastFetchConfig {
@@ -328,115 +350,33 @@ function Set-FastFetchConfig {
 }
 
 function Invoke-ShellSetup {
-    # Full shell setup in one pass: Terminal → Font → PS Profile → Prompt → FastFetch
-    Clear-Host
-    Write-Host ""
-    Write-Log -Message "Starting Full Shell Setup..." -Level INFO
-    Write-Host ""
-
-    # 1. Windows Terminal
-    if (-not (Get-Command wt.exe -ErrorAction SilentlyContinue)) {
-        Write-Log -Message "Installing Windows Terminal..." -Level INFO
-        Install-WingetPackage -PackageId "Microsoft.WindowsTerminal" -Name "Windows Terminal"
-    } else {
-        Write-Log -Message "Windows Terminal already installed." -Level SKIP
-    }
-
-    # 2. WT config + Nerd Font
-    Set-WinTermConfig
-
-    # 3. PowerShell Profile + Terminal-Icons
-    Set-PwshConfig
-
-    # 4. Prompt theme
-    $prompt = Show-InteractiveMenu -Title "Shell Prompt Theme" -Items @(
-        "1 › Oh My Posh - Feature-rich, highly customizable",
-        "2 › Starship   - Fast, minimal, cross-platform",
-        "3 › Skip"
-    )
-    switch ($prompt) {
-        "1" { Set-OhMyPoshConfig }
-        "2" { Install-Starship }
-    }
-
-    # 5. FastFetch
-    Set-FastFetchConfig
-
-    Write-Host ""
-    Write-Log -Message "Full Shell Setup complete." -Level SUCCESS
-    Wait-ForUser
+    . "$PSScriptRoot\AppConfiguration.ps1"
+    Show-WinriftShellSetup
 }
-
 function Restore-ConfigBackup {
-    Clear-Host
-
-    $docsDir = [Environment]::GetFolderPath('MyDocuments')
-    $editorNames = @("Code", "Cursor", "Windsurf", "VSCodium", "Trae")
-
-    $locations = @(
-        @{ Name = "Windows Terminal"; Path = "$env:USERPROFILE\AppData\Local\Packages\Microsoft.WindowsTerminal_8wekyb3d8bbwe\LocalState\settings.json.bak" }
-        @{ Name = "PowerShell 5.1 Profile"; Path = "$docsDir\WindowsPowerShell\Microsoft.PowerShell_profile.ps1.bak" }
-        @{ Name = "PowerShell 7 Profile"; Path = "$docsDir\PowerShell\Microsoft.PowerShell_profile.ps1.bak" }
-        @{ Name = "Oh My Posh"; Path = "$env:USERPROFILE\.config\ohmyposh\zen.toml.bak" }
-        @{ Name = "FastFetch"; Path = "$env:USERPROFILE\.config\fastfetch\config.jsonc.bak" }
-        @{ Name = "GlazeWM"; Path = "$env:USERPROFILE\.glzr\glazewm\config.yaml.bak" }
-    )
-
-    foreach ($editor in $editorNames) {
-        $bakPath = "$env:USERPROFILE\AppData\Roaming\$editor\User\settings.json.bak"
-        $locations += @{ Name = "$editor (settings.json)"; Path = $bakPath }
-    }
-
-    $found = @()
-    foreach ($loc in $locations) {
-        if (Test-Path $loc.Path) {
-            $found += $loc
+    . "$PSScriptRoot\..\profile\Profile.ps1"
+    $map=Get-WinriftConfigMap
+    $items=@();$candidates=@()
+    foreach($key in $map.Keys){
+        $definition=$map[$key]
+        for($i=0;$i -lt $definition.Files.Count;$i++){
+            $name=if($definition.TargetNames){$definition.TargetNames[$i]}else{$definition.Files[$i]}
+            $target=Join-Path $definition.Target $name;$backup="$target.bak";$source=Join-Path $definition.SourceDir $definition.Files[$i]
+            if(Test-Path -LiteralPath $backup){$candidates+=@{Target=$target;Backup=$backup;Expected=$source;Name=$definition.Name}}
         }
     }
-
-    if ($found.Count -eq 0) {
-        Write-Log -Message "No config backups found." -Level INFO
-        Wait-ForUser
-        return
-    }
-
-    $menuItems = @()
-    for ($i = 0; $i -lt $found.Count; $i++) {
-        $bakInfo = Get-Item $found[$i].Path
-        $size = '{0:N1} KB' -f ($bakInfo.Length / 1KB)
-        $date = $bakInfo.LastWriteTime.ToString('yyyy-MM-dd HH:mm')
-        $menuItems += "$($i + 1) › $($found[$i].Name)  ($date, $size)"
-    }
-    $allIdx = $found.Count + 1
-    $cancelIdx = $found.Count + 2
-    $menuItems += "---"
-    $menuItems += "$allIdx › Restore all"
-    $menuItems += "$cancelIdx › Cancel"
-
-    $choice = Show-InteractiveMenu -Title "Restore Config Backups" -Items $menuItems
-
-    if ($null -eq $choice -or $choice -eq "$cancelIdx") { return }
-
-    $toRestore = @()
-    if ($choice -eq "$allIdx") {
-        $toRestore = $found
-    } else {
-        $idx = 0
-        if ([int]::TryParse($choice, [ref]$idx) -and $idx -ge 1 -and $idx -le $found.Count) {
-            $toRestore = @($found[$idx - 1])
-        } else {
-            return
-        }
-    }
-
-    foreach ($item in $toRestore) {
-        $original = $item.Path -replace '\.bak$', ''
-        try {
-            Copy-Item -Path $item.Path -Destination $original -Force
-            Write-Log -Message "Restored: $($item.Name)" -Level SUCCESS
-        } catch {
-            Write-Log -Message "Failed to restore $($item.Name): $($_.Exception.Message)" -Level ERROR
-        }
-    }
+    if(-not $candidates.Count){Write-Log 'No legacy configuration backups found. New backups are in Action History.';Wait-ForUser;return}
+    for($i=0;$i -lt $candidates.Count;$i++){$items+="$i › $($candidates[$i].Name) — legacy .bak"}
+    $choice=Show-InteractiveMenu -Title 'Legacy Configuration Backups' -Items ($items+@('---','B › Back'))
+    $index=0;if(-not[int]::TryParse($choice,[ref]$index) -or $index -lt 0 -or $index -ge $candidates.Count){return}
+    $candidate=$candidates[$index]
+    $current=Get-WinriftFileSnapshot $candidate.Target;$expected=Get-WinriftFileSnapshot $candidate.Expected;$previous=Get-WinriftFileSnapshot $candidate.Backup
+    if(-not $current.Exists -or $current.Hash -ne $expected.Hash){Show-InfoBox 'Legacy Backup Conflict' @($candidate.Target,'Current file differs from the known bundled configuration. Its expected post-Winrift state cannot be verified.','The current file and legacy backup are preserved.');Wait-ForUser;return}
+    $confirm=Show-InteractiveMenu -Title 'Review Legacy Configuration Restore' -Items @($candidate.Target,"Current hash: $($current.Hash)","Backup hash: $($previous.Hash)",'---','Y › Restore Previous State','N › Back')
+    if($confirm -ne 'Y'){return}
+    $record=New-WinriftActionRecord -Kind File -Label ('Legacy '+$candidate.Name) -Target @{Path=$candidate.Target} -Before @{Exists=$true;Hash=$previous.Hash;BackupPath=$candidate.Backup} -Proposed $current
+    if($env:WINRIFT_DRY_RUN -eq '1'){Write-Log '[DRY-RUN] Restore legacy configuration';Wait-ForUser;return}
+    Save-WinriftActionRecord $record
+    try{$result=Restore-WinriftFileAction $record;Write-Log "Legacy configuration restore: $result"}catch{Write-Log $_.Exception.Message -Level ERROR}
     Wait-ForUser
 }
