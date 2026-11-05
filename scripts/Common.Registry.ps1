@@ -16,7 +16,7 @@ function Add-AuditEntry {
 }
 
 function Show-AuditTable {
-    param([switch]$NamesOnly, [string[]]$Notes)
+    param([switch]$NamesOnly, [scriptblock]$GetNote)
     if ($script:AuditQueue.Count -eq 0) {
         Write-Log -Message "No changes to preview." -Level INFO
         return $false
@@ -29,38 +29,60 @@ function Show-AuditTable {
         return $false
     }
 
-    $items = @()
-    foreach ($e in $changed) {
-        if ($NamesOnly) { $items += $e.Message; continue }
-        $cur = ($null -eq $e.Current) ? "(not set)" : "$($e.Current)"
-        $new = "$($e.Value)"
-        $items += "$($e.Message)  $Dim$cur$Reset $Yellow->$Reset $Green$new$Reset"
-    }
-    if ($Notes.Count) { $items += '---'; $items += $Notes }
-    if ($skipped -gt 0) { $items += "---"; $items += "$Dim$skipped value(s) already match — skipped$Reset" }
-    $summary = if ($changed.Count -eq 1) { '1 change to apply' } else { "$($changed.Count) changes to apply" }
-    $actions = @('Y › Apply changes', 'N › Cancel')
-    $review = $items + @('---', $summary, '---') + $actions
-    if ($review.Count -gt ([Console]::WindowHeight - 7)) {
-        $review = @($summary, '---', 'V › View Changes') + $actions
-    }
+    $editable = $changed
+    while ($true) {
+        $items = @()
+        foreach ($entry in $changed) {
+            if ($NamesOnly) { $items += $entry.Message; continue }
+            $current = if ($null -eq $entry.Current) { '(not set)' } else { "$($entry.Current)" }
+            $items += "$($entry.Message)  $current → $($entry.Value)"
+        }
+        if ($GetNote) {
+            $notes = @($changed | ForEach-Object { & $GetNote $_.Name } | Select-Object -Unique)
+            if ($notes.Count) { $items += @('---') + $notes }
+        }
+        if ($skipped -gt 0) { $items += @('---', "$skipped already match") }
+        $summary = switch ($changed.Count) {
+            0 { 'No changes selected' }
+            1 { '1 change to apply' }
+            default { "$($changed.Count) changes to apply" }
+        }
 
-    do {
-        $choice = Show-InteractiveMenu -Title 'Review Changes' -HideKeys -ActionsOnly -Items $review
+        $actions = @()
+        if ($NamesOnly) { $actions += 'E › Edit Selection' }
+        if ($changed.Count) { $actions += 'Y › Apply Changes' }
+        $actions += 'N › Cancel'
+        $review = $items + @('---', $summary, '---') + $actions
+        if ($review.Count -gt ([Console]::WindowHeight - 7)) {
+            $review = @($summary, '---', 'V › View Changes') + $actions
+        }
+
+        $choice = Show-InteractiveMenu -Title 'Review Changes' -HideKeys -Items $review
         if ($choice -eq 'V') {
             Clear-Host
             Show-InfoBox -Title 'Selected Changes' -Items $items
             Wait-ForUser
-        }
-    } while ($choice -eq 'V')
-    return ($choice -eq "Y")
+        } elseif ($choice -eq 'E') {
+            $editItems = @(for ($i = 0; $i -lt $editable.Count; $i++) { "$i › $($editable[$i].Message)" })
+            $defaults = @($editable | ForEach-Object { $_ -in $changed })
+            $confirmed = $false
+            $keep = @(Show-MultiSelect -Title 'Edit Selection' -Items $editItems -Defaults $defaults -Confirmed ([ref]$confirmed) -Hint 'Space toggle  A all  Enter save  Esc back')
+            if ($confirmed) { $changed = @($keep | ForEach-Object { $editable[[int]$_] }) }
+        } elseif ($choice -eq 'Y') {
+            $script:AuditQueue.Clear()
+            foreach ($entry in $changed) { $script:AuditQueue.Add($entry) }
+            return $true
+        } else { return $false }
+    }
 }
 
 function Invoke-AuditedApply {
+    param([switch]$Report)
     $changed = @($script:AuditQueue | Where-Object { Test-WinriftQueuedChange $_ })
     foreach ($e in $changed) {
-        if ($e.Kind -eq 'System') { Invoke-WinriftSystemAction $e; continue }
-        Set-RegistryValue -Path $e.Path -Name $e.Name -Type $e.Type -Value $e.Value -Message $e.Message
+        if ($e.Kind -eq 'System') { Invoke-WinriftSystemAction $e }
+        else { Set-RegistryValue -Path $e.Path -Name $e.Name -Type $e.Type -Value $e.Value -Message $e.Message }
+        if ($Report) { [pscustomobject]@{ Name = $e.Message; Status = $script:LastActionResult.Status } }
     }
     $script:AuditQueue.Clear()
 }

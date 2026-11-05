@@ -162,7 +162,10 @@ function Add-WinriftSystemAction {
     }
     if ($script:CollectMode) { $script:AuditQueue.Add($entry) }
     elseif ($entry.Supported) { Invoke-WinriftSystemAction $entry }
-    else { Write-Log "$Message unavailable: $($entry.Reason)" -Level WARNING }
+    else {
+        $script:LastActionResult = @{ Status = 'Unsupported'; Error = $entry.Reason }
+        Write-Log "$Message unavailable: $($entry.Reason)" -Level WARNING
+    }
 }
 
 function Invoke-WinriftSystemAction {

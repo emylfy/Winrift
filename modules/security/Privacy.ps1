@@ -1,6 +1,98 @@
 . "$PSScriptRoot\..\..\scripts\Common.ps1"
 
+function Remove-WinriftPrivacyApp {
+    param([string]$Name, [System.Collections.Generic.List[object]]$Results)
+
+    $issues = $false
+    $removed = $false
+    try {
+        foreach ($package in (Get-AppxPackage -Name $Name -AllUsers -ErrorAction Stop)) {
+            if ($package.NonRemovable) {
+                $issues = $true
+                $Results.Add(@{ Name = "$Name (protected app)"; Status = 'Unsupported' })
+                Write-Log "Protected app skipped: $($package.PackageFullName)" -Level SKIP
+                continue
+            }
+            try {
+                Remove-AppxPackage -Package $package.PackageFullName -AllUsers -ErrorAction Stop
+                $removed = $true
+            } catch {
+                $issues = $true
+                $Results.Add(@{ Name = "$Name (installed app)"; Status = 'Failed' })
+                Write-Log "Could not remove $($package.PackageFullName): $($_.Exception.Message)" -Level ERROR
+            }
+        }
+    } catch {
+        $issues = $true
+        $Results.Add(@{ Name = "$Name (installed app lookup)"; Status = 'Failed' })
+        Write-Log "Could not query installed packages for ${Name}: $($_.Exception.Message)" -Level ERROR
+    }
+
+    try {
+        $provisioned = Get-AppxProvisionedPackage -Online -ErrorAction Stop |
+            Where-Object { $_.DisplayName -eq $Name -or $_.PackageName -like "$Name`_*" }
+        foreach ($package in $provisioned) {
+            try {
+                Remove-AppxProvisionedPackage -PackageName $package.PackageName -Online -ErrorAction Stop | Out-Null
+                $removed = $true
+            } catch {
+                $issues = $true
+                $Results.Add(@{ Name = "$Name (provisioned app)"; Status = 'Failed' })
+                Write-Log "Could not remove provisioned package $($package.PackageName): $($_.Exception.Message)" -Level ERROR
+            }
+        }
+    } catch {
+        $issues = $true
+        $Results.Add(@{ Name = "$Name (provisioned app lookup)"; Status = 'Failed' })
+        Write-Log "Could not query provisioned packages for ${Name}: $($_.Exception.Message)" -Level ERROR
+    }
+
+    if ($removed) { $Results.Add(@{ Name = $Name; Status = 'Applied' }) }
+    if ($issues) { return }
+
+    $deprovisioned = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Appx\AppxAllUserStore\Deprovisioned\${Name}_cw5n1h2txyewy"
+    try {
+        if (-not (Test-Path -LiteralPath $deprovisioned -ErrorAction Stop)) {
+            New-Item -Path $deprovisioned -Force -ErrorAction Stop | Out-Null
+        }
+        if (-not $removed) { $Results.Add(@{ Name = "$Name (already absent)"; Status = 'AlreadyMatches' }) }
+    } catch {
+        $Results.Add(@{ Name = "$Name (deprovisioning marker)"; Status = 'Failed' })
+        Write-Log "Could not save deprovisioning marker for ${Name}: $($_.Exception.Message)" -Level ERROR
+    }
+}
+
+function Add-WinriftPrivacySystemResult {
+    param([System.Collections.Generic.List[object]]$Results, [string]$Id, $Value, [string]$Message)
+
+    Add-WinriftSystemAction -Id $Id -Value $Value -Message $Message
+    $Results.Add(@{ Name = $Message; Status = $script:LastActionResult.Status })
+}
+
 function Invoke-PrivacyHardening {
+    param([System.Collections.Generic.List[object]]$Results = [System.Collections.Generic.List[object]]::new())
+
+    $dry = $env:WINRIFT_DRY_RUN -eq '1'
+
+    try {
+        Invoke-WinriftPrivacyOperations -Results $Results
+    } finally {
+        if (-not $dry) {
+            try { Save-TweakBackup } catch {
+                $Results.Add(@{ Name = 'Tweak backup'; Status = 'Failed' })
+                Write-Log "Could not save tweak backup: $($_.Exception.Message)" -Level ERROR
+            }
+            try { Save-DesiredState } catch {
+                $Results.Add(@{ Name = 'Desired state'; Status = 'Failed' })
+                Write-Log "Could not save desired state: $($_.Exception.Message)" -Level ERROR
+            }
+        }
+    }
+}
+
+function Invoke-WinriftPrivacyOperations {
+    param([System.Collections.Generic.List[object]]$Results)
+
     $ErrorActionPreference = 'Continue'
     $dry = $env:WINRIFT_DRY_RUN -eq '1'
 
@@ -394,6 +486,7 @@ function Invoke-PrivacyHardening {
     foreach ($r in ($registryTweaks | Where-Object { -not (Test-WinriftUpdaterPolicy $_) -and (Test-WinriftPrivacyEntry $_) })) {
         $t = $r.Type ?? "DWord"
         Set-RegistryValue -Path $r.Path -Name $r.Name -Type $t -Value $r.Value -Message "Privacy: $($r.Name)"
+        $Results.Add(@{ Name = $r.Name; Status = $script:LastActionResult.Status })
     }
 
     if ($dry) {
@@ -407,7 +500,25 @@ function Invoke-PrivacyHardening {
         @{ Path = "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Applets\Regedit"; Name = "LastKey" }
         @{ Path = "HKLM:\Software\Microsoft\VisualStudio\DiagnosticsHub"; Name = "LogLevel" }
         @{ Path = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Run"; Name = "OneDriveSetup" }
-    ) | ForEach-Object { Remove-ItemProperty -Path $_.Path -Name $_.Name -Force }
+    ) | ForEach-Object {
+        $entry = $_
+        try {
+            $key = Get-Item -LiteralPath $entry.Path -ErrorAction Stop
+            if ($entry.Name -in $key.Property) {
+                Remove-ItemProperty -LiteralPath $entry.Path -Name $entry.Name -Force -ErrorAction Stop
+                $Results.Add(@{ Name = $entry.Name; Status = 'Applied' })
+            } else {
+                $Results.Add(@{ Name = $entry.Name; Status = 'AlreadyMatches' })
+            }
+        } catch {
+            if ($_.CategoryInfo.Category -eq 'ObjectNotFound') {
+                $Results.Add(@{ Name = $entry.Name; Status = 'AlreadyMatches' })
+            } else {
+                $Results.Add(@{ Name = $entry.Name; Status = 'Failed' })
+                Write-Log "Could not remove $($entry.Name): $($_.Exception.Message)" -Level ERROR
+            }
+        }
+    }
 
     Write-Host "  Disabling services..."
     @(
@@ -418,10 +529,18 @@ function Invoke-PrivacyHardening {
         "mrxsmb10", "XblGameSave", "XboxNetApiSvc", "XblAuthManager", "MapsBroker", "RetailDemo"
     ) | Where-Object { -not (Test-WinriftUpdaterName $_) } | ForEach-Object {
         $svc = Get-Service -Name $_ -ErrorAction SilentlyContinue
-        if (-not $svc) { return }
-        $currentState = Get-WinriftSystemValue ('Service.' + $svc.Name)
-        $delay = ($currentState.Split('|'))[2]
-        Add-WinriftSystemAction -Id ('Service.' + $svc.Name) -Value "Disabled|Stopped|$delay" -Message "Disable privacy service $($svc.Name)"
+        if (-not $svc) {
+            $Results.Add(@{ Name = $_; Status = 'Unsupported' })
+            return
+        }
+        try {
+            $currentState = Get-WinriftSystemValue ('Service.' + $svc.Name)
+            $delay = ($currentState.Split('|'))[2]
+            Add-WinriftPrivacySystemResult -Results $Results -Id ('Service.' + $svc.Name) -Value "Disabled|Stopped|$delay" -Message "Disable privacy service $($svc.Name)"
+        } catch {
+            $Results.Add(@{ Name = $svc.Name; Status = 'Failed' })
+            Write-Log "Could not prepare service $($svc.Name): $($_.Exception.Message)" -Level ERROR
+        }
     }
 
     Write-Host "  Disabling scheduled tasks..."
@@ -454,7 +573,7 @@ function Invoke-PrivacyHardening {
         "NvTmRepOnLogon_{B2FE1952-0186-46C3-BAEC-A80AA35AC5B8}",
         "\Mozilla\Firefox Default Browser Agent 308046B0AF4A39CB",
         "\Mozilla\Firefox Default Browser Agent D2CEEC440E2074BD"
-    ) | Where-Object { -not (Test-WinriftUpdaterName $_) } | ForEach-Object { Add-WinriftSystemAction -Id ('Task.' + $_) -Value $false -Message "Disable privacy task $_" }
+    ) | Where-Object { -not (Test-WinriftUpdaterName $_) } | ForEach-Object { Add-WinriftPrivacySystemResult -Results $Results -Id ('Task.' + $_) -Value $false -Message "Disable privacy task $_" }
 
     Write-Host "  Removing bloatware apps..."
     @(
@@ -466,11 +585,7 @@ function Invoke-PrivacyHardening {
         "Microsoft.CommsPhone", "Microsoft.Windows.Holographic.FirstRun",
         "Microsoft.Windows.ParentalControls", "Microsoft.WindowsFeedback", "Windows.CBSPreview"
     ) | Where-Object { $_ -ne 'Microsoft.549981C3F5F10' } | ForEach-Object {
-        Get-AppxPackage -Name $_ -AllUsers | Remove-AppxPackage -AllUsers
-        $appName = $_
-        Get-AppxProvisionedPackage -Online | Where-Object { $_.DisplayName -eq $appName -or $_.PackageName -like "$appName`_*" } | Remove-AppxProvisionedPackage -Online
-        $deprovKey = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Appx\AppxAllUserStore\Deprovisioned\${_}_cw5n1h2txyewy"
-        if (-not (Test-Path $deprovKey)) { New-Item -Path $deprovKey -Force | Out-Null }
+        Remove-WinriftPrivacyApp -Name $_ -Results $Results
     }
 
     Write-Host "  Disabling Windows features..."
@@ -479,11 +594,11 @@ function Invoke-PrivacyHardening {
         "TelnetClient", "TFTP", "SMB1Protocol", "SMB1Protocol-Client",
         "SMB1Protocol-Server", "ScanManagementConsole", "FaxServicesClientPackage",
         "Xps-Foundation-Xps-Viewer"
-    ) | ForEach-Object { Add-WinriftSystemAction -Id ('Feature.'+$_) -Value Disabled -Message "Disable Windows feature $_" }
+    ) | ForEach-Object { Add-WinriftPrivacySystemResult -Results $Results -Id ('Feature.'+$_) -Value Disabled -Message "Disable Windows feature $_" }
 
     Write-Host "  Setting environment variables..."
-    Add-WinriftSystemAction -Id Environment.DOTNET_CLI_TELEMETRY_OPTOUT -Value '1' -Message 'Set machine .NET telemetry opt-out'
-    Add-WinriftSystemAction -Id Environment.POWERSHELL_TELEMETRY_OPTOUT -Value '1' -Message 'Set machine PowerShell telemetry opt-out'
+    Add-WinriftPrivacySystemResult -Results $Results -Id Environment.DOTNET_CLI_TELEMETRY_OPTOUT -Value '1' -Message 'Set machine .NET telemetry opt-out'
+    Add-WinriftPrivacySystemResult -Results $Results -Id Environment.POWERSHELL_TELEMETRY_OPTOUT -Value '1' -Message 'Set machine PowerShell telemetry opt-out'
 
     Write-Host "  Blocking telemetry domains..."
     $hostsFile = "$env:SystemRoot\System32\drivers\etc\hosts"
@@ -517,6 +632,7 @@ function Invoke-PrivacyHardening {
         try{
             [IO.File]::WriteAllText($stage,$hostsContent.TrimEnd()+"`r`n"+($newEntries -join "`r`n")+"`r`n",[Text.UTF8Encoding]::new($false))
             Copy-WinriftJournaledFile -Source $stage -Destination $hostsFile -Label 'Privacy hosts entries'
+            $Results.Add(@{ Name = 'Hosts file'; Status = $script:LastFileResult.Status })
         }finally{if(Test-Path -LiteralPath $stage){Remove-Item -LiteralPath $stage}}
     }
 
@@ -541,7 +657,7 @@ function Invoke-PrivacyHardening {
     Write-Host "  Applying miscellaneous hardening..."
     & net user defaultuser0 /delete 2>$null
     & dism.exe /online /Remove-DefaultAppAssociations 2>$null
-    Add-WinriftSystemAction -Id ServiceDependencies.lanmanworkstation -Value 'bowser/mrxsmb20/nsi' -Message 'Set Workstation service dependencies (legacy compatibility required)'
+    Add-WinriftPrivacySystemResult -Results $Results -Id ServiceDependencies.lanmanworkstation -Value 'bowser/mrxsmb20/nsi' -Message 'Set Workstation service dependencies (legacy compatibility required)'
     $key = 'HKLM:SYSTEM\CurrentControlSet\services\NetBT\Parameters\Interfaces'
     Get-ChildItem $key | ForEach-Object { Set-ItemProperty -Path "$key\$($_.PSChildName)" -Name NetbiosOptions -Value 2 }
 
@@ -656,9 +772,6 @@ function Invoke-PrivacyHardening {
         $expanded = [System.Environment]::ExpandEnvironmentVariables($_)
         Remove-Item -Path $expanded -Recurse -Force -ErrorAction SilentlyContinue
     }
-
-    Save-TweakBackup
-    Save-DesiredState
 }
 
 function Test-WinriftPrivacyEntry {
@@ -686,7 +799,7 @@ function Get-WinriftPrivacyManifest {
     # Read literal data from the same implementation that Apply will execute.
     # SafeGetValue rejects executable expressions; the preview never runs it.
     $ast = [Management.Automation.Language.Parser]::ParseFile($PSCommandPath, [ref]$null, [ref]$null)
-    $function = $ast.Find({param($n) $n -is [Management.Automation.Language.FunctionDefinitionAst] -and $n.Name -eq 'Invoke-PrivacyHardening'}, $true)
+    $function = $ast.Find({param($n) $n -is [Management.Automation.Language.FunctionDefinitionAst] -and $n.Name -eq 'Invoke-WinriftPrivacyOperations'}, $true)
     $arrays = @($function.FindAll({param($n) $n -is [Management.Automation.Language.ArrayExpressionAst]}, $true))
     return @{
         Registry = @($arrays[0].SafeGetValue() | Where-Object { -not (Test-WinriftUpdaterPolicy $_) -and (Test-WinriftPrivacyEntry $_) })
@@ -776,8 +889,43 @@ function Show-PrivacyMenu {
         if ($choice -eq 'D') { Show-WinriftPrivacyDetails -Manifest (Get-WinriftPrivacyManifest) }
     } while ($choice -eq 'D')
     if ($choice -ne 'A') { return }
-    Invoke-PrivacyHardening
-    Write-Log 'Privacy operations finished. Inspect individual errors and unsupported items in the log.'
+    Clear-Host
+    $results = [System.Collections.Generic.List[object]]::new()
+    $interrupted = $false
+    try {
+        Invoke-PrivacyHardening -Results $results 6>$null 2>&1 | ForEach-Object {
+            if ($_ -is [System.Management.Automation.ErrorRecord]) {
+                $results.Add(@{ Name = $_.CategoryInfo.Activity; Status = 'Failed' })
+                Write-Log ($_.ToString()) -Level ERROR -Quiet
+            }
+        }
+    } catch {
+        $interrupted = $true
+        Write-Log "Privacy Setup stopped early: $($_.Exception.Message)" -Level ERROR -Quiet
+    }
+
+    $summary = @(if ($interrupted) { 'Privacy Setup stopped early. Earlier changes may still be applied.' })
+    foreach ($status in @('Applied', 'AlreadyMatches', 'Unsupported', 'Failed', 'DryRun')) {
+        $matching = @($results | Where-Object { $_.Status -eq $status })
+        if (-not $matching.Count) { continue }
+        $label = switch ($status) {
+            'Applied' { 'Applied' }
+            'AlreadyMatches' { 'Already matched or absent' }
+            'Unsupported' { 'Skipped' }
+            'Failed' { 'Failed' }
+            'DryRun' { 'Would apply' }
+        }
+        $summary += "$label · $($matching.Count)"
+    }
+    $failures = @($results | Where-Object { $_.Status -eq 'Failed' } | Select-Object -ExpandProperty Name -Unique)
+    if ($failures.Count) {
+        $summary += '--- Could not complete ---'
+        $summary += @($failures | Select-Object -First 5)
+        if ($failures.Count -gt 5) { $summary += 'See the log for the remaining failures.' }
+    }
+    $summary += 'Counts cover operations with a recorded result.'
+    $summary += 'See Help → Open Logs for details.'
+    Show-InfoBox -Title 'Privacy Setup Results' -Items $summary
     Wait-ForUser
 }
 

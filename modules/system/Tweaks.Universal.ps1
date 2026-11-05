@@ -69,12 +69,46 @@ function Show-WinriftTweakSelection {
     $selected = @(Show-MultiSelect -Title $Title -Items $items -Disabled $disabled -Markers $markers -Descriptions $details -DetailsOnly -Defaults $defaults -OnSelectionChanged $changedSelection)
     $script:AuditQueue.Clear()
     foreach ($key in $selected) { $script:AuditQueue.Add($entries[[int]$key]) }
-    if ($script:AuditQueue.Count -and (Show-AuditTable -NamesOnly -Notes @($script:AuditQueue | ForEach-Object { Get-WinriftTweakNote $_.Name } | Select-Object -Unique))) {
-        Invoke-AuditedApply
-        Save-TweakBackup; Save-DesiredState
-        Write-Log 'Selected operations finished. Review individual results; restart where required.'
-        Wait-ForUser
+    if ($script:AuditQueue.Count -and (Show-AuditTable -NamesOnly -GetNote { param($name) Get-WinriftTweakNote $name })) {
+        $approved = @($script:AuditQueue | ForEach-Object { [array]::IndexOf($entries, $_) })
+        & $changedSelection $approved
+        Invoke-WinriftTweakApplyWithResults
     } else { Clear-AuditQueue }
+}
+
+function Invoke-WinriftTweakApplyWithResults {
+    param([string]$Title = 'Tweak Results', [switch]$MayRequireRestart)
+
+    Clear-Host
+    $results = @(Invoke-AuditedApply -Report 6>$null)
+    $saveFailed = $false
+    try {
+        Save-TweakBackup 6>$null
+        Save-DesiredState 6>$null
+    } catch {
+        $saveFailed = $true
+        Write-Log "Could not save tweak backup or state: $($_.Exception.Message)" -Level ERROR -Quiet
+    }
+
+    $summary = @()
+    if ($results.Count -eq 0) { $summary += 'No changes needed.' }
+    foreach ($status in @('Applied', 'AlreadyMatches', 'DryRun')) {
+        $count = @($results | Where-Object Status -EQ $status).Count
+        if (-not $count) { continue }
+        $label = switch ($status) {
+            'Applied' { 'Applied' }
+            'AlreadyMatches' { 'Already matched' }
+            'DryRun' { 'Would apply' }
+        }
+        $summary += "$label · $count"
+    }
+    $failed = @($results | Where-Object { $_.Status -notin @('Applied', 'AlreadyMatches', 'DryRun') })
+    if ($failed.Count) { $summary += @('--- Could not apply ---') + @($failed.Name) }
+    if ($saveFailed) { $summary += 'Could not save backup or state.' }
+    if ($failed.Count -or $saveFailed) { $summary += 'See Help → Open Logs for details.' }
+    if ($MayRequireRestart -and ($results.Status -contains 'Applied')) { $summary += 'A restart may be required.' }
+    Show-InfoBox -Title $Title -Items $summary
+    Wait-ForUser
 }
 
 function Invoke-UniversalTweaks {

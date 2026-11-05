@@ -60,9 +60,7 @@ function Show-WinriftGpuPreset {
     }
     if ($choice -ne 'Y') { return }
     foreach ($entry in $entries) { $script:AuditQueue.Add($entry) }
-    Invoke-AuditedApply; Save-TweakBackup; Save-DesiredState
-    Write-Log 'Preset operations finished. Review individual results; restart may be required.'
-    Wait-ForUser
+    Invoke-WinriftTweakApplyWithResults -Title "$Vendor Preset Results" -MayRequireRestart
 }
 function Invoke-NvidiaTweaks {
     param (

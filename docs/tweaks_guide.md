@@ -24,7 +24,7 @@ On a laptop, pay particular attention to the idle and power settings. Disabling 
 
 Open **Set Up Windows → Performance Tweaks**. Choose **Review Recommended Preset** for a short list, or **All Tweaks** to pick specific changes. **GPU Tweaks** and **Power Settings** have their own menus.
 
-Use **Space** to select an item, **A** to select applicable items, and **?** to see the current and proposed values. A filled circle marks a selection. A check mark means the setting already matches. Press **Enter** to review your selection, then confirm **Apply**. You can return from the review to change your selection.
+Use **Space** to select an item, **A** to select applicable items, and **→** to see the current and proposed values. A filled circle marks a selection. A check mark means the setting already matches. Press **Enter** to review your selection, then confirm **Apply**. You can return from the review to change your selection.
 
 ## Recommended Preset
 
@@ -234,7 +234,7 @@ Open **GPU Tweaks → DirectX Preset** to review the full set, or use **Individu
 
 ## Power Management
 
-Open **Performance Tweaks → Power Settings**. Use **Select Power Plan** to activate an available plan or try Ultimate Performance. Winrift records the previous active plan for Undo. **Open Windows Power Mode** opens the native Settings page.
+Open **Performance Tweaks → Power Settings**. **Enable Ultimate Performance** activates that plan and records the previous plan for Undo. **Open Windows Power Plans** opens Power Options, where you can switch to Balanced or another available plan.
 
 The advanced standby and idle options are separate from the plan picker. They can increase heat and battery drain.
 
