@@ -102,7 +102,7 @@ function Get-WinriftMenuFrame {
     param(
         [string]$Title, [string[]]$Items, [int]$HighlightIndex = -1,
         [bool[]]$Checked, [string[]]$Markers, [hashtable]$Descriptions, [string]$Hint,
-        [int]$Width = 80, [int]$Height = 25, [int]$Top = 0, [switch]$HideHint
+        [int]$Width = 80, [int]$Height = 25, [int]$Top = 0, [switch]$HideHint, [hashtable]$FocusedDescriptions
     )
     $widthBudget = [math]::Max(1, $Width - 5)
     $rows = [System.Collections.Generic.List[string]]::new()
@@ -110,8 +110,10 @@ function Get-WinriftMenuFrame {
     $rows.Add("    ${Bold}${Ice}$(ConvertTo-WinriftLine $Title ([math]::Max(1,$widthBudget - 1)))$Reset")
     $rows.Add('')
     # Reserve title, context, hint and a final console row to avoid wrapping.
-    $visible = [math]::Max(1, $Height - 9)
-    if ($Items.Count -le $Height - 7 -and -not $Descriptions -and -not ($Items -like "*~*")) {
+    $focusedDescription = if ($FocusedDescriptions) { $FocusedDescriptions[$HighlightIndex] }
+    $descriptionRows = if ($focusedDescription) { 1 } else { 0 }
+    $visible = [math]::Max(1, $Height - 9 - $descriptionRows)
+    if ($Items.Count -le $Height - 7 - $descriptionRows -and -not $Descriptions -and -not ($Items -like "*~*")) {
         $visible = $Items.Count
     }
     $topLimit = [math]::Max(0, $Items.Count - $visible)
@@ -152,6 +154,9 @@ function Get-WinriftMenuFrame {
         $tail = if ($glyph) { ' ' * [math]::Max(1,$labelWidth - $label.Length + 1) + "$Dim$glyph$Reset" } else { '' }
         if ($i -eq $HighlightIndex) {
             $rows.Add("   ${Bold}${Cyan}▌${Reset} ${Bold}$label${Reset}$tail")
+            if ($focusedDescription) {
+                $rows.Add("       $Dim$(ConvertTo-WinriftLine $focusedDescription ($Width - 8))$Reset")
+            }
         } else { $rows.Add("     $label$tail") }
     }
     $rows.Add($(if ($last -lt $Items.Count) { "     ${Dim}▼ …$Reset" } else { '' }))
@@ -188,7 +193,7 @@ function _Draw-InteractiveBox {
         [string]$Title, [string[]]$Items, [int]$HighlightIndex = -1,
         [bool[]]$Checked = $null, [string[]]$Markers, [int]$PrevLines = 0, [ref]$VpTop,
         [switch]$NoBox, [string]$Hint, [switch]$HideKeys,
-        [hashtable]$Descriptions, [int]$SplitAt = 0, [string]$TitleRight, [switch]$HideHint
+        [hashtable]$Descriptions, [int]$SplitAt = 0, [string]$TitleRight, [switch]$HideHint, [hashtable]$FocusedDescriptions
     )
     $width = try { [Console]::WindowWidth } catch { 80 }
     $height = try { [Console]::WindowHeight } catch { 25 }
@@ -198,7 +203,7 @@ function _Draw-InteractiveBox {
     $width = [math]::Max(4, $width)
     $height = [math]::Max(2, $height)
     $top = if ($null -ne $VpTop) { $VpTop.Value } else { 0 }
-    $frame = Get-WinriftMenuFrame -Title $Title -Items $Items -HighlightIndex $HighlightIndex -Checked $Checked -Markers $Markers -Descriptions $Descriptions -Hint $Hint -Width $width -Height $height -Top $top -HideHint:$HideHint
+    $frame = Get-WinriftMenuFrame -Title $Title -Items $Items -HighlightIndex $HighlightIndex -Checked $Checked -Markers $Markers -Descriptions $Descriptions -Hint $Hint -Width $width -Height $height -Top $top -HideHint:$HideHint -FocusedDescriptions $FocusedDescriptions
     if ($null -ne $VpTop) { $VpTop.Value = $frame.Top }
     $esc = [char]27
     $sb = [Text.StringBuilder]::new()
@@ -462,6 +467,7 @@ function Show-MultiSelect {
         [bool[]]$Disabled, [string[]]$Markers, [hashtable]$Descriptions,
         [switch]$NoBox,
         [switch]$DetailsOnly,
+        [hashtable]$FocusedDescriptions,
         [scriptblock]$OnSelectionChanged
     )
 
@@ -485,9 +491,9 @@ function Show-MultiSelect {
     try {
         while ($true) {
             if ($NoBox) {
-                $prevLines = _Draw-InteractiveBox -Title $Title -Items $Items -HighlightIndex $selectIdx[$cursor] -Checked $checked -Markers $Markers -Descriptions $inlineDescriptions -PrevLines $prevLines -VpTop ([ref]$vpTop) -NoBox
+                $prevLines = _Draw-InteractiveBox -Title $Title -Items $Items -HighlightIndex $selectIdx[$cursor] -Checked $checked -Markers $Markers -Descriptions $inlineDescriptions -FocusedDescriptions $FocusedDescriptions -PrevLines $prevLines -VpTop ([ref]$vpTop) -NoBox
             } else {
-                $prevLines = _Draw-InteractiveBox -Title $Title -Items $Items -HighlightIndex $selectIdx[$cursor] -Checked $checked -Markers $Markers -Descriptions $inlineDescriptions -PrevLines $prevLines -VpTop ([ref]$vpTop)
+                $prevLines = _Draw-InteractiveBox -Title $Title -Items $Items -HighlightIndex $selectIdx[$cursor] -Checked $checked -Markers $Markers -Descriptions $inlineDescriptions -FocusedDescriptions $FocusedDescriptions -PrevLines $prevLines -VpTop ([ref]$vpTop)
             }
 
             [Console]::TreatControlCAsInput = $true

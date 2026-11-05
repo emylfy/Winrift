@@ -53,13 +53,16 @@ function Show-WinriftAppPicker {
     if (-not $packages.Count) { Write-Log 'No matching curated apps.'; Wait-ForUser; return }
     $installed,$unknownVersion=Get-InstalledAndBrokenIds
     $queue=@(Get-WinriftAppQueue)
-    $items=@(); $defaults=@(); $disabled=@(); $markers=@(); $details=@{}
+    $descriptionPath = Join-Path $PSScriptRoot '..\..\config\app-descriptions.json'
+    $descriptions = Get-Content -LiteralPath $descriptionPath -Raw | ConvertFrom-Json -AsHashtable
+    $items=@(); $defaults=@(); $disabled=@(); $markers=@(); $details=@{}; $focusedDescriptions=@{}
     for($i=0;$i -lt $packages.Count;$i++) {
         $package=$packages[$i]; $isInstalled=$installed.Contains($package.Id)
         $items+="$($package.Id) › $($package.Name)"
         $defaults+=(-not $isInstalled -and $package.Id -in $queue.Id)
         $disabled+=$isInstalled; $markers+=$(if($isInstalled){'✓'}else{''})
-        $details[$i]=@($package.Id, "Category: $($package.Category)", $(if($isInstalled){'Installed; version may be unknown. Reinstallation is not selected.'}else{'Not detected by winget. Review before installation.'}))
+        $focusedDescriptions[$i] = $descriptions[$package.Id]
+        $details[$i]=@($package.Id, "Source: $($package.Source)", "Category: $($package.Category)", $(if($isInstalled){'Installed; version may be unknown. Reinstallation is not selected.'}else{'Not detected by winget. Review before installation.'}))
     }
     $changed={
         param($keys)
@@ -67,7 +70,7 @@ function Show-WinriftAppPicker {
         $chosen=@($packages | Where-Object { $_.Id -in $keys })
         Save-WinriftAppQueue -Packages @($retained+$chosen)
     }
-    $selection=@(Show-MultiSelect -Title $Category -Items $items -Defaults $defaults -Disabled $disabled -Markers $markers -Descriptions $details -OnSelectionChanged $changed)
+    $selection=@(Show-MultiSelect -Title $Category -Items $items -Defaults $defaults -Disabled $disabled -Markers $markers -Descriptions $details -DetailsOnly -FocusedDescriptions $focusedDescriptions -OnSelectionChanged $changed)
     if ($selection.Count) { Show-WinriftAppQueue }
 }
 

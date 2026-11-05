@@ -28,6 +28,14 @@ Describe 'Macrift style menu geometry' {
         $wide.Lines.Count | Should -BeGreaterThan $narrow.Lines.Count
         $wide.Lines.Count | Should -BeLessThan 25
     }
+    It 'places only the focused app description directly below its label' {
+        $items = @('a › Alpha', 'b › Beta')
+        $descriptions = @{0 = 'Alpha description'; 1 = 'Beta description'}
+        $frame = Get-WinriftMenuFrame -Title Apps -Items $items -HighlightIndex 1 -FocusedDescriptions $descriptions
+        $plain = ($frame.Lines -join "`n") -replace '\x1b\[[0-9;]*m',''
+        $plain | Should -Match 'Beta\n +Beta description'
+        $plain | Should -Not -Match 'Alpha description'
+    }
     It 'separates cursor and round selection markers' {
         $frame = Get-WinriftMenuFrame -Title Test -Items @('a › Alpha','b › Beta') -HighlightIndex 0 -Checked @($false,$true)
         $plain = ($frame.Lines -join "`n") -replace '\x1b\[[0-9;]*m',''
