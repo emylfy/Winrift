@@ -1,88 +1,69 @@
-# 🪟 Windows Unattended Installation
+# 🪟 Windows Installation Media
 
 <div align="center">
-  <p><em>Install Windows 11 clean and debloated — without clicking through setup screens</em></p>
+  <p><em>Build a Windows ISO with your tweaks, apps, and configs ready for first sign-in.</em></p>
 </div>
 
-## ❓ What is this?
+## ❓ What can I put in the ISO?
 
-An `autounattend.xml` is a special file that automates the Windows installer. Place it on your USB drive or into your ISO, and Windows will configure itself automatically — no extra clicks, no bloatware, no telemetry prompts.
+- **Your saved Winrift setup** brings your selected tweaks, apps, and configs to a fresh Windows install. You go through Windows Setup as usual, then Winrift runs at first sign-in.
+- **An answer file** (`autounattend.xml`) automates Windows Setup itself. Use your own file to decide what happens during installation.
 
-This file does more than skip setup screens. It also runs scripts during installation that remove pre-installed apps, disable tracking, and clean up the interface. You don't need any technical knowledge — just follow one of the installation methods below.
+You can include either file or both. If you just want your usual apps and settings back after a reinstall, save your setup in Winrift and keep the standard Windows installer.
 
-> 🛠️ **Want to customize?** This file was generated with [Unattend-Generator](https://schneegans.de/windows/unattend-generator/) — you can use it to create your own version
+## 📥 Build an ISO in Winrift
 
-> 🔧 **Integrated with [Winrift](https://github.com/emylfy/winrift)** — a desktop shortcut is created automatically for further post-install tweaks
+Start with a Windows 11 26H2 ISO and enough free space for a temporary copy of its contents and the finished image. To bring over your current setup, export it from **Save / Restore Setup → Save Setup**.
 
-## ✨ What You'll Get
+Open **Save / Restore Setup → Create Windows Installation Media**.
 
-After installing Windows with this file, your system will have:
+1. **Select Windows ISO** and choose your source image.
+2. Under **Windows Installation Options**, keep **Standard interactive Windows Setup** or choose your own `autounattend.xml`.
+3. Under **Include Saved Setup**, choose the setup you exported if you want Winrift to apply it at first sign-in.
+4. Open **Review & Build**, give the new ISO a path, and check what will go into it. Choose **Build ISO**.
 
-- **25 bloatware apps removed** — no Cortana, Clipchamp, Teams, News, Weather, etc. ([full list below](#-removed-apps))
-- **No auto-installing apps** — Copilot, OneDrive, Teams, and Outlook won't sneak back in
-- **Clean taskbar** — no widgets, no search box, no Task View button
-- **Empty Start menu** — no pinned ads or suggested apps
-- **File Explorer opens to "This PC"** — with file extensions and hidden files visible
-- **No system sounds** — startup sound and all event sounds disabled
-- **Works on unsupported hardware** — TPM 2.0, Secure Boot, and RAM checks bypassed
-- **SmartScreen disabled** — see [Warnings](#%EF%B8%8F-warnings) for details
-- **Winrift desktop shortcut** — one-click access to further customization
+Winrift uses Microsoft's `oscdimg.exe`. If it can't find the tool, it offers to download it or open the Windows ADK download page. Your source ISO stays intact.
 
-## 📥 Installation Guide
+Boot the new ISO in a VM or use it to create a bootable USB. If you included a saved setup, the ISO contains the Winrift scripts from the copy you used to build it. Windows runs those scripts locally at first sign-in. PowerShell 7 and app installs may still need internet access.
 
-> **Download:** [autounattend.xml](https://github.com/emylfy/winrift/blob/main/docs/autounattend.xml)
+## 🔌 Other ways to prepare your installation media
 
-### Method 1 — USB Flash Drive (Simplest)
+### Use an answer file on a bootable Windows USB
 
-1. Create a bootable Windows USB using [Rufus](https://rufus.ie/), the [Media Creation Tool](https://www.microsoft.com/software-download/windows11), or [Ventoy](https://www.ventoy.net/)
-2. Download [autounattend.xml](https://github.com/emylfy/winrift/blob/main/docs/autounattend.xml)
-3. Copy `autounattend.xml` to the **root** of the USB drive (same level as `setup.exe`)
-4. Boot from the USB drive and install Windows as usual — the file is detected automatically
+If you need to create the USB first, use a Windows media creation tool such as Rufus or Microsoft's Media Creation Tool. Once the Windows installer files are on the drive, copy `autounattend.xml` to the root, next to `setup.exe`, and boot from it.
 
-### Method 2 — Modify an Existing ISO (AnyBurn)
+### Add an answer file to an ISO with AnyBurn
 
-1. Download [AnyBurn](https://anyburn.com/) and the [autounattend.xml](https://github.com/emylfy/winrift/blob/main/docs/autounattend.xml) file
-2. Open AnyBurn and select **"Edit Image File"**
-3. Browse to your Windows ISO file
-4. Click **"Add"** and select `autounattend.xml`
-5. Make sure it's placed at the **root level** (not inside a folder)
-6. Click **"Save"** to produce the modified ISO
-7. Burn the ISO to a USB drive or mount it for a virtual machine
+1. Open AnyBurn and choose **Edit image file**.
+2. Open your Windows ISO. Add `autounattend.xml` at the top level, alongside `setup.exe`.
+3. Choose **Next** and save to a new ISO path. Boot the new ISO in a VM or use it to create a bootable USB.
 
-### Method 3 — Automated ISO Build
+Both methods carry your installer choices. To embed a saved Winrift setup and its scripts, use **Include Saved Setup** in the Winrift builder. [AnyBurn's ISO editing guide](https://www.anyburn.com/tutorials/edit-iso-file.htm).
 
-Use [tiny11maker-reforged](https://github.com/chrisGrando/tiny11maker-reforged) — a PowerShell script that builds a trimmed-down Windows 11 image (supports 24H2 and 25H2). This strips components at the image level rather than using an answer file, so it produces a smaller ISO.
+### Build a trimmed Windows image
 
-## ⚠️ Warnings
+[tiny11maker-reforged](https://github.com/chrisGrando/tiny11maker-reforged) removes components from the Windows image itself. Its project documents Windows 11 24H2 and 25H2. For the 26H2 workflow in this guide, start with the standard Windows ISO.
 
-> **SmartScreen is disabled system-wide.** It normally blocks unrecognized apps and downloads. Re-enable it anytime via **Windows Security > App & browser control**.
+## 🎛️ Customize your answer file
 
-> **Windows Defender is NOT disabled** — only the tray icon is hidden. Defender still runs in the background. You can show the icon again in Windows Security settings.
+Create your own with the [Schneegans Unattend Generator](https://schneegans.de/windows/unattend-generator/), or start from [Winrift's bundled answer file](../config/autounattend.xml). The bundled file is optional. Select it explicitly if you want the changes below.
 
-> **Edge SmartScreen and PUA detection are disabled** for the default user profile. Re-enable in **Edge Settings > Privacy** if you want download warnings back.
+> [!WARNING]
+> The bundled answer file disables Windows and Edge SmartScreen and requests TPM, Secure Boot, and RAM check bypasses. Review the file before using it.
 
-> **TPM and Secure Boot checks are bypassed.** This allows installation on unsupported hardware, but BitLocker may not work without TPM.
+The bundled file creates a Winrift desktop shortcut that opens the online launcher. If you also choose **Include Saved Setup**, a separate first-sign-in command applies your setup using the scripts inside the ISO.
 
-> **All telemetry is disabled** with the most restrictive privacy setting Windows offers.
-
-> **PowerShell execution policy is set to RemoteSigned.** Local scripts run freely; downloaded scripts need a digital signature.
-
-## 🎛️ Customization
-
-- **Generate your own:** Use the [Schneegans Unattend-Generator](https://schneegans.de/windows/unattend-generator/) to create a customized version with different app removals, settings, or configurations
-- **Edit directly:** Advanced users can modify the XML file manually, or import it back into the [Unattend-Generator](https://schneegans.de/windows/unattend-generator/) to tweak settings through the UI and re-export
-- **Post-install tweaks:** Use [Winrift](https://github.com/emylfy/winrift) after installation for additional optimization — a desktop shortcut is created automatically
-
-## 📦 Removed Apps
+## 📦 What the bundled answer file changes
 
 <details>
-<summary>25 pre-installed apps removed during installation (click to expand)</summary>
+<summary>Packages selected for removal</summary>
 
 | App | Package ID |
 |-----|-----------|
 | 3D Viewer | Microsoft.Microsoft3DViewer |
 | Bing Search | Microsoft.BingSearch |
 | Clipchamp | Clipchamp.Clipchamp |
+| Copilot | Microsoft.Copilot |
 | Cortana | Microsoft.549981C3F5F10 |
 | Family | MicrosoftCorporationII.MicrosoftFamily |
 | Feedback Hub | Microsoft.WindowsFeedbackHub |
@@ -132,7 +113,7 @@ The very first stage, before Windows is installed on disk:
 
 After Windows copies files to disk, scripts run to configure the system:
 
-- **Removes 25 pre-installed apps** ([full list above](#-removed-apps))
+- **Removes matching provisioned apps** from the list above
 - **Removes capabilities**: OneSync, Quick Assist, Steps Recorder
 - **Disables feature**: Remote Desktop Connection client
 - **Removes OneDrive** — deletes setup files and Start Menu shortcut
@@ -173,7 +154,7 @@ These settings apply to every new user account created on the system:
 
 During the Out-of-Box Experience and first user login:
 
-- **All telemetry/express settings disabled** (most restrictive)
+- **Express settings disabled** by the answer file
 - **EULA page hidden**
 - **Wi-Fi and account screens remain interactive** — you still choose your network and create your account
 
@@ -240,9 +221,8 @@ Logs are written during installation for debugging:
 
 </details>
 
-![](https://github.com/emylfy/winrift/blob/main/media/separator.png)
+## 🧪 Check the result
 
-<div align="center">
-  <p>Made with ❤️ for the Windows community</p>
-  <p>Star ⭐ this repo if you found it useful!</p>
-</div>
+Boot the finished ISO in a VM, install Windows, and sign in. If you included a saved setup, check that your settings, apps, and configs made it across. For Winrift errors, look under `%LOCALAPPDATA%\Winrift\logs`. The log paths above are for scripts in the bundled answer file.
+
+The full ISO boot and installation cycle remains unverified for this version. See the [validation notes](validation.md).

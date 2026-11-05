@@ -1,10 +1,11 @@
 # System Tweaks Guide
 
-All tweaks have been tested and compared across multiple sources. Only the most effective values and best practices are included.
+Winrift brings Windows settings into one menu so you can see what each tweak changes before you apply it. This guide covers the individual settings, GPU presets, power options, and how to undo your changes on Windows 11 26H2.
 
 ## Table of Contents
 
-- [Before You Start](#before-you-start)
+- [How to Apply](#how-to-apply)
+- [Recommended Preset](#recommended-preset)
 - [Universal Tweaks](#universal-tweaks)
 - [Power Management](#power-management)
 - [GPU-Specific Tweaks](#gpu-specific-tweaks)
@@ -12,51 +13,32 @@ All tweaks have been tested and compared across multiple sources. Only the most 
 - [How to Revert](#how-to-revert)
 - [Reference Sources](#reference-sources)
 
-## Before You Start
-
-**Compatibility:** Windows 11 22H2 / 23H2 / 24H2 / 25H2
-
-**Safety:** A System Restore Point is automatically created before applying any tweaks.
-
-**Recommended:** Apply tweaks through the [Winrift](https://github.com/emylfy/winrift) interface — it lets you pick individual categories and handles everything automatically.
-
-**Risk levels used in this guide:**
-- 🟢 **Safe** — no side effects, can be reverted easily
-- 🟡 **Moderate** — disables features some users may need
-- ⚠️ **Aggressive** — may cause instability on some hardware
-- 🔧 **Advanced** — disables background maintenance
-
 ## How to Apply
 
-Three modes are available from the System Tweaks menu:
+Open **Set Up Windows → Performance Tweaks**. Choose **Review Recommended Preset** for a short list, or **All Tweaks** to pick specific changes. **GPU Tweaks** and **Power Settings** have their own menus.
 
-**1. Pick categories** — select any combination of the 13 categories from a numbered menu. Each category can be applied independently.
+Use **Space** to select an item, **A** to select applicable items, and **?** to see the current and proposed values. A filled circle marks a selection. A check mark means the setting already matches. Press **Enter** to review your selection, then confirm **Apply**. You can return from the review to change your selection.
 
-**2. Apply all safe** — applies all categories rated 🟢 Safe in one pass with a single confirmation.
+## Recommended Preset
 
-**3. Step-by-step wizard** — walks through each of the 13 categories one at a time:
+| Setting | What changes |
+| --- | --- |
+| Accessibility activation shortcuts | Turns off the activation shortcuts for Sticky Keys, Toggle Keys, and Filter Keys while preserving their other settings. |
+| Menu display delay | Sets the delay for opening submenus to zero. |
+| TRIM notifications | Enables NTFS and ReFS delete notifications where they are disabled and the query is supported. |
 
-```
-● ● ● ○ · · · · · · ·   [3/13]  SSD / NVMe  ✓ selected
-Interrupt steering, timer serialization
-
-[Y] Apply    [N] Skip    [B] Back    [Esc] Exit wizard
-```
-
-A progress dot bar shows selected (●), skipped (○), and pending (·) steps. Navigate back with `B` to change a previous choice. After the last step, a preview table is shown with all pending registry changes before anything is written. Confirm to apply or cancel without changes.
-
----
+The remaining settings are available for individual selection. The values below are what Winrift proposes. To see whether a preset helps on your PC, compare the same workload before and after applying it.
 
 ## Universal Tweaks
 
-### 1. System Latency 🟡
+### 1. System Latency
 
-Reduces system-level latency by changing how Windows handles interrupts and timers.
+These overrides change Windows interrupt and timer settings.
 
 | Registry Key | Value | Effect |
 |---|---|---|
 | `InterruptSteeringDisabled` | 1 | Disables interrupt steering — prevents Windows from redistributing hardware interrupts across cores |
-| `SerializeTimerExpiration` | 1 | Forces timers to expire on a single core, reducing cross-core contention |
+| `SerializeTimerExpiration` | 1 | Requests serialized timer expiration |
 
 **Path:** `HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\kernel`
 
@@ -64,106 +46,69 @@ Sources: [Interrupt Steering](https://youtu.be/Gazv0q3njYU), [Timer Serializatio
 
 ---
 
-### 2. Input Device Optimization 🟢
+### 2. Input Devices
 
-Reduces input lag for mouse and keyboard.
+| Setting | Value | What changes |
+| --- | --- | --- |
+| `MouseDataQueueSize` / `KeyboardDataQueueSize` | 20 | Sets the mouse and keyboard driver queue sizes. |
+| Accessibility activation shortcuts | Off | Clears the activation shortcut flag through SystemParametersInfo. |
+| `DelayBeforeAcceptance` | 0 | Sets the Filter Keys acceptance delay. |
+| `AutoRepeatRate` / `AutoRepeatDelay` | 0 | Sets the Filter Keys repeat timing values. |
 
-| Registry Key | Value | Effect |
-|---|---|---|
-| `MouseDataQueueSize` | 20 | Smaller buffer = faster mouse input processing |
-| `KeyboardDataQueueSize` | 20 | Smaller buffer = faster keyboard input processing |
-| `StickyKeys` | 506 | Disables StickyKeys popup |
-| `ToggleKeys Flags` | 58 | Disables ToggleKeys audio indicator |
-| `DelayBeforeAcceptance` | 0 | No delay before key press is accepted |
-| `AutoRepeatRate` | 0 | Maximum key repeat speed |
-| `AutoRepeatDelay` | 0 | No delay before key repeat starts |
-| `Keyboard Response Flags` | 122 | Disables FilterKeys with all optimizations active |
-
-**Paths:**
-- `HKLM:\SYSTEM\CurrentControlSet\Services\mouclass\Parameters`
-- `HKLM:\SYSTEM\CurrentControlSet\Services\kbdclass\Parameters`
-- `HKCU:\Control Panel\Accessibility`
-- `HKCU:\Control Panel\Accessibility\ToggleKeys`
-- `HKCU:\Control Panel\Accessibility\Keyboard Response`
-
-Sources: [Verified-Tweaks](https://github.com/AlchemyTweaks/Verified-Tweaks), [Latency Optimization](https://github.com/denis-g/windows10-latency-optimization)
+**Paths:** The queue settings are under `HKLM:\SYSTEM\CurrentControlSet\Services\mouclass\Parameters` and `kbdclass\Parameters`. The timing settings are under `HKCU:\Control Panel\Accessibility\Keyboard Response`.
 
 ---
 
-### 3. SSD/NVMe Performance 🟢
+### 3. SSD / NVMe
 
-Optimizes storage for solid-state drives. Automatically detects SSD/NVMe presence before applying.
+| Setting | What changes |
+| --- | --- |
+| TRIM notifications | Sets `DisableDeleteNotify` to `0` through `fsutil` for supported filesystems. This verifies the Windows notification setting. |
+| Last access time | Disables NTFS last-access timestamp updates. Restart to apply. |
+| 8.3 filenames | Disables creation of legacy short filenames through `NtfsDisable8dot3NameCreation`. |
+| Prefetch | Sets `EnablePrefetcher` to `0`. |
+| Application Prelaunch | Turns off prelaunch through MMAgent. |
 
-| Action | Effect |
-|---|---|
-| TRIM enabled (`DisableDeleteNotify = 0`) | Ensures SSD can reclaim unused blocks |
-| Defragmentation disabled | Prevents unnecessary writes on SSD |
-| Last access time disabled | Reduces NTFS write overhead |
-| 8.3 filename creation disabled | Removes legacy short filename generation |
-| Prefetcher disabled | Not needed on SSD — reduces background I/O |
-| Superfetch tracing disabled | Same as above |
-| ApplicationPreLaunch disabled | Prevents speculative app loading |
-
-**Paths:**
-- `HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem`
-- `HKLM:\System\CurrentControlSet\Control\Session Manager\Memory Management\PrefetchParameters`
-
-Source: [Latency Optimization](https://github.com/denis-g/windows10-latency-optimization)
+**Paths:** `HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem` and `HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Memory Management\PrefetchParameters`.
 
 ---
 
-### 4. GPU Hardware Scheduling 🟡
+### 4. GPU Hardware Scheduling
 
-Enables hardware-accelerated GPU scheduling for lower render latency.
+HAGS and GPU preemption are separate settings. Review them individually under **GPU Tweaks → GPU Scheduling & Preemption**.
 
 | Registry Key | Value | Effect |
 |---|---|---|
 | `HwSchMode` | 2 | Enables hardware GPU scheduling |
-| `EnablePreemption` | 0 | Disables GPU preemption — reduces micro-stutter |
+| `EnablePreemption` | 0 | Disables GPU preemption requests where the override applies |
 
 **Paths:**
 - `HKLM:\SYSTEM\CurrentControlSet\Control\GraphicsDrivers`
-- `HKLM:\SYSTEM\ControlSet001\Control\GraphicsDrivers\Scheduler`
+- `HKLM:\SYSTEM\CurrentControlSet\Control\GraphicsDrivers\Scheduler`
 
 Source: [Latency Optimization](https://github.com/denis-g/windows10-latency-optimization)
 
 ---
 
-### 5. Network Optimization 🟢
+### 5. Network
 
-Removes bandwidth throttling for maximum throughput.
+`NetworkThrottlingIndex = 0xFFFFFFFF` sets the multimedia network-throttling override under `HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile`. Check throughput and latency under your own workload if you are tuning this setting.
 
-| Registry Key | Value | Effect |
-|---|---|---|
-| `NetworkThrottlingIndex` | 4294967295 | Disables network throttling entirely |
-| `NoLazyMode` | 1 | Disables lazy mode for network packet processing |
+### 6. Multimedia Scheduling
 
-**Path:** `HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile`
+| Setting | Value | What changes |
+| --- | --- | --- |
+| `NoLazyMode` | 1 | Applies the existing Winrift MMCSS override. The upstream file uses `LazyMode = 0`, so its effect cannot be inferred from that file. |
+| `LazyModeTimeout` | 25000 | Sets the timeout to 2.5 ms in 100 ns units. |
+| MMCSS `Start` | 2 | Sets the Multimedia Class Scheduler Service to automatic startup. |
 
-Source: [Network Tweaks](https://youtu.be/EmdosMT5TtA)
-
----
-
-### 6. CPU Performance 🟢
-
-Optimizes CPU scheduling for foreground application performance.
-
-| Registry Key | Value | Effect |
-|---|---|---|
-| `LazyModeTimeout` | 25000 | Sets optimal timeout for multimedia scheduling |
-| MMCSS `Start` | 2 | Sets Multimedia Class Scheduler Service to auto-start |
-
-**Paths:**
-- `HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile`
-- `HKLM:\SYSTEM\CurrentControlSet\Services\MMCSS`
-
-Source: [CPU Tweaks](https://youtu.be/FxpRL7wheGc)
+**Paths:** `HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile` and `HKLM:\SYSTEM\CurrentControlSet\Services\MMCSS`.
 
 ---
 
-### 7. Power Management 🟡
+### 7. Background Power Settings
 
-Disables background power monitoring overhead. Safe for all devices including laptops on battery.
+These overrides change background power throttling and energy tracking. Disabling throttling can increase power use.
 
 | Registry Key | Value | Effect |
 |---|---|---|
@@ -182,9 +127,9 @@ Sources: [Ancels Performance Batch](https://github.com/ancel1x/Ancels-Performanc
 
 ---
 
-### 8. System Responsiveness 🟢
+### 8. Process and IRQ Priority
 
-Prioritizes foreground applications over background services.
+These are optional scheduler and interrupt-priority overrides.
 
 | Registry Key | Value | Effect |
 |---|---|---|
@@ -194,15 +139,14 @@ Prioritizes foreground applications over background services.
 
 **Paths:**
 - `HKLM:\SYSTEM\CurrentControlSet\Control\PriorityControl`
-- `HKLM:\SYSTEM\ControlSet001\Control\PriorityControl`
 
 Source: [Priority Separation](https://youtu.be/bqDMG1ZS-Yw)
 
 ---
 
-### 9. Boot Optimization 🟢
+### 9. Startup and Desktop Transition
 
-Removes artificial delays during Windows startup.
+Changes two timing settings for startup apps and desktop switching.
 
 | Registry Key | Value | Effect |
 |---|---|---|
@@ -215,9 +159,9 @@ Removes artificial delays during Windows startup.
 
 ---
 
-### 10. UI Responsiveness ⚠️
+### 10. Menus, Hooks and Shutdown
 
-Reduces timeouts and delays in the Windows shell for a snappier feel.
+Menu delay is a display preference. Shorter shutdown timeouts and automatic task termination can leave apps less time to save work.
 
 | Registry Key | Value | Effect |
 |---|---|---|
@@ -234,15 +178,15 @@ Reduces timeouts and delays in the Windows shell for a snappier feel.
 
 ---
 
-### 11. Memory Optimization 🟡
+### 11. Memory
 
-Improves memory management for systems with sufficient RAM.
+These settings change cache and paging behavior. Apply them individually if you want to compare their effect on your workload.
 
 | Registry Key | Value | Effect |
 |---|---|---|
 | `LargeSystemCache` | 1 | Uses larger system cache for file operations |
-| `DisablePagingCombining` | 1 | Disables memory page combining |
-| `DisablePagingExecutive` | 1 | Keeps kernel and drivers in RAM instead of paging to disk |
+| MMAgent Page Combining | Off | Disables memory page combining through MMAgent |
+| `DisablePagingExecutive` | 1 | Requests that pageable kernel and driver code stay resident |
 
 **Path:** `HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Memory Management`
 
@@ -250,53 +194,25 @@ Source: [QuickBoost Memory Tweaks](https://github.com/SanGraphic/QuickBoost)
 
 ---
 
-### 12. System Maintenance 🔧
+### 12. Automatic Maintenance
 
-Disables background maintenance tasks that consume resources.
+`MaintenanceDisabled = 1` requests that Windows stop automatic maintenance. Leave it unselected if you rely on Windows to schedule maintenance in the background.
 
-| Registry Key | Value | Effect |
-|---|---|---|
-| `MaintenanceDisabled` | 1 | Disables Windows automatic maintenance |
-| `CountOperations` | 0 | Disables I/O operation counting |
-| `EncryptProtocol` | 0 | Disables FSS provider encryption overhead |
-| `DisableRpcOver` | 1 | Disables RPC over Task Scheduler |
-
-**Paths:**
-- `HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Schedule\Maintenance`
-- `HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\I/O System`
-- `HKLM:\SOFTWARE\Policies\Microsoft\Windows\fssProv`
-- `HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Schedule`
-
-Source: [System Maintenance](https://youtu.be/5omPOfsJNSo)
+**Path:** `HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Schedule\Maintenance`
 
 ---
 
-### 13. DirectX Enhancements ⚠️
+### 13. DirectX
 
-Enables advanced DirectX 11 and DirectX 12 features for better gaming performance.
-
-| Feature | APIs | Effect |
-|---|---|---|
-| Multithreading | D3D11, D3D12 | Distributes rendering work across CPU cores |
-| Deferred Contexts | D3D11, D3D12 | Enables deferred command list recording |
-| Tiling | D3D11, D3D12 | Optimizes texture and resource tiling |
-| Dynamic Code Generation | D3D11 | Enables runtime shader optimization |
-| Command Buffer Reuse | D3D12 | Reuses command buffers to reduce allocation overhead |
-| Runtime Driver Optimizations | D3D12 | Enables driver-level rendering optimizations |
-| Resource Alignment | D3D12 | Optimizes GPU memory resource alignment |
-| CPU Page Table | D3D12 | Enables CPU-side page table for GPU memory |
-| Heap Serialization | D3D12 | Enables heap allocation serialization |
-| Residency Management | D3D12 | Optimizes GPU memory residency |
-
-**Path:** `HKLM:\SOFTWARE\Microsoft\DirectX`
-
-Source: [DirectX Tweaks](https://youtu.be/itTcqcJxtbo)
+Open **GPU Tweaks → DirectX Preset** to review the D3D11/D3D12 preset, or select individual entries under **All Tweaks**. It writes 14 flags under `HKLM:\SOFTWARE\Microsoft\DirectX`, including multithreading, deferred contexts, tiling, and D3D12 heap and residency settings. See the proposed values in the review. Test the preset with the apps you actually use.
 
 ---
 
-## Power Management 🟡
+## Power Management
 
-> **For desktops and plugged-in laptops.** These tweaks disable power-saving features like Connected Standby, CPU idle states, and PCIe ASPM. Skip if running on battery — they will significantly reduce battery life.
+Open **Performance Tweaks → Power Settings**. Use **Select Power Plan** to activate an available plan or try Ultimate Performance. Winrift records the previous active plan for Undo. **Open Windows Power Mode** opens the native Settings page.
+
+The advanced standby and idle options are separate from the plan picker. They can increase heat and battery drain.
 
 | Action | Effect |
 |---|---|
@@ -306,7 +222,6 @@ Source: [DirectX Tweaks](https://youtu.be/itTcqcJxtbo)
 | `CPPCEnable = 0` | Disables Collaborative Processor Performance Control |
 | `AllowPepPerfStates = 0` | Disables Platform Energy Provider states |
 | `ASPMOptOut = 1` | Disables PCIe Active State Power Management |
-| Ultimate Performance power plan | Activates hidden high-performance plan |
 
 **Paths:**
 - `HKLM:\SYSTEM\CurrentControlSet\Control\Power`
@@ -320,9 +235,9 @@ Sources: [Ancels Performance Batch](https://github.com/ancel1x/Ancels-Performanc
 
 ## GPU-Specific Tweaks
 
-### NVIDIA 🟢
+### NVIDIA
 
-Enables per-CPU core DPC (Deferred Procedure Call) processing across all NVIDIA driver paths to reduce GPU-related latency.
+**Review NVIDIA Preset** presents the per-CPU DPC override as one action. Expand the details to see the five writes.
 
 **Registry key:** `RmGpsPsEnablePerCpuCoreDpc = 1`
 
@@ -335,63 +250,39 @@ Applied to:
 
 Source: [AlchemyTweaks NVIDIA](https://github.com/AlchemyTweaks/Verified-Tweaks)
 
-### AMD 🟡
+### AMD
 
-Optimizes AMD Radeon drivers by disabling power-saving features and minimizing latencies.
+Open **Review AMD Preset** for a summary, then choose **View Details** to see the target driver entry and all 30 values. Use **Individual Tweaks** to select specific changes.
 
-**Power gating disabled:**
-- UVD, VCE, general, DRMDMA power gating — prevents GPU from entering low-power states during workloads
+- **Power behavior** includes UVD, VCE, DRMDMA and general power gating, plus GPU power-down settings.
+- **Driver timing** includes LTR, display, compute, memory clock-switch and BGM values.
+- **Other driver settings** include overlay, snapshot, color depth, stutter mode, DMA copy and block write controls.
 
-**Latency optimization:**
-- All LTR (Latency Tolerance Reporting) values set to 1 for minimal latency
-- Memory clock switch, compute, and display latencies minimized
-- BGM (Background Memory) latencies optimized
-
-**Other:**
-- Stutter mode disabled
-- GPU power down disabled
-- Snapshots and subscriptions disabled
-
-**Path:** `HKLM:\SYSTEM\CurrentControlSet\Control\Class\{4d36e968-e325-11ce-bfc1-08002be10318}\0000`
-
-Sources: [AMD Tweaks](https://youtu.be/nuUV2RoPOWc), [AlchemyTweaks AMD](https://github.com/AlchemyTweaks/Verified-Tweaks)
-
-### Hybrid (Laptop)
-
-Applies both NVIDIA and AMD tweaks for laptops with dual GPU configurations.
-
----
+**Path:** `HKLM:\SYSTEM\CurrentControlSet\Control\Class\{4d36e968-e325-11ce-bfc1-08002be10318}`, under the detected AMD driver entry.
 
 ## Free Up Disk Space
 
-### 1. Disable Reserved Storage
-Disables the 7GB partition Windows reserves for updates.
-```
-dism /Online /Set-ReservedStorageState /State:Disabled
-```
+Open **Set Up Windows → Additional Tools → Free Up Disk Space**.
 
-### 2. Clean WinSxS
-Removes old component versions from the Windows component store.
-```
-dism /Online /Cleanup-Image /StartComponentCleanup /ResetBase /RestoreHealth
-```
+### Reserved Storage
 
-### 3. PC Manager
-Installs and launches Microsoft PC Manager — official utility for system cleanup and optimization.
+Check the current state and choose **Enable** or **Disable**. Windows servicing can block the change. The space recovered depends on the installation.
 
----
+### Clean Windows Components
+
+Runs `DISM /Online /Cleanup-Image /StartComponentCleanup` to remove superseded Windows components. Review the operation before running it.
+
+### PC Manager
+
+Open Microsoft PC Manager if it is installed, or install it from the prompt.
 
 ## How to Revert
 
-1. **System Restore** — a restore point is created automatically before any tweaks are applied. Open `rstrui.exe` and select the restore point to undo all changes at once.
+1. Open **Undo Changes → Action History**.
+2. Select the operation and review the values Winrift can restore.
+3. Confirm the restore and restart if the setting calls for it.
 
-2. **Manual** — delete the modified registry keys or set them back to their default values, then reboot. Default values for each key can be found in the linked sources above.
-
-3. **System repair** — if something breaks beyond registry changes:
-   ```
-   DISM /Online /Cleanup-Image /RestoreHealth
-   sfc /scannow
-   ```
+Winrift uses the recorded previous value and checks for later edits before writing. Use **Restore Configuration Backup** for saved app configs. Component cleanup and actions taken inside external tools have their own recovery paths.
 
 ---
 
@@ -403,3 +294,13 @@ Installs and launches Microsoft PC Manager — official utility for system clean
 - [Snowfliger/SyncOS](https://github.com/Snowfliger/SyncOS)
 - [denis-g/windows10-latency-optimization](https://github.com/denis-g/windows10-latency-optimization)
 - [ancel1x/Ancels-Performance-Batch](https://github.com/ancel1x/Ancels-Performance-Batch)
+
+## Pinned source comparison
+
+The upstream snapshot is [AlchemyTweaks/Verified-Tweaks at 9b8d96d](https://github.com/AlchemyTweaks/Verified-Tweaks/tree/9b8d96d2d60eac53fc688f718726006321818d62). `tests/fixtures/alchemy-approved.json` records the compared values and source identifiers.
+
+- [NVIDIA per-CPU DPC](https://github.com/AlchemyTweaks/Verified-Tweaks/blob/9b8d96d2d60eac53fc688f718726006321818d62/Nvidia/RmGpsPsEnablePerCpuCoreDpc/RmGpsPsEnablePerCpuCoreDpc.reg): all five path/name/type/value writes match. The picker presents one logical action.
+- [AMD Melody](https://github.com/AlchemyTweaks/Verified-Tweaks/blob/9b8d96d2d60eac53fc688f718726006321818d62/AMD%20Radeon/AMD%20Tweak%20Melody/AMD%20Tweak%20Melody.reg): all 30 names/types/values match, with the fixed 0000 source path replaced by an actually present AMD driver key.
+- [DirectX](https://github.com/AlchemyTweaks/Verified-Tweaks/blob/9b8d96d2d60eac53fc688f718726006321818d62/DirectX/D3D11%20-%20D3D12%20Tweaks/D3D11%20-%20D3D12%20Tweaks.bat): all 14 existing writes match.
+
+The comparison checks the entries in the presets. See [validation notes](validation.md) for the test environment and outstanding hardware checks.

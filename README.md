@@ -2,14 +2,14 @@
 
 # Winrift
 
-**The complete Windows 11 post-install pipeline**
+**Set up Windows once. Bring your setup to the next install.**
+
+Windows tweaks, app installs, and app configuration in one terminal menu.
 
 <a href="https://github.com/emylfy/winrift/stargazers"><img src="https://img.shields.io/github/stars/emylfy/winrift?style=for-the-badge&logo=starship&color=C9CBFF&logoColor=C9CBFF&labelColor=302D41" alt="GitHub Stars"></a>&nbsp;&nbsp;
 <a href="https://github.com/emylfy/winrift/blob/main/LICENSE"><img src="https://img.shields.io/github/license/emylfy/winrift?style=for-the-badge&logo=apache&color=CBA6F7&logoColor=CBA6F7&labelColor=302D41&label=License" alt="GitHub License"></a>&nbsp;&nbsp;
 <a href="https://github.com/emylfy/winrift/commits/main/"><img src="https://img.shields.io/github/last-commit/emylfy/winrift?style=for-the-badge&logo=github&logoColor=eba0ac&label=Last%20Commit&labelColor=302D41&color=eba0ac" alt="Last Commit"></a>&nbsp;&nbsp;
 <a href="https://github.com/emylfy/winrift/releases"><img src="https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fraw.githubusercontent.com%2Femylfy%2Fwinrift%2Fmain%2Fconfig%2Fversion.json&query=%24.version&prefix=v&style=for-the-badge&label=Version&color=a6e3a1&labelColor=302D41" alt="Version"></a>
-
-<img src="media/demo.gif" alt="Winrift terminal interface demo" width="90%">
 
 </div>
 
@@ -17,17 +17,16 @@
 
 ## ⚡ Quick Start
 
-Open PowerShell — <kbd>Win</kbd> + <kbd>X</kbd> → Terminal:
+Open PowerShell on **Windows 11 26H2** and run:
 
 ```powershell
 Set-ExecutionPolicy Bypass -Scope Process -Force; irm https://raw.githubusercontent.com/emylfy/winrift/main/scripts/launch.ps1 | iex
 ```
 
-> [!NOTE]
-> PowerShell 7 installs automatically if missing. A restore point is created before any changes. Every registry modification is backed up for rollback.
+This launches the version on the project's `main` branch. Winrift downloads portable PowerShell 7 if needed.
 
 <details>
-<summary><strong>Pin shortcut to Start Menu</strong></summary>
+<summary><strong>Add a Start Menu shortcut</strong></summary>
 
 ```powershell
 Set-ExecutionPolicy Bypass -Scope Process -Force; irm https://raw.githubusercontent.com/emylfy/winrift/main/scripts/install.ps1 | iex
@@ -35,187 +34,73 @@ Set-ExecutionPolicy Bypass -Scope Process -Force; irm https://raw.githubusercont
 
 </details>
 
----
+**From a downloaded copy:** Open the Winrift folder and double-click **Winrift.cmd**.
 
-## 🎯 One-pass provisioning
+<details>
+<summary><strong>Preview mode</strong></summary>
 
-Describe a machine as a single JSON **profile** — system tweaks, winget apps, app
-configs and privacy hardening — and apply it all in one non-interactive pass:
+Run from the Winrift folder:
 
 ```powershell
-Winrift.ps1 -Apply myprofile.json -NoConfirm
+.\Winrift.cmd -DryRun
 ```
 
-Preview first with `-DryRun` (writes nothing). See [`config/profiles/example.json`](config/profiles/example.json)
-for the schema:
+</details>
 
-```json
-{
-  "winriftProfile": 1,
-  "privacy": true,
-  "tweaks":  [ { "Path": "...", "Name": "...", "Value": 1, "Type": "DWord" } ],
-  "apps":    [ "Microsoft.VisualStudioCode", "Microsoft.WindowsTerminal" ],
-  "configs": [ "terminal", "pwsh", "fastfetch" ]
-}
-```
+---
 
-The **ISO Builder** can bake a profile straight into a Windows 11 ISO — the machine
-then configures itself at first logon with zero clicks.
+## 💾 Take your setup with you
 
-## 🧩 Features
+1. **Set up your PC.** Pick your Windows tweaks, install your apps, and configure your terminal, editor, or desktop.
+2. **Save what you want to keep.** Open **Save / Restore Setup → Save Setup** and select the settings, app list, and supported configs to carry over.
+3. **Bring it back after a reinstall.** Open **Restore Setup**, choose what to restore, and review the changes before applying them.
 
-|     | Feature                                        | What it does                                                       |
-| :-- | :--------------------------------------------- | :----------------------------------------------------------------- |
-| 📦  | **Profiles**                                   | One JSON file → whole machine (tweaks + apps + configs + privacy) in a single pass |
-| 🩺  | **System Audit**                               | Scans 33 issues across 6 categories — one-click fixes              |
-| ⚙️  | [**System Tweaks**](docs/tweaks_guide.md)      | 13 categories — latency, SSD, GPU, network, power, memory, DirectX |
-| 🔄  | [**Drift Detection**](docs/drift_detection.md) | Catches Windows Update reverting your tweaks; one-click reapply    |
-| 🛡️  | **Security & Privacy**                         | Defender, Copilot/Recall removal, privacy hardening, DNS benchmark |
-| 🖥️  | **Drivers**                                    | Intel Driver & Support Assistant (auto-install)                    |
-| 🎨  | [**Customize**](modules/customize/README.md)   | Desktop, terminal, editors, app themes — all without admin         |
-| 📦  | **App Bundles**                                | 7 collections via winget — native selector, optional UniGetUI      |
-| 💿  | [**ISO Builder**](docs/autounattend_guide.md)  | Embed answer file (and optionally a profile) into a Windows 11 ISO |
+## 🧩 What you can do
+
+| | Section | What you can do |
+| :-: | :-- | :-- |
+| 🖥️ | **Update Windows & Drivers** | Open Windows Update and find Intel Driver & Support Assistant on compatible hardware. |
+| ⚙️ | **Set Up Windows** | Review Windows tweaks, apply AMD, NVIDIA, or DirectX presets, and review Privacy Setup before applying it. |
+| 📦 | **Install Your Apps** | Build an install queue from the catalog or import a bundle. Edit and save your own copy in UniGetUI. |
+| 🎨 | **Configure Your Apps** | Set up Windows Terminal, PowerShell, editors, and GlazeWM, and organize Start Menu shortcuts. |
+| ↩️ | **Undo Changes** | Browse action history and restore previous settings or configuration backups where available. |
 
 <details>
-<summary><strong>🩺 System Audit — 33 checks</strong></summary>
+<summary><strong>Tools and customization</strong></summary>
 
-Scans your system and shows **what's wrong, why it matters, and how to fix it**. Each issue links to a Winrift fix you can apply right from the audit screen.
-
-| Category        | What it checks                                                                 |
-| :-------------- | :----------------------------------------------------------------------------- |
-| **Privacy**     | Telemetry level, DiagTrack, Copilot, Recall, OneDrive, Ad ID, Activity history |
-| **Performance** | Power throttling, HAGS, network throttling, MMCSS, energy estimation           |
-| **Memory**      | SysMain on SSD, large system cache, paging executive                           |
-| **Storage**     | TRIM, NTFS last-access, 8.3 names, prefetcher                                  |
-| **Startup**     | HKLM/HKCU Run keys for unwanted autostart entries                              |
-| **Network**     | Nagle algorithm, DNS resolver, throttling index                                |
+- **Privacy & maintenance** — RemoveWindowsAI, app updater controls, DNS Benchmark, disk cleanup, and DefendNot.
+- **Shell & editors** — Starship or Oh My Posh, FastFetch, editor settings, and extension installation.
+- **Desktop & browser** — GlazeWM configs, wallpaper collections, and JustTheBrowser.
 
 </details>
 
-<details>
-<summary><strong>⚙️ System Tweaks — all 13 categories</strong></summary>
+---
 
-Every tweak is backed up before applying. Three modes: pick categories, apply all safe, or step-by-step wizard.
+## 💿 Installation Media
 
-|   # | Category       | Risk | What it does                                     |
-| --: | :------------- | :--: | :----------------------------------------------- |
-|   1 | System Latency |  🟡  | Interrupt steering, timer serialization          |
-|   2 | Input Devices  |  🟢  | Queue sizes, sticky/filter keys, input delays    |
-|   3 | SSD / NVMe     |  🟢  | TRIM, defrag, last access, 8.3 names, prefetcher |
-|   4 | GPU Scheduling |  🟡  | Hardware scheduling, preemption                  |
-|   5 | Network        |  🟢  | Network throttling, lazy mode                    |
-|   6 | CPU            |  🟢  | MMCSS, multimedia scheduler                      |
-|   7 | Power          |  🟡  | C-states, PCIe ASPM, Ultimate Performance plan   |
-|   8 | Responsiveness |  🟢  | Program priority, IRQ optimization               |
-|   9 | Boot           |  🟢  | Startup delays, desktop switch timeout           |
-|  10 | UI             |  ⚠️  | Auto-end tasks, hung app timeout, menu delay     |
-|  11 | Memory         |  🟡  | Large system cache (16 GB+), page combining      |
-|  12 | Maintenance    |  🔧  | Automatic maintenance, I/O counting              |
-|  13 | DirectX        |  ⚠️  | D3D12/D3D11 optimizations, multithreading        |
+Under **Save / Restore Setup → Create Windows Installation Media**, select a Windows ISO and optionally include a saved setup for first sign-in. You can keep the standard Windows installer or supply your own answer file.
 
-GPU-specific tweaks are auto-detected:
-
-- **NVIDIA** — per-CPU core DPC optimization
-- **AMD** — 40+ tweaks including power gating, color depth, latency
-
-</details>
-
-<details>
-<summary><strong>🔄 Drift Detection — keep tweaks applied</strong></summary>
-
-Windows Updates silently revert registry changes. Drift Detection catches this.
-
-- Tracks every applied tweak in a desired-state JSON
-- Compares current registry against desired state
-- Reports each entry as **OK** · **Drifted** · **Missing**
-- One-click reapply for all drifted values
-- Optional scheduled task runs automatically after updates
-
-<sub>→ <a href="docs/drift_detection.md">Drift Detection Guide</a></sub>
-
-</details>
-
-<details>
-<summary><strong>🛡️ Security & Privacy tools</strong></summary>
-
-| Tool                  | Description                                            |
-| :-------------------- | :----------------------------------------------------- |
-| **DefendNot**         | Disable Windows Defender via Security Center API       |
-| **RemoveWindowsAI**   | Remove Copilot and Recall packages                     |
-| **Privacy Hardening** | Disable telemetry, tracking, bloatware — 200+ settings |
-| **JustTheBrowser**    | Remove AI, telemetry, sponsored content from browsers  |
-| **DNS Benchmark**     | Test 8 providers, apply the fastest to your adapter    |
-
-All tools run only when explicitly selected.
-
-</details>
-
-<details>
-<summary><strong>🎨 Desktop Customization</strong></summary>
-
-Complete environment setup from one menu. Runs without admin.
-
-**Desktop** — [GlazeWM](https://github.com/glzr-io/glazewm) tiling WM · [Zebar](https://github.com/glzr-io/zebar) / [YASB](https://github.com/amnweb/yasb) status bar · [Flow Launcher](https://github.com/Flow-Launcher/Flow.Launcher) · [Windhawk](https://windhawk.net/) · [Rainmeter](https://www.rainmeter.net/) · Wallpaper Browser
-
-**Terminal** — Full Shell Setup (single-pass) · Windows Terminal config · Nerd Fonts · Oh My Posh / Starship · FastFetch · PowerShell profile
-
-**Editors** — Config import for 5 VSCode-based editors · extension install via CLI
-
-**Profile & Backups** — Export / Import Winrift profile (apps, configs, tweaks state) · Restore any config backup (.bak)
-
-</details>
-
-<details>
-<summary><strong>💿 ISO Builder</strong></summary>
-
-Create a bootable Windows 11 ISO with automation baked in:
-
-- Embeds `autounattend.xml` answer file
-- Removes 25 bloatware apps (Cortana, Teams, Edge, News, OneDrive...)
-- Disables telemetry and Copilot
-- Bypasses TPM / SecureBoot / RAM checks
-- Optionally bakes in a Winrift profile — the machine self-configures at first logon (zero clicks)
-
-<sub>→ <a href="docs/autounattend_guide.md">Autounattend Guide</a></sub>
-
-</details>
-
-<details>
-<summary><strong>📦 App Bundles</strong></summary>
-
-7 collections installable directly from the menu:
-
-Development · Browsers · Utilities · Productivity · Creative & Media · Gaming · Communications
-
-- **Native selector** — browse packages per category, see which are already installed or broken, install via winget
-- **Search all** — single multi-select across all 7 bundles at once
-- **UniGetUI integration** — if [UniGetUI](https://github.com/marticliment/UniGetUI) is installed, open any bundle directly in the app for a full GUI experience
-
-</details>
+[See the installation media guide](docs/autounattend_guide.md).
 
 ---
 
 ## ✅ Compatibility
 
-| Windows Version        | Status        |
-| :--------------------- | :------------ |
-| Windows 11 25H2        | Fully tested  |
-| Windows 11 24H2 / 22H2 | Supported     |
-| Windows 10             | Not supported |
-
-**Requirements:** PowerShell 7+ (auto-installs if missing) · Administrator · Internet connection
-
----
+**Windows 11 26H2**. Winrift can download portable PowerShell 7 when needed. Administrator access is required for system changes, and downloads require an internet connection.
 
 ## 🔧 Troubleshooting
 
-| Problem               | Solution                                                     |
-| :-------------------- | :----------------------------------------------------------- |
-| Scripts disabled      | `Set-ExecutionPolicy RemoteSigned -Scope CurrentUser`        |
-| Module not found      | Re-run the install command for the latest version            |
-| Registry errors       | Check `%LOCALAPPDATA%\Winrift\logs\` for the session log     |
-| Tweak broke something | System Tweaks → Restore Backup, or boot from a restore point |
-| UniGetUI fails        | `winget source reset --force` in admin PowerShell            |
+| Problem | Where to look |
+| :-- | :-- |
+| **Winrift fails to start** | Check the startup logs in `%LOCALAPPDATA%\Winrift\logs`. |
+| **An app install fails** | Review the package result and choose **Retry Failed Items**. |
+| **A setting or config needs restoring** | Open **Undo Changes** and choose **Action History** or **Restore Configuration Backup**. |
+
+## Documentation
+
+- [Tweaks and what they change](docs/tweaks_guide.md)
+- [Validation and known limits](docs/validation.md)
+- [Development tests](docs/tests.md)
 
 ---
 
