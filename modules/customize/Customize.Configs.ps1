@@ -181,14 +181,59 @@ function Set-WinTermConfig {
     Wait-ForUser
 }
 
+function Initialize-WinriftProfilePolicy {
+    param([string]$Executable)
+
+    # Check the persistent policy of the target edition, without inheriting
+    # Winrift's process-only Bypass.
+    $probe = {
+        $env:PSExecutionPolicyPreference = $null
+        $effective = Get-ExecutionPolicy
+        if ($effective -in @('RemoteSigned', 'Unrestricted', 'Bypass')) {
+            'Ready'
+        } elseif ((Get-ExecutionPolicy -Scope MachinePolicy) -ne 'Undefined' -or
+                  (Get-ExecutionPolicy -Scope UserPolicy) -ne 'Undefined') {
+            'Managed'
+        } elseif ($effective -eq 'Restricted' -and
+                  (Get-ExecutionPolicy -Scope CurrentUser) -eq 'Undefined' -and
+                  (Get-ExecutionPolicy -Scope LocalMachine) -eq 'Undefined') {
+            try {
+                Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned -Force -ErrorAction Stop
+                if ((Get-ExecutionPolicy) -eq 'RemoteSigned') { 'Updated' } else { 'Manual' }
+            } catch {
+                Write-Error $_ -ErrorAction Continue
+                'Manual'
+            }
+        } else {
+            'Manual'
+        }
+    }
+    $command = [Convert]::ToBase64String([Text.Encoding]::Unicode.GetBytes($probe.ToString()))
+    try {
+        $result = & $Executable -NoLogo -NoProfile -NonInteractive -EncodedCommand $command 2>&1
+        if ($LASTEXITCODE -eq 0 -and $result -contains 'Ready') { return 'Ready' }
+        if ($LASTEXITCODE -eq 0 -and $result -contains 'Updated') { return 'Updated' }
+        if ($LASTEXITCODE -eq 0 -and $result -contains 'Managed') { return 'Managed' }
+        foreach ($line in $result) { Write-Log "PowerShell policy check: $line" -Quiet }
+    } catch {
+        Write-Log "PowerShell policy check failed: $($_.Exception.Message)" -Level WARNING -Quiet
+    }
+    return 'Manual'
+}
+
 function Set-PwshConfig {
-    $review=Show-InteractiveMenu -Title 'Review PowerShell Profile' -Items @('Replace the PowerShell 7 and Windows PowerShell profiles with bundled configuration.','Versioned backups are preserved. Terminal-Icons is offered if missing.','---','Y › Apply','N › Back')
-    if($review -ne 'Y'){return}
+    $review = Show-InteractiveMenu -Title 'Review PowerShell Profile' -Items @(
+        'Install the bundled profiles and back up existing files.',
+        'If Windows blocks profiles by default, set RemoteSigned for your user.',
+        '---', 'Y › Apply', 'N › Back'
+    )
+    if ($review -ne 'Y') { return }
+
     if ($env:WINRIFT_DRY_RUN -ne '1' -and -not (Get-Module -ListAvailable -Name Terminal-Icons)) {
         try {
             Write-Log -Message "Installing Terminal-Icons module..." -Level INFO
             $offer=Show-InteractiveMenu -Title 'Terminal-Icons Dependency' -Items @('Y › Install Terminal-Icons','N › Continue without installing','B › Back')
-            if($offer -eq 'B'){return}
+            if($null -eq $offer -or $offer -eq 'B'){return}
             if($offer -eq 'Y'){Install-Module -Name Terminal-Icons -Scope CurrentUser -Force -ErrorAction Stop}
         } catch {
             Write-Log -Message "Failed to install Terminal-Icons: $($_.Exception.Message)" -Level ERROR
@@ -197,20 +242,52 @@ function Set-PwshConfig {
         Write-Log -Message "Terminal-Icons is already installed." -Level INFO
     }
 
+    $legacyShell = Join-Path $env:SystemRoot 'System32\WindowsPowerShell\v1.0\powershell.exe'
+    $shells = @(
+        @{ Name = 'PowerShell 7'; Directory = 'PowerShell'; Path = (Get-Process -Id $PID).Path }
+        @{ Name = 'Windows PowerShell 5.1'; Directory = 'WindowsPowerShell'; Path = $legacyShell }
+    )
+    $dryRun = $env:WINRIFT_DRY_RUN -eq '1'
+    $ready = @()
+    $issues = @()
+    foreach ($shell in $shells) {
+        $name = $shell.Name
+        if (-not (Test-Path -LiteralPath $shell.Path -PathType Leaf)) { continue }
+        $status = if ($dryRun) { 'Ready' } else { Initialize-WinriftProfilePolicy $shell.Path }
+        switch ($status) {
+            'Ready' { $ready += $shell }
+            'Updated' {
+                $ready += $shell
+                Write-Log "$name now uses RemoteSigned for the current user." -Level SUCCESS
+            }
+            'Managed' {
+                $issues += "$name profile skipped. Group Policy blocks profile scripts."
+            }
+            default {
+                $issues += "$name profile skipped. Open that shell and run:"
+                $issues += 'Set-ExecutionPolicy -Scope CurrentUser RemoteSigned'
+                $issues += 'Then run this setup again.'
+            }
+        }
+    }
+    if ($issues.Count) {
+        Clear-Host
+        Show-InfoBox -Title 'PowerShell Profile Policy' -Items $issues
+        Wait-ForUser
+    }
+    if (-not $ready.Count) { return }
+
     $docsDir = [Environment]::GetFolderPath('MyDocuments')
-
-    # PowerShell 7 profile (primary)
-    Copy-ConfigFiles -SourceDir "$PSScriptRoot\config\cli" `
-                     -FileNames @("Microsoft.PowerShell_profile.ps1") `
-                     -TargetDir "$docsDir\PowerShell" `
-                     -ConfigName "PowerShell 7"
-
-    # PowerShell 5.1 profile (copy for users who also use legacy shell)
-    Copy-ConfigFiles -SourceDir "$PSScriptRoot\config\cli" `
-                     -FileNames @("Microsoft.PowerShell_profile.ps1") `
-                     -TargetDir "$docsDir\WindowsPowerShell" `
-                     -ConfigName "PowerShell 5.1"
-
+    foreach ($shell in $ready) {
+        $copy = @{
+            SourceDir = "$PSScriptRoot\config\cli"
+            FileNames = @('Microsoft.PowerShell_profile.ps1')
+            TargetDir = Join-Path $docsDir $shell.Directory
+            ConfigName = $shell.Name
+            Reviewed = $true
+        }
+        Copy-ConfigFiles @copy
+    }
     Wait-ForUser
 }
 
