@@ -14,107 +14,120 @@ $script:DnsProviders = @(
     @{ Name = "Comodo";         Primary = "8.26.56.26";      Secondary = "8.20.247.20" }
 )
 
+function Set-WinriftBenchmarkDns {
+    param([hashtable]$Provider)
+
+    $adapters = @(Get-NetAdapter -ErrorAction SilentlyContinue | Where-Object Status -EQ 'Up' | Sort-Object Name)
+    if (-not $adapters.Count) {
+        $null = Show-InteractiveMenu -Title 'Choose Network Adapter' -Items @('No active network adapters found.', '---', 'B › Back')
+        return
+    }
+
+    $items = @(for ($i = 0; $i -lt $adapters.Count; $i++) { "$i › $($adapters[$i].Name)" })
+    $choice = Show-InteractiveMenu -Title 'Choose Network Adapter' -Items ($items + @('---', 'B › Back'))
+    if ($null -eq $choice -or $choice -eq 'B') { return }
+    $adapter = $adapters[[int]$choice]
+    $servers = @($Provider.Primary, $Provider.Secondary)
+    $choice = Show-InteractiveMenu -Title 'Confirm DNS Change' -Items @(
+        "Provider: $($Provider.Name)",
+        "Adapter: $($adapter.Name)",
+        "DNS servers: $($servers -join ', ')",
+        'This replaces the DNS servers for this adapter.',
+        '---', 'A › Apply DNS', 'B › Back'
+    )
+    if ($choice -ne 'A') { return }
+
+    $message = if ($env:WINRIFT_DRY_RUN -eq '1') {
+        "Would set DNS to $($Provider.Name) on $($adapter.Name)."
+    } else {
+        try {
+            Set-DnsClientServerAddress -InterfaceIndex $adapter.InterfaceIndex -ServerAddresses $servers -ErrorAction Stop
+            "DNS set to $($Provider.Name) on $($adapter.Name)."
+        } catch {
+            Write-Log "Could not set DNS on $($adapter.Name): $($_.Exception.Message)" -Level ERROR -Quiet
+            'Could not change DNS. See Help → Open Logs for details.'
+        }
+    }
+    $null = Show-InteractiveMenu -Title 'DNS Change Result' -Items @($message, '---', 'B › Back to Results')
+}
+
 function Invoke-DnsBenchmark {
+    $choice = Show-InteractiveMenu -Title 'DNS Benchmark' -Items @(
+        'Compare DNS lookup times for a domain.',
+        '---', 'D › Use example.com', 'C › Enter a Domain or URL', 'B › Back'
+    )
+    if ($null -eq $choice -or $choice -eq 'B') { return }
+
+    $domain = 'example.com'
+    if ($choice -eq 'C') {
+        Clear-Host
+        while ($true) {
+            $inputDomain = (Read-Host 'Domain or URL (blank to cancel)').Trim()
+            if (-not $inputDomain) { return }
+            if ($inputDomain -notmatch '://') { $inputDomain = 'https://' + $inputDomain }
+            $uri = $null
+            if ([uri]::TryCreate($inputDomain, [UriKind]::Absolute, [ref]$uri) -and
+                $uri.Scheme -in @('http', 'https') -and $uri.HostNameType -eq [UriHostNameType]::Dns -and
+                $uri.DnsSafeHost.TrimEnd('.') -match '\.') {
+                $domain = $uri.IdnHost.TrimEnd('.')
+                break
+            }
+            Write-Host 'Enter a domain such as example.com or an HTTP(S) URL.'
+        }
+    }
+
     Clear-Host
-    $domain = "example.com"
     $queries = 5
-
-    # VPN detection
-    $vpnAdapters = Get-NetAdapter -ErrorAction SilentlyContinue | Where-Object {
-        $_.InterfaceDescription -match 'VPN|WireGuard|Tunnel|TAP|TUN' -and $_.Status -eq 'Up'
-    }
-    if ($vpnAdapters) {
-        Write-Log -Message "VPN detected ($($vpnAdapters[0].InterfaceDescription)). Results may not reflect normal DNS performance." -Level WARNING
-        Write-Host ""
-    }
-
-    Write-Host "$Cyan  Benchmarking $($script:DnsProviders.Count) DNS providers ($queries queries each)...$Reset"
-    Write-Host ""
-
     $results = @()
-    foreach ($provider in $script:DnsProviders) {
-        Write-Host -NoNewline "  $Dim$($provider.Name.PadRight(16))$Reset"
-        $times = @()
-        for ($i = 0; $i -lt $queries; $i++) {
-            try {
-                $sw = [System.Diagnostics.Stopwatch]::StartNew()
-                Resolve-DnsName -Name $domain -Server $provider.Primary -Type A -DnsOnly -ErrorAction Stop | Out-Null
-                $sw.Stop()
-                $times += $sw.Elapsed.TotalMilliseconds
-            } catch {
-                $sw.Stop()
-                # Failed DNS queries are excluded from latency samples.
+    $vpnAdapters = @(Get-NetAdapter -ErrorAction SilentlyContinue | Where-Object {
+        $_.InterfaceDescription -match 'VPN|WireGuard|Tunnel|TAP|TUN' -and $_.Status -eq 'Up'
+    })
+    try {
+        foreach ($provider in $script:DnsProviders) {
+            Write-Progress -Activity "Testing DNS for $domain" -Status $provider.Name -PercentComplete (100 * $results.Count / $script:DnsProviders.Count)
+            $times = @()
+            for ($i = 0; $i -lt $queries; $i++) {
+                $watch = [System.Diagnostics.Stopwatch]::StartNew()
+                try {
+                    $answer = @(Resolve-DnsName -Name "$domain." -Server $provider.Primary -Type A -DnsOnly -NoHostsFile -QuickTimeout -ErrorAction Stop)
+                    $watch.Stop()
+                    if ($answer.Type -contains 'A') { $times += $watch.Elapsed.TotalMilliseconds }
+                } catch {
+                    Write-Log "DNS lookup via $($provider.Name) failed: $($_.Exception.Message)" -Level INFO -Quiet
+                }
             }
+            $average = if ($times.Count) { ($times | Measure-Object -Average).Average }
+            $results += [pscustomobject]@{ Provider = $provider; Successes = $times.Count; Average = $average }
         }
-        if ($times.Count -ne $queries) { Write-Host 'Unavailable or partial failure'; continue }
-        $avg = ($times | Measure-Object -Average).Average
-        $color = $avg -lt 20 ? $Green : ($avg -lt 50 ? $Yellow : $Red)
-        Write-Host "$color$([math]::Round($avg, 1)) ms$Reset"
-        $results += @{ Name = $provider.Name; Primary = $provider.Primary; Secondary = $provider.Secondary; Avg = $avg }
+    } finally {
+        Write-Progress -Activity "Testing DNS for $domain" -Completed
     }
 
-    if (-not $results.Count) { Write-Log 'No provider completed all queries. No DNS changes will be offered.' -Level WARNING; Wait-ForUser; return }
-    $ranked = @($results | Sort-Object { $_.Avg })
-    $best = $ranked[0]
+    $ranked = @($results | Where-Object Successes -EQ $queries | Sort-Object Average)
+    $partial = @($results | Where-Object Successes -LT $queries | Sort-Object Successes -Descending)
+    $items = @("Domain: $domain", "Average IPv4 lookup time · $queries requests per provider")
+    if ($vpnAdapters.Count) { $items += 'VPN detected. Results reflect this connection.' }
+    $items += '---'
+    foreach ($result in $ranked) {
+        $items += "$($result.Provider.Name)  $([math]::Round($result.Average, 1)) ms  ($queries/$queries)"
+    }
+    foreach ($result in $partial) {
+        $items += "$($result.Provider.Name)  $($result.Successes)/$queries lookups succeeded"
+    }
+    if (-not $ranked.Count) { $items += 'No provider answered all requests.' }
+    $items += '---'
+    if ($ranked.Count) { $items += 'C › Choose DNS Provider' }
+    $items += 'B › Back'
 
-    Write-Host ""
-    Write-Log -Message "Fastest: $($best.Name) ($([math]::Round($best.Avg, 1)) ms)" -Level SUCCESS
-    Write-Host ""
-    Write-Host -NoNewline "  Apply $Cyan$($best.Name)$Reset?  $Green[Y]$Reset Apply   $Dim[N]$Reset Pick other   $Dim[Esc]$Reset Skip  "
-
-    $key  = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
-    $char = $key.Character.ToString().ToUpper()
-    $vk   = [int]$key.VirtualKeyCode
-
-    $selected = $null
-    if ($char -eq "Y") {
-        Write-Host "$Green[Y]$Reset"
-        $selected = $best
-    } elseif ($char -eq "N") {
-        Write-Host "$Dim[N]$Reset"
-        Write-Host ""
-        for ($i = 0; $i -lt $ranked.Count; $i++) {
-            $r     = $ranked[$i]
-            $color = $r.Avg -lt 20 ? $Green : ($r.Avg -lt 50 ? $Yellow : $Red)
-            Write-Host "  $Cyan$($i + 1)$Reset  $($r.Name.PadRight(16))$color$([math]::Round($r.Avg, 1)) ms$Reset"
-        }
-        Write-Host "  $Dim0$Reset  Skip"
-        Write-Host ""
-        $raw = Read-Host "  Select (1-$($ranked.Count), 0 to skip)"
-        $n = 0
-        if ([int]::TryParse($raw.Trim(), [ref]$n) -and $n -ge 1 -and $n -le $ranked.Count) {
-            $selected = $ranked[$n - 1]
+    while ((Show-InteractiveMenu -Title 'DNS Results' -Items $items) -eq 'C') {
+        $providerItems = @(for ($i = 0; $i -lt $ranked.Count; $i++) {
+            "$i › $($ranked[$i].Provider.Name)  $([math]::Round($ranked[$i].Average, 1)) ms"
+        })
+        $choice = Show-InteractiveMenu -Title 'Choose DNS Provider' -Items ($providerItems + @('---', 'B › Back'))
+        if ($null -ne $choice -and $choice -ne 'B') {
+            Set-WinriftBenchmarkDns -Provider $ranked[[int]$choice].Provider
         }
     }
-
-    if ($selected) {
-        Write-Host ""
-        $adapters = @(Get-NetAdapter | Where-Object { $_.Status -eq 'Up' -and $_.InterfaceDescription -notmatch 'VPN|Loopback|Virtual' })
-        if ($adapters.Count -gt 1) {
-            $adapterItems = @()
-            for ($i = 0; $i -lt $adapters.Count; $i++) {
-                $a = $adapters[$i]
-                $adapterItems += "$($i + 1) › $($a.Name) — $($a.InterfaceDescription)"
-            }
-            $pick = Show-InteractiveMenu -Title "Select network adapter" -Items $adapterItems
-            $n = 0
-            if ([int]::TryParse($pick, [ref]$n) -and $n -ge 1 -and $n -le $adapters.Count) {
-                $adapter = $adapters[$n - 1]
-            } else {
-                $adapter = $null
-            }
-        } else {
-            $adapter = $adapters | Select-Object -First 1
-        }
-        if ($adapter) {
-            if ($env:WINRIFT_DRY_RUN -eq '1') { Write-Log "[DRY-RUN] Set DNS to $($selected.Name) on $($adapter.Name)"; Wait-ForUser; return }
-            Set-DnsClientServerAddress -InterfaceIndex $adapter.InterfaceIndex -ServerAddresses @($selected.Primary, $selected.Secondary) -ErrorAction Stop
-            Write-Log -Message "DNS set to $($selected.Name) on $($adapter.Name)" -Level SUCCESS
-        } else {
-            Write-Log -Message "No suitable network adapter found." -Level ERROR
-        }
-    }
-    Wait-ForUser
 }
 
 function Show-SecurityMenu {
@@ -123,7 +136,7 @@ function Show-SecurityMenu {
         "1 › DefendNot - Disable Windows Defender",
         "2 › RemoveWindowsAI - Remove Copilot & Recall",
         "3 › Privacy Hardening - Enforce privacy and security",
-        "4 › DNS Benchmark - Test & apply fastest DNS",
+        "4 › DNS Benchmark - Compare DNS lookup times",
         "5 › Just the Browser - Remove AI & telemetry from browsers",
         "---",
         "6 › Back to menu"
