@@ -18,6 +18,16 @@ Describe 'Macrift style menu geometry' {
             }
         }
     }
+    It 'uses extra width and height while keeping the focused item in view' {
+        $label = 'Long tweak ' + ('x' * 80)
+        $items = @(0..30 | ForEach-Object { "$_ › $label $_" })
+        $narrow = Get-WinriftMenuFrame -Title Test -Items $items -HighlightIndex 15 -Width 60 -Height 14
+        $wide = Get-WinriftMenuFrame -Title Test -Items $items -HighlightIndex 15 -Width 120 -Height 25 -Top $narrow.Top
+        ($narrow.Lines -join "`n") | Should -Match '…'
+        ($wide.Lines -join "`n") | Should -Match ([regex]::Escape("$label 15"))
+        $wide.Lines.Count | Should -BeGreaterThan $narrow.Lines.Count
+        $wide.Lines.Count | Should -BeLessThan 25
+    }
     It 'separates cursor and round selection markers' {
         $frame = Get-WinriftMenuFrame -Title Test -Items @('a › Alpha','b › Beta') -HighlightIndex 0 -Checked @($false,$true)
         $plain = ($frame.Lines -join "`n") -replace '\x1b\[[0-9;]*m',''

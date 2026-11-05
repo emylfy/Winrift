@@ -1,10 +1,66 @@
 function _Enter-RawUI {
+    if ($IsWindows -and -not ('Winrift.ConsoleInput' -as [type])) {
+        try {
+            Add-Type -ErrorAction Stop -TypeDefinition @'
+using System;
+using System.Runtime.InteropServices;
+
+namespace Winrift {
+    public static class ConsoleInput {
+        [StructLayout(LayoutKind.Explicit, Size = 20)]
+        private struct InputRecord {
+            [FieldOffset(0)] public ushort Type;
+            [FieldOffset(4)] public int KeyDown;
+        }
+
+        [DllImport("kernel32.dll")]
+        private static extern IntPtr GetStdHandle(int kind);
+        [DllImport("kernel32.dll")]
+        private static extern bool GetConsoleMode(IntPtr handle, out uint mode);
+        [DllImport("kernel32.dll")]
+        private static extern bool SetConsoleMode(IntPtr handle, uint mode);
+        [DllImport("kernel32.dll", EntryPoint = "PeekConsoleInputW")]
+        private static extern bool PeekConsoleInput(IntPtr handle, out InputRecord record, uint count, out uint read);
+        [DllImport("kernel32.dll", EntryPoint = "ReadConsoleInputW")]
+        private static extern bool ReadConsoleInput(IntPtr handle, out InputRecord record, uint count, out uint read);
+
+        public static uint? EnableResizeEvents() {
+            var handle = GetStdHandle(-10);
+            if (GetConsoleMode(handle, out uint mode) && SetConsoleMode(handle, mode | 0x0008))
+                return mode;
+            return null;
+        }
+
+        public static void RestoreMode(uint mode) {
+            SetConsoleMode(GetStdHandle(-10), mode);
+        }
+
+        public static bool ReadResizeEvent() {
+            var handle = GetStdHandle(-10);
+            // Leave keyboard records to Console.ReadKey, which handles repeats.
+            while (PeekConsoleInput(handle, out InputRecord record, 1, out uint count) &&
+                   count != 0 && (record.Type != 0x0001 || record.KeyDown == 0)) {
+                if (!ReadConsoleInput(handle, out record, 1, out count) || count == 0)
+                    break;
+                if (record.Type == 0x0004)
+                    return true;
+            }
+            return false;
+        }
+    }
+}
+'@
+        } catch {
+            # Keep size polling available if native console input is unavailable.
+        }
+    }
     # Saves cursor visibility and CtrlC mode, hides cursor.
     # Returns a state hashtable to pass to _Exit-RawUI.
     $visible = try { [Console]::CursorVisible } catch { $true }
     $s = @{
         Visible = $visible
         CtrlC   = [Console]::TreatControlCAsInput
+        InputMode = if ('Winrift.ConsoleInput' -as [type]) { [Winrift.ConsoleInput]::EnableResizeEvents() }
     }
     try { [Console]::CursorVisible = $false } catch { $null = $_ }
     return $s
@@ -12,6 +68,7 @@ function _Enter-RawUI {
 
 function _Exit-RawUI {
     param([hashtable]$State)
+    if ($null -ne $State.InputMode) { [Winrift.ConsoleInput]::RestoreMode($State.InputMode) }
     [Console]::TreatControlCAsInput = $State.CtrlC
     try { [Console]::CursorVisible = $State.Visible } catch { $null = $_ }
 }
@@ -21,6 +78,11 @@ function ConvertTo-WinriftLine {
     $plain = ($Text -replace '\x1b\][^\x07]*(?:\x07|\x1b\\)', '') -replace '\x1b\[[0-9;?]*[A-Za-z]', ''
     $plain = ($plain.Replace("`t",'  ')) -replace '[\x00-\x1f\x7f]', ''
     if($Width -le 0){return ''}
+    # Most menu text and its markers occupy one cell per character.
+    if ($plain -cmatch '^[ -~…○●✓–↑↓←→↵›↗·]*$') {
+        if ($plain.Length -le $Width) { return $plain }
+        return $plain.Substring(0, $Width - 1) + '…'
+    }
     $elements=[Collections.Generic.List[object]]::new();$total=0
     $enumerator=[Globalization.StringInfo]::GetTextElementEnumerator($plain)
     while($enumerator.MoveNext()){
@@ -40,15 +102,18 @@ function Get-WinriftMenuFrame {
     param(
         [string]$Title, [string[]]$Items, [int]$HighlightIndex = -1,
         [bool[]]$Checked, [string[]]$Markers, [hashtable]$Descriptions, [string]$Hint,
-        [int]$Width = 80, [int]$Height = 25, [int]$Top = 0
+        [int]$Width = 80, [int]$Height = 25, [int]$Top = 0, [switch]$HideHint
     )
-    $widthBudget = [math]::Max(1, [math]::Min(68, $Width - 4))
+    $widthBudget = [math]::Max(1, $Width - 5)
     $rows = [System.Collections.Generic.List[string]]::new()
     $rows.Add('')
     $rows.Add("    ${Bold}${Ice}$(ConvertTo-WinriftLine $Title ([math]::Max(1,$widthBudget - 1)))$Reset")
     $rows.Add('')
     # Reserve title, context, hint and a final console row to avoid wrapping.
     $visible = [math]::Max(1, $Height - 9)
+    if ($Items.Count -le $Height - 7 -and -not $Descriptions -and -not ($Items -like "*~*")) {
+        $visible = $Items.Count
+    }
     $topLimit = [math]::Max(0, $Items.Count - $visible)
     $Top = [math]::Clamp($Top, 0, $topLimit)
     if ($HighlightIndex -ge 0) {
@@ -64,8 +129,9 @@ function Get-WinriftMenuFrame {
         $labelWidth = [math]::Max($labelWidth, $plainLabel.Length)
     }
     if ($null -ne $Checked) { $labelWidth += 2 }
-    $labelWidth = [math]::Min($labelWidth, [math]::Max(1,$widthBudget - 6))
+    $labelWidth = [math]::Min($labelWidth, [math]::Max(1,$widthBudget - 3))
     $last = [math]::Min($Items.Count, $Top + $visible)
+    if ($Top -gt 0) { $rows[2] = "     ${Dim}▲ …$Reset" }
     for ($i = $Top; $i -lt $last; $i++) {
         $item = $Items[$i]
         if ($item -eq '---' -or $item -match '^---\s+-+\s*$') { $rows.Add(''); continue }
@@ -88,22 +154,23 @@ function Get-WinriftMenuFrame {
             $rows.Add("   ${Bold}${Cyan}▌${Reset} ${Bold}$label${Reset}$tail")
         } else { $rows.Add("     $label$tail") }
     }
-    $rows.Add('')
+    $rows.Add($(if ($last -lt $Items.Count) { "     ${Dim}▼ …$Reset" } else { '' }))
     $context = ''
     if ($Descriptions -and $Descriptions.ContainsKey($HighlightIndex)) {
         $context = @($Descriptions[$HighlightIndex]) -join ' '
     } elseif ($HighlightIndex -ge 0 -and $Items[$HighlightIndex] -like '*~*') {
         $context = ($Items[$HighlightIndex] -split '~', 2)[1]
     }
-    if ($Top -gt 0 -or $last -lt $Items.Count) {
-        $context = "↑↓ $($Top + 1)–$last / $($Items.Count)  $context"
+    if ($context) {
+        $rows.Add("     $Dim$(ConvertTo-WinriftLine $context ([math]::Max(1,$widthBudget - 2)))$Reset")
+        $rows.Add('')
     }
-    $rows.Add("     $Dim$(ConvertTo-WinriftLine $context ([math]::Max(1,$widthBudget - 2)))$Reset")
-    $rows.Add('')
-    if (-not $Hint) {
-        $Hint = if ($null -ne $Checked) { 'Space: toggle  A: applicable  ?: details  Enter: review  Esc: back' } else { '↑↓ move · →/↵ select · ←/Esc back' }
+    if (-not $HideHint) {
+        if (-not $Hint) {
+            $Hint = if ($null -ne $Checked) { 'Space select · A select applicable · ? details · Enter review · Esc back' } else { '↑↓ move · →/↵ select · ←/Esc back' }
+        }
+        $rows.Add("  $Dim$(ConvertTo-WinriftLine $Hint ([math]::Max(1,$Width - 3)))$Reset")
     }
-    $rows.Add("  $Dim$(ConvertTo-WinriftLine $Hint ([math]::Max(1,$Width - 3)))$Reset")
     # Very short windows still show the active row; no negative dimensions.
     if ($Height -lt 9) {
         $rows.Clear()
@@ -121,17 +188,25 @@ function _Draw-InteractiveBox {
         [string]$Title, [string[]]$Items, [int]$HighlightIndex = -1,
         [bool[]]$Checked = $null, [string[]]$Markers, [int]$PrevLines = 0, [ref]$VpTop,
         [switch]$NoBox, [string]$Hint, [switch]$HideKeys,
-        [hashtable]$Descriptions, [int]$SplitAt = 0, [string]$TitleRight
+        [hashtable]$Descriptions, [int]$SplitAt = 0, [string]$TitleRight, [switch]$HideHint
     )
-    $width = try { [math]::Max(4, [Console]::WindowWidth) } catch { 80 }
-    $height = try { [math]::Max(2, [Console]::WindowHeight) } catch { 25 }
+    $width = try { [Console]::WindowWidth } catch { 80 }
+    $height = try { [Console]::WindowHeight } catch { 25 }
+    $resized = $PrevLines -gt 0 -and ($width -ne $script:WinriftFrameWidth -or $height -ne $script:WinriftFrameHeight)
+    $script:WinriftFrameWidth = $width
+    $script:WinriftFrameHeight = $height
+    $width = [math]::Max(4, $width)
+    $height = [math]::Max(2, $height)
     $top = if ($null -ne $VpTop) { $VpTop.Value } else { 0 }
-    $frame = Get-WinriftMenuFrame -Title $Title -Items $Items -HighlightIndex $HighlightIndex -Checked $Checked -Markers $Markers -Descriptions $Descriptions -Hint $Hint -Width $width -Height $height -Top $top
+    $frame = Get-WinriftMenuFrame -Title $Title -Items $Items -HighlightIndex $HighlightIndex -Checked $Checked -Markers $Markers -Descriptions $Descriptions -Hint $Hint -Width $width -Height $height -Top $top -HideHint:$HideHint
     if ($null -ne $VpTop) { $VpTop.Value = $frame.Top }
     $esc = [char]27
     $sb = [Text.StringBuilder]::new()
     [void]$sb.Append("$esc[?2026h")
-    if ($PrevLines -ge $height) { [void]$sb.Append("$esc[H$esc[J") }
+    if ($resized) {
+        # Clear reflowed rows from scrollback after clearing the viewport.
+        [void]$sb.Append("$esc[2J$esc[3J$esc[H")
+    } elseif ($PrevLines -ge $height) { [void]$sb.Append("$esc[H$esc[J") }
     elseif ($PrevLines -gt 0) { [void]$sb.Append("$esc[${PrevLines}A`r") }
     foreach ($line in $frame.Lines) { [void]$sb.Append("$line$esc[K`n") }
     [void]$sb.Append("$esc[J$esc[?2026l")
@@ -139,15 +214,21 @@ function _Draw-InteractiveBox {
     return $frame.Lines.Count
 }
 function Read-WinriftMenuKey {
-    $width = [Console]::WindowWidth
-    $height = [Console]::WindowHeight
-    while (-not $Host.UI.RawUI.KeyAvailable) {
-        Start-Sleep -Milliseconds 50
-        if ([Console]::WindowWidth -ne $width -or [Console]::WindowHeight -ne $height) {
+    $nativeInput = 'Winrift.ConsoleInput' -as [type]
+    while ($true) {
+        if ($nativeInput -and [Winrift.ConsoleInput]::ReadResizeEvent()) {
+            $script:WinriftFrameWidth = -1
             return [pscustomobject]@{ VirtualKeyCode = 0; Character = [char]0 }
         }
+        if ([Console]::WindowWidth -ne $script:WinriftFrameWidth -or [Console]::WindowHeight -ne $script:WinriftFrameHeight) {
+            return [pscustomobject]@{ VirtualKeyCode = 0; Character = [char]0 }
+        }
+        if ([Console]::KeyAvailable) {
+            $key = [Console]::ReadKey($true)
+            return [pscustomobject]@{ VirtualKeyCode = [int]$key.Key; Character = $key.KeyChar }
+        }
+        Start-Sleep -Milliseconds 25
     }
-    return $Host.UI.RawUI.ReadKey('NoEcho,IncludeKeyDown')
 }
 function Invoke-MenuLoop {
     # Persistent menu loop — executes action callbacks and stays open until exit.
@@ -167,7 +248,9 @@ function Invoke-MenuLoop {
         [int]$SplitAt = 0,
         [scriptblock]$TitleSuffix = $null,
         [switch]$HideKeys,
-        [scriptblock]$OnTab, [scriptblock]$HintProvider
+        [scriptblock]$OnTab, [scriptblock]$HintProvider,
+        [string]$NextKey,
+        [switch]$HideHint
     )
 
     # Parse selectable items
@@ -196,16 +279,17 @@ function Invoke-MenuLoop {
         while ($true) {
             $drawHint = if ($HintProvider) { & $HintProvider } else { $null }
             $drawRight = $TitleSuffix ? (& $TitleSuffix) : $null
-            $prevLines = _Draw-InteractiveBox -Title $Title -Items $Items -HighlightIndex $selectIdx[$cursor] -PrevLines $prevLines -VpTop ([ref]$vpTop) -Descriptions $Descriptions -SplitAt $SplitAt -TitleRight $drawRight -HideKeys:$HideKeys -Hint $drawHint
+            $prevLines = _Draw-InteractiveBox -Title $Title -Items $Items -HighlightIndex $selectIdx[$cursor] -PrevLines $prevLines -VpTop ([ref]$vpTop) -Descriptions $Descriptions -SplitAt $SplitAt -TitleRight $drawRight -HideKeys:$HideKeys -Hint $drawHint -HideHint:$HideHint
 
             # Wait for keypress. When TitleSuffix is set, poll periodically to
             # redraw live stats. Otherwise just block on ReadKey (no CPU waste).
             [Console]::TreatControlCAsInput = $true
             if ($TitleSuffix) {
-                while (-not $Host.UI.RawUI.KeyAvailable) {
+                while (-not [Console]::KeyAvailable) {
                     Start-Sleep -Milliseconds 500
+                    if ([Console]::WindowWidth -ne $script:WinriftFrameWidth -or [Console]::WindowHeight -ne $script:WinriftFrameHeight) { break }
                     $drawRight = & $TitleSuffix
-                    $prevLines = _Draw-InteractiveBox -Title $Title -Items $Items -HighlightIndex $selectIdx[$cursor] -PrevLines $prevLines -VpTop ([ref]$vpTop) -Descriptions $Descriptions -SplitAt $SplitAt -TitleRight $drawRight -HideKeys:$HideKeys -Hint $drawHint
+                    $prevLines = _Draw-InteractiveBox -Title $Title -Items $Items -HighlightIndex $selectIdx[$cursor] -PrevLines $prevLines -VpTop ([ref]$vpTop) -Descriptions $Descriptions -SplitAt $SplitAt -TitleRight $drawRight -HideKeys:$HideKeys -Hint $drawHint -HideHint:$HideHint
                 }
             }
             $k = Read-WinriftMenuKey
@@ -247,13 +331,15 @@ function Invoke-MenuLoop {
                 return
             }
 
+            if ($NextKey -and $selKey -eq $NextKey) { return 'Next' }
+
             # Execute action
             $actionKey = $null
             if ($Actions.ContainsKey($selKey)) { $actionKey = $selKey }
             elseif ($Actions.ContainsKey($selKey.ToUpper())) { $actionKey = $selKey.ToUpper() }
             if ($actionKey) {
                 $selectedLabel = ($Items[$selectIdx[$cursor]] -replace '\x1b\[[0-9;]*m', '' -replace '^\s*\S+\s*[›>]\s*', '').Trim()
-                Write-Log -Message "[$cleanTitle] › $selectedLabel" -Level INFO
+                Write-Log -Message "[$cleanTitle] › $selectedLabel" -Level INFO -Quiet
                 try { [Console]::CursorVisible = $true } catch { $null = $_ }
                 & $Actions[$actionKey]
                 try { [Console]::CursorVisible = $false } catch { $null = $_ }

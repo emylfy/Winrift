@@ -1,6 +1,6 @@
 # Shared product navigation. Opening a route never applies a configuration.
 function Show-WinriftMainMenu {
-    Invoke-MenuLoop -Title ('Winrift ' + (($script:AppVersion -split '\.')[0..1] -join '.')) -HintProvider { "↑↓ move · →/↵ select · v$script:AppVersion" } -Items @(
+    Invoke-MenuLoop -Title ('Winrift ' + (($script:AppVersion -split '\.')[0..1] -join '.')) -Items @(
         '1 › Update Windows & Drivers          ›',
         '2 › Set Up Windows                    ›',
         '3 › Install Your Apps                 ›',
@@ -12,22 +12,28 @@ function Show-WinriftMainMenu {
         '---',
         '0 › Exit'
     ) -Actions @{
-        '1' = { Show-WinriftUpdates }
-        '2' = { Show-WinriftSetup }
-        '3' = { & "$script:Root\modules\apps\Apps.ps1" }
-        '4' = { Show-WinriftAppConfiguration }
+        '1' = { Show-WinriftSetupStages -StartAt 1 }
+        '2' = { Show-WinriftSetupStages -StartAt 2 }
+        '3' = { Show-WinriftSetupStages -StartAt 3 }
+        '4' = { Show-WinriftSetupStages -StartAt 4 }
         '5' = { Show-WinriftSaveRestore }
         '6' = { Show-WinriftUndo }
         '7' = { Show-WinriftHelp }
-    } -ExitKey '0' -Descriptions @{
-        0 = @('Windows updates and component drivers.')
-        1 = @('Choose your Windows settings.')
-        2 = @('Choose apps to install.')
-        3 = @('Configure installed apps.')
-        5 = @('Save or restore your setup.')
-        6 = @('Restore previous settings.')
-        7 = @('Documentation and diagnostic logs.')
-    } -HideKeys
+    } -ExitKey '0' -HideKeys -HideHint
+}
+
+function Show-WinriftSetupStages {
+    param([int]$StartAt)
+
+    for ($stage = $StartAt; $stage -le 4; $stage++) {
+        $result = switch ($stage) {
+            1 { Show-WinriftUpdates }
+            2 { Show-WinriftSetup }
+            3 { & "$script:Root\modules\apps\Apps.ps1" }
+            4 { Show-WinriftAppConfiguration }
+        }
+        if ($result -notcontains 'Next') { return }
+    }
 }
 
 function Test-WinriftIntelComponent {
@@ -40,13 +46,16 @@ function Test-WinriftIntelComponent {
 }
 
 function Show-WinriftUpdates {
-    $items = @('1 › Open Windows Update')
+    $items = @('1 › Open Windows Update ↗')
     $actions = @{
         '1' = {
-            if ($env:WINRIFT_DRY_RUN -eq '1') { Write-Log '[DRY-RUN] Open ms-settings:windowsupdate'; Wait-ForUser; return }
-            Start-Process 'ms-settings:windowsupdate'
-            Show-InfoBox -Title 'Windows Update' -Items @('Install available updates. Restart if Windows requests it, then check again.', 'Opening Settings does not verify that updates were installed.')
-            Wait-ForUser
+            if ($env:WINRIFT_DRY_RUN -eq '1') { Write-Log '[DRY-RUN] Open ms-settings:windowsupdate' -Quiet; return }
+            try {
+                Start-Process 'ms-settings:windowsupdate' -ErrorAction Stop
+            } catch {
+                Write-Log "Could not open Windows Update: $($_.Exception.Message)" -Level ERROR
+                Wait-ForUser
+            }
         }
         '2' = {
             $choice = Show-InteractiveMenu -Title 'Intel Driver & Support Assistant' -Items @(
@@ -62,11 +71,12 @@ function Show-WinriftUpdates {
                 if ($offer -eq 'Y') { Install-WingetPackage 'Intel.IntelDriverAndSupportAssistant' 'Intel Driver & Support Assistant' | Out-Null }
             }
         }
-        '3' = { Show-WinriftSetup }
     }
     if (Test-WinriftIntelComponent) { $items += '2 › Intel Driver & Support Assistant' }
-    $items += @('---', '3 › Continue to Windows Setup        ›', '0 › Back to Menu')
-    Invoke-MenuLoop -Title 'Update Windows & Drivers' -Items $items -Actions $actions -ExitKey '0' -HideKeys
+    $items += @('---', '3 › Continue to Windows Setup        ›')
+    Invoke-MenuLoop -Title 'Update Windows & Drivers' -Items $items -Actions $actions -ExitKey '0' -NextKey '3' -HideKeys -Descriptions @{
+        0 = @('Install available updates and restart if prompted.')
+    }
 }
 
 function Show-WinriftSetup {
@@ -75,14 +85,13 @@ function Show-WinriftSetup {
         '2 › Privacy & Debloat                ›',
         '3 › Windows Preferences              ›',
         '4 › Additional Tools                 ›',
-        '---', '5 › Continue to App Installation     ›', '0 › Back to Menu'
+        '---', '5 › Continue to App Installation     ›'
     ) -Actions @{
         '1' = { & "$script:Root\modules\system\Tweaks.ps1" }
         '2' = { Show-WinriftPrivacy }
         '3' = { Show-WinriftPreferences }
         '4' = { Show-WinriftTools }
-        '5' = { & "$script:Root\modules\apps\Apps.ps1" }
-    } -ExitKey '0' -HideKeys
+    } -ExitKey '0' -NextKey '5' -HideKeys
 }
 
 function Show-WinriftPrivacy {
@@ -128,7 +137,7 @@ function Show-WinriftAppConfiguration {
         '2 › Code Editors                     ›',
         '3 › Desktop Tools                    ›',
         '4 › Browser Privacy                  ›',
-        '5 › Organize Start Menu Shortcuts    ›', '---', '0 › Back to Menu'
+        '5 › Organize Start Menu Shortcuts    ›'
     ) -Actions @{
         '1' = { Show-TerminalMenu }
         '2' = { Show-VSCodeConfigMenu }

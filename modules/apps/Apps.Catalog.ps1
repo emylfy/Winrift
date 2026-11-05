@@ -157,14 +157,15 @@ function Show-WinriftAppUpdates {
 function Show-AppCategoryMenu {
     try {
     Invoke-MenuLoop -Title 'Install Your Apps' -Items @(
-        'S › Search Apps                      ›', 'C › Command Line                     ›',
+        'S › Search Apps                      ›', '---',
+        'C › Command Line                     ›',
         'D › Developer Apps                   ›', 'U › Utilities                        ›',
         'B › Browsers                         ›', 'M › Communication                    ›',
         'P › Productivity                     ›', 'V › Media & Creative                 ›',
         'G › Games                            ›', 'F › Fonts                            ›',
         'A › Browse All Apps                  ›', 'W › Update Installed Apps            ›',
         'I › Import Bundle                    ›', '---',
-        'N › Continue to App Configuration    ›', '0 › Back to Menu'
+        'N › Continue to App Configuration    ›'
     ) -Actions @{
         'S'={ $query=Read-Host 'Search curated apps'; if($query){Show-WinriftAppPicker -Search $query} }
         'C'={ Show-WinriftAppPicker 'Command Line' }; 'D'={ Show-WinriftAppPicker 'Developer Apps' }
@@ -173,8 +174,7 @@ function Show-AppCategoryMenu {
         'V'={ Show-WinriftAppPicker 'Media & Creative' }; 'G'={ Show-WinriftAppPicker Games }
         'F'={ Show-WinriftAppPicker Fonts }; 'A'={ Show-WinriftAppPicker All }
         'W'={ Show-WinriftAppUpdates }; 'I'={ Import-WinriftAppBundle }
-        'N'={ Show-WinriftAppConfiguration }
-    } -ExitKey '0' -HideKeys -OnTab { Show-WinriftAppQueue } -HintProvider {
+    } -ExitKey '0' -NextKey 'N' -HideKeys -OnTab { Show-WinriftAppQueue } -HintProvider {
         $count=@(Get-WinriftAppQueue).Count
         if($count){ "Selected: $count  Tab: queue  Enter: open  ←/Esc: back" } else { '↑↓: navigate  Enter: open  ←/Esc: back' }
     }

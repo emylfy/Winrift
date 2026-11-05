@@ -62,7 +62,8 @@ function Write-Log {
         [string]$Message,
         [ValidateSet('INFO','SUCCESS','WARNING','ERROR','SKIP')]
         [string]$Level = 'INFO',
-        [string]$LogFile = ""
+        [string]$LogFile = "",
+        [switch]$Quiet
     )
 
     $glyph = switch ($Level) {
@@ -73,7 +74,7 @@ function Write-Log {
         default   { "$Cyan$([char]0x203A)$Reset" }    # ›
     }
 
-    Write-Host "  $glyph  $Message"
+    if (-not $Quiet) { Write-Host "  $glyph  $Message" }
 
     $effectiveLog = ($LogFile -ne "") ? $LogFile : ($script:LogFile ? $script:LogFile : "")
     if ($effectiveLog -ne "") {
