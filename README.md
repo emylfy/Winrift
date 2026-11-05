@@ -68,7 +68,7 @@ Run from the Winrift folder:
 <details>
 <summary><strong>Tools and customization</strong></summary>
 
-- **Privacy & maintenance** — RemoveWindowsAI, app updater controls, DNS Benchmark, disk cleanup, and DefendNot.
+- **Privacy & maintenance** — App updater controls, DNS Benchmark, disk cleanup, and external tool collections.
 - **Shell & editors** — Starship or Oh My Posh, FastFetch, editor settings, and extension installation.
 - **Desktop & browser** — GlazeWM configs, wallpaper collections, and JustTheBrowser.
 

@@ -22,9 +22,9 @@ function Write-WinriftAtomicJson {
 }
 
 function Read-WinriftJson {
-    param([Parameter(Mandatory)][string]$Path)
+    param([Parameter(Mandatory)][string]$Path, [switch]$AsHashtable)
     # Corrupt state is never silently replaced with an empty document.
-    $value = [IO.File]::ReadAllText($Path) | ConvertFrom-Json -ErrorAction Stop
+    $value = [IO.File]::ReadAllText($Path) | ConvertFrom-Json -AsHashtable:$AsHashtable -ErrorAction Stop
     if ($value.schemaVersion -ne 1) { throw "Unsupported Winrift state schema in $Path" }
     return $value
 }

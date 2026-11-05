@@ -1,22 +1,6 @@
 {
+    "authorCollectionUrl": "https://gist.github.com/emylfy/a7f081ca8d3802f2f2adaa791c48bc56",
     "tools": [
-        {
-            "id": "defendnot",
-            "name": "DefendNot",
-            "description": "Disable Windows Defender via WSC API",
-            "type": "irm",
-            "url": "https://dnot.sh/",
-            "docs": "https://github.com/es3n1n/defendnot"
-        },
-        {
-            "id": "removewindowsai",
-            "name": "RemoveWindowsAI",
-            "description": "Remove Copilot, Recall and AI features",
-            "type": "irm",
-            "interactive": true,
-            "url": "https://raw.githubusercontent.com/zoicware/RemoveWindowsAI/main/RemoveWindowsAi.ps1",
-            "docs": "https://github.com/zoicware/RemoveWindowsAI"
-        },
         {
             "id": "justthebrowser",
             "name": "Just the Browser",

@@ -97,12 +97,10 @@ function Show-WinriftSetup {
 function Show-WinriftPrivacy {
     Invoke-MenuLoop -Title 'Privacy & Debloat' -Items @(
         '1 › Privacy Setup                    ›',
-        '2 › Remove Windows AI Features       ↗',
         '3 › App Auto-Updates                 ›',
         '---', '0 › Back'
     ) -Actions @{
         '1' = { & "$script:Root\modules\security\Privacy.ps1" }
-        '2' = { & "$script:Root\modules\security\RemoveWindowsAI.ps1" }
         '3' = { . "$script:Root\modules\security\Privacy.ps1"; Show-WinriftAppUpdates }
     } -ExitKey '0' -HideKeys
 }
@@ -118,15 +116,37 @@ function Show-WinriftPreferences {
 function Show-WinriftTools {
     . "$script:Root\modules\security\SecurityMenu.ps1"
     . "$script:Root\modules\system\Tweaks.Cleanup.ps1"
-    Invoke-MenuLoop -Title 'Additional Tools' -Items @(
-        '1 › DNS Benchmark                    ›',
-        '2 › Free Up Disk Space               ›',
-        '3 › Disable Windows Defender         ↗', '---', '0 › Back'
-    ) -Actions @{
-        '1' = { Invoke-DnsBenchmark }
-        '2' = { Clear-SystemSpace }
-        '3' = { & "$script:Root\modules\security\DefendNot.ps1" }
-    } -ExitKey '0' -HideKeys
+    . "$PSScriptRoot\ToolCollections.ps1"
+
+    while ($true) {
+        $items = @('1 › DNS Benchmark ›', '2 › Free Up Disk Space ›', '---')
+        $paths = @()
+        $directory = Join-Path (Get-WinriftStateRoot) 'tool-collections'
+        foreach ($file in (Get-ChildItem -LiteralPath $directory -File -Filter '*.json' -ErrorAction SilentlyContinue | Sort-Object Name)) {
+            try {
+                $saved = Read-WinriftJson $file.FullName -AsHashtable
+                $catalog = ConvertTo-WinriftToolCollection $saved.catalog
+                $paths += $file.FullName
+                $items += "$($paths.Count + 2) › $($catalog.name) ›"
+            } catch {
+                Write-Log "Could not read tool collection $($file.Name): $($_.Exception.Message)" -Level WARNING -Quiet
+            }
+        }
+        $items += @('A › Add a Tool Collection… ›', '---', '0 › Back')
+        $choice = Show-InteractiveMenu -Title 'Additional Tools' -Items $items -HideKeys
+        try {
+            switch ($choice) {
+                '1' { Invoke-DnsBenchmark }
+                '2' { Clear-SystemSpace }
+                'A' { Show-WinriftAddToolCollection }
+                { $_ -match '^[1-9][0-9]*$' -and [int]$_ -gt 2 } { Show-WinriftToolCollection $paths[[int]$choice - 3] }
+                default { return }
+            }
+        } catch {
+            Show-InfoBox -Title 'Additional Tools' -Items @($_.Exception.Message)
+            Wait-ForUser
+        }
+    }
 }
 
 function Show-WinriftAppConfiguration {

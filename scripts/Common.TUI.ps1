@@ -390,7 +390,8 @@ function Show-InteractiveMenu {
         [string]$Title,
         [string[]]$Items,
         [switch]$NoClear,
-        [switch]$HideKeys
+        [switch]$HideKeys,
+        [hashtable]$FocusedDescriptions
     )
 
     $selectIdx = [System.Collections.Generic.List[int]]::new()
@@ -422,7 +423,7 @@ function Show-InteractiveMenu {
             $highlight = if ($browsing) { -1 } else { $selectIdx[$cursor] }
             $hint = if ($browsing) { '↑↓ scroll  Enter actions  Esc back' }
                     elseif ($cursor -eq 0 -and $selectIdx[0] -ge ([Console]::WindowHeight - 8)) { '↑ earlier text  Enter select  Esc back' }
-            $prevLines = _Draw-InteractiveBox -Title $Title -Items $Items -HighlightIndex $highlight -PrevLines $prevLines -VpTop ([ref]$vpTop) -HideKeys:$HideKeys -Hint $hint
+            $prevLines = _Draw-InteractiveBox -Title $Title -Items $Items -HighlightIndex $highlight -PrevLines $prevLines -VpTop ([ref]$vpTop) -HideKeys:$HideKeys -Hint $hint -FocusedDescriptions $FocusedDescriptions
 
             [Console]::TreatControlCAsInput = $true
             $k = Read-WinriftMenuKey

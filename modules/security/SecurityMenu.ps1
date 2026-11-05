@@ -133,16 +133,12 @@ function Invoke-DnsBenchmark {
 function Show-SecurityMenu {
     $menuRoot = $PSScriptRoot
     Invoke-MenuLoop -Title "Security & Privacy Tools" -Items @(
-        "1 › DefendNot - Disable Windows Defender",
-        "2 › RemoveWindowsAI - Remove Copilot & Recall",
         "3 › Privacy Hardening - Enforce privacy and security",
         "4 › DNS Benchmark - Compare DNS lookup times",
         "5 › Just the Browser - Remove AI & telemetry from browsers",
         "---",
         "6 › Back to menu"
     ) -Actions @{
-        "1" = { Start-AdminProcess -ScriptPath "$menuRoot\DefendNot.ps1" }
-        "2" = { Start-AdminProcess -ScriptPath "$menuRoot\RemoveWindowsAI.ps1" }
         "3" = { Start-AdminProcess -ScriptPath "$menuRoot\Privacy.ps1" }
         "4" = { Invoke-DnsBenchmark }
         "5" = { Start-AdminProcess -ScriptPath "$menuRoot\JustTheBrowser.ps1" }

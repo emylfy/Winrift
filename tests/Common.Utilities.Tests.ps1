@@ -5,9 +5,9 @@ BeforeAll {
 
 Describe 'Get-ToolConfig' {
     It 'returns tool object for known ID' {
-        $tool = Get-ToolConfig 'defendnot'
+        $tool = Get-ToolConfig 'justthebrowser'
         $tool | Should -Not -BeNullOrEmpty
-        $tool.id | Should -Be 'defendnot'
+        $tool.id | Should -Be 'justthebrowser'
         $tool.name | Should -Not -BeNullOrEmpty
         $tool.url | Should -Not -BeNullOrEmpty
     }
