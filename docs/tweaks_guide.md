@@ -4,6 +4,7 @@ Winrift brings Windows settings into one menu so you can see what each tweak cha
 
 ## Table of Contents
 
+- [Before You Start](#before-you-start)
 - [How to Apply](#how-to-apply)
 - [Recommended Preset](#recommended-preset)
 - [Universal Tweaks](#universal-tweaks)
@@ -12,6 +13,12 @@ Winrift brings Windows settings into one menu so you can see what each tweak cha
 - [Free Up Disk Space](#free-up-disk-space)
 - [How to Revert](#how-to-revert)
 - [Reference Sources](#reference-sources)
+
+## Before You Start
+
+Start with **Review Recommended Preset** if you're setting up a fresh install. Use **All Tweaks** if you came for a specific setting. The preview shows the current and proposed values before you apply anything.
+
+On a laptop, pay particular attention to the idle and power settings. Disabling idle states can increase heat and battery drain. Shorter shutdown timeouts give apps less time to save their work. For GPU changes, compare the same game or app on the same driver before and after.
 
 ## How to Apply
 
@@ -204,7 +211,24 @@ Source: [QuickBoost Memory Tweaks](https://github.com/SanGraphic/QuickBoost)
 
 ### 13. DirectX
 
-Open **GPU Tweaks → DirectX Preset** to review the D3D11/D3D12 preset, or select individual entries under **All Tweaks**. It writes 14 flags under `HKLM:\SOFTWARE\Microsoft\DirectX`, including multithreading, deferred contexts, tiling, and D3D12 heap and residency settings. See the proposed values in the review. Test the preset with the apps you actually use.
+Open **GPU Tweaks → DirectX Preset** to review the full set, or use **Individual Tweaks** to select specific entries. The preset writes these values under `HKLM:\SOFTWARE\Microsoft\DirectX`.
+
+| Registry value | Type | Value |
+| --- | --- | --- |
+| `D3D12_ENABLE_UNSAFE_COMMAND_BUFFER_REUSE` | `DWord` | `1` |
+| `D3D12_ENABLE_RUNTIME_DRIVER_OPTIMIZATIONS` | `DWord` | `1` |
+| `D3D12_RESOURCE_ALIGNMENT` | `DWord` | `1` |
+| `D3D11_MULTITHREADED` | `DWord` | `1` |
+| `D3D12_MULTITHREADED` | `DWord` | `1` |
+| `D3D11_DEFERRED_CONTEXTS` | `DWord` | `1` |
+| `D3D12_DEFERRED_CONTEXTS` | `DWord` | `1` |
+| `D3D11_ALLOW_TILING` | `DWord` | `1` |
+| `D3D11_ENABLE_DYNAMIC_CODEGEN` | `DWord` | `1` |
+| `D3D12_ALLOW_TILING` | `DWord` | `1` |
+| `D3D12_CPU_PAGE_TABLE_ENABLED` | `DWord` | `1` |
+| `D3D12_HEAP_SERIALIZATION_ENABLED` | `DWord` | `1` |
+| `D3D12_MAP_HEAP_ALLOCATIONS` | `DWord` | `1` |
+| `D3D12_RESIDENCY_MANAGEMENT_ENABLED` | `DWord` | `1` |
 
 ---
 
@@ -237,7 +261,7 @@ Sources: [Ancels Performance Batch](https://github.com/ancel1x/Ancels-Performanc
 
 ### NVIDIA
 
-**Review NVIDIA Preset** presents the per-CPU DPC override as one action. Expand the details to see the five writes.
+A deferred procedure call (DPC) lets a driver run follow-up work after an interrupt. **Review NVIDIA Preset** shows the per-CPU DPC override as one action with five registry writes. How the driver responds depends on the driver version.
 
 **Registry key:** `RmGpsPsEnablePerCpuCoreDpc = 1`
 
@@ -259,6 +283,44 @@ Open **Review AMD Preset** for a summary, then choose **View Details** to see th
 - **Other driver settings** include overlay, snapshot, color depth, stutter mode, DMA copy and block write controls.
 
 **Path:** `HKLM:\SYSTEM\CurrentControlSet\Control\Class\{4d36e968-e325-11ce-bfc1-08002be10318}`, under the detected AMD driver entry.
+
+<details>
+<summary>All 30 AMD registry values</summary>
+
+| Registry value | Type | Value |
+| --- | --- | --- |
+| `AllowSnapshot` | `DWord` | `0` |
+| `AllowSubscription` | `DWord` | `0` |
+| `AllowRSOverlay` | `String` | `"false"` |
+| `AllowSkins` | `String` | `"false"` |
+| `AutoColorDepthReduction_NA` | `DWord` | `0` |
+| `DisableUVDPowerGatingDynamic` | `DWord` | `1` |
+| `DisableVCEPowerGating` | `DWord` | `1` |
+| `DisablePowerGating` | `DWord` | `1` |
+| `DisableDrmdmaPowerGating` | `DWord` | `1` |
+| `DisableDMACopy` | `DWord` | `1` |
+| `DisableBlockWrite` | `DWord` | `0` |
+| `StutterMode` | `DWord` | `0` |
+| `PP_GPUPowerDownEnabled` | `DWord` | `0` |
+| `LTRSnoopL1Latency` | `DWord` | `1` |
+| `LTRSnoopL0Latency` | `DWord` | `1` |
+| `LTRNoSnoopL1Latency` | `DWord` | `1` |
+| `LTRMaxNoSnoopLatency` | `DWord` | `1` |
+| `KMD_RpmComputeLatency` | `DWord` | `1` |
+| `DalUrgentLatencyNs` | `DWord` | `1` |
+| `memClockSwitchLatency` | `DWord` | `1` |
+| `PP_RTPMComputeF1Latency` | `DWord` | `1` |
+| `PP_DGBMMMaxTransitionLatencyUvd` | `DWord` | `1` |
+| `PP_DGBPMMaxTransitionLatencyGfx` | `DWord` | `1` |
+| `DalNBLatencyForUnderFlow` | `DWord` | `1` |
+| `BGM_LTRSnoopL1Latency` | `DWord` | `1` |
+| `BGM_LTRSnoopL0Latency` | `DWord` | `1` |
+| `BGM_LTRNoSnoopL1Latency` | `DWord` | `1` |
+| `BGM_LTRNoSnoopL0Latency` | `DWord` | `1` |
+| `BGM_LTRMaxSnoopLatencyValue` | `DWord` | `1` |
+| `BGM_LTRMaxNoSnoopLatencyValue` | `DWord` | `1` |
+
+</details>
 
 ## Free Up Disk Space
 
@@ -282,7 +344,9 @@ Open Microsoft PC Manager if it is installed, or install it from the prompt.
 2. Select the operation and review the values Winrift can restore.
 3. Confirm the restore and restart if the setting calls for it.
 
-Winrift uses the recorded previous value and checks for later edits before writing. Use **Restore Configuration Backup** for saved app configs. Component cleanup and actions taken inside external tools have their own recovery paths.
+Winrift uses the recorded previous value and checks for later edits before writing. Use **Restore Configuration Backup** for saved app configs. For component cleanup and actions taken inside external tools, use the recovery options available for that operation.
+
+If you want a Windows restore point before applying tweaks, open **Create a restore point** from the Start menu and create one under **System Protection**. To restore to an existing point later, run `rstrui.exe` and select it.
 
 ---
 

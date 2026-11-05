@@ -371,14 +371,15 @@ function Show-InteractiveMenu {
         [string]$Title,
         [string[]]$Items,
         [switch]$NoClear,
-        [switch]$HideKeys
+        [switch]$HideKeys,
+        [switch]$ActionsOnly
     )
 
     $selectIdx = [System.Collections.Generic.List[int]]::new()
     $keyMap = @{}
     for ($i = 0; $i -lt $Items.Count; $i++) {
         $t = $Items[$i]
-        if ($t -ne "---" -and $t -notmatch '^---\s+') {
+        if ($t -ne "---" -and $t -notmatch '^---\s+' -and (-not $ActionsOnly -or $t -match '^\s*[^\s]+\s*[›>]')) {
             $selectIdx.Add($i)
             if ($t -match '^\s*([^\s]+)\s*[›>]') {
                 $keyMap[$i] = $Matches[1]
@@ -387,17 +388,17 @@ function Show-InteractiveMenu {
     }
     if ($selectIdx.Count -eq 0) { return $null }
 
-    $cursor = 0
-    $_ui = _Enter-RawUI
-    if (-not $NoClear) { Clear-Host }
-    $prevLines = 0
-    $vpTop = 0
-
     # Auto-confirm: if NO_CONFIRM=1 and menu has "Y ›" item — return "Y" without rendering
     if ($env:WINRIFT_NO_CONFIRM -eq "1") {
         $yItem = $Items | Where-Object { $_ -match '^\s*Y\s*[›>]' } | Select-Object -First 1
         if ($yItem) { return "Y" }
     }
+
+    $cursor = 0
+    $_ui = _Enter-RawUI
+    if (-not $NoClear) { Clear-Host }
+    $prevLines = 0
+    $vpTop = 0
 
     try {
         while ($true) {
@@ -460,10 +461,12 @@ function Show-MultiSelect {
         [bool[]]$Defaults = $null,
         [bool[]]$Disabled, [string[]]$Markers, [hashtable]$Descriptions,
         [switch]$NoBox,
+        [switch]$DetailsOnly,
         [scriptblock]$OnSelectionChanged
     )
 
     $selectIdx = [System.Collections.Generic.List[int]]::new()
+    $inlineDescriptions = if (-not $DetailsOnly) { $Descriptions }
     $checked = [bool[]]::new($Items.Count)
     for ($i = 0; $i -lt $Items.Count; $i++) {
         if ($Items[$i] -ne "---" -and $Items[$i] -notmatch '^---\s+') {
@@ -482,9 +485,9 @@ function Show-MultiSelect {
     try {
         while ($true) {
             if ($NoBox) {
-                $prevLines = _Draw-InteractiveBox -Title $Title -Items $Items -HighlightIndex $selectIdx[$cursor] -Checked $checked -Markers $Markers -Descriptions $Descriptions -PrevLines $prevLines -VpTop ([ref]$vpTop) -NoBox
+                $prevLines = _Draw-InteractiveBox -Title $Title -Items $Items -HighlightIndex $selectIdx[$cursor] -Checked $checked -Markers $Markers -Descriptions $inlineDescriptions -PrevLines $prevLines -VpTop ([ref]$vpTop) -NoBox
             } else {
-                $prevLines = _Draw-InteractiveBox -Title $Title -Items $Items -HighlightIndex $selectIdx[$cursor] -Checked $checked -Markers $Markers -Descriptions $Descriptions -PrevLines $prevLines -VpTop ([ref]$vpTop)
+                $prevLines = _Draw-InteractiveBox -Title $Title -Items $Items -HighlightIndex $selectIdx[$cursor] -Checked $checked -Markers $Markers -Descriptions $inlineDescriptions -PrevLines $prevLines -VpTop ([ref]$vpTop)
             }
 
             [Console]::TreatControlCAsInput = $true

@@ -725,37 +725,57 @@ function Show-WinriftAppUpdates {
         }
     }
 }
+function Show-WinriftPrivacyDetails {
+    param([hashtable]$Manifest)
+
+    $sections = [ordered]@{
+        'Registry values' = @($Manifest.Registry | ForEach-Object { "$($_.Path)\$($_.Name) = $($_.Value)" })
+        'Registry values removed' = @($Manifest.RegistryDeletes | ForEach-Object { "$($_.Path)\$($_.Name)" })
+        'Services and scheduled tasks' = @($Manifest.Services) + @($Manifest.Tasks)
+        'Apps and optional features' = @($Manifest.Apps) + @($Manifest.Features)
+        'Hosts file entries' = @($Manifest.Hosts)
+        'History and files' = @($Manifest.HistoryKeys) + @($Manifest.Files)
+        'Other system changes' = @(
+            'Set machine DOTNET_CLI_TELEMETRY_OPTOUT and POWERSHELL_TELEMETRY_OPTOUT.',
+            'Stop CompatTelRunner, DeviceCensus and software_reporter_tool; set executable restrictions.',
+            'Remove NVIDIA telemetry packages when their installer is present.',
+            'Browser policies use Browser Privacy; retained browser cache and log cleanup paths are listed above.',
+            'Remove defaultuser0; reset default app associations; change Workstation dependencies and NetBIOS options.',
+            'Set DTLS 1.2/TLS 1.3 protocol values. Older policies may be unavailable on this Windows version.',
+            'Cleanup includes Windows/application logs and MRU data; these deletions cannot be undone.'
+        )
+    }
+
+    $names = @($sections.Keys)
+    $items = @(for ($i = 0; $i -lt $names.Count; $i++) { "$i › $($names[$i])" })
+    while ($true) {
+        $choice = Show-InteractiveMenu -Title 'Privacy Setup — Details' -Items ($items + @('---', 'B › Back'))
+        if ($choice -eq 'B' -or $null -eq $choice) { return }
+
+        $section = $names[[int]$choice]
+        Clear-Host
+        Show-InfoBox -Title $section -Items $sections[$section]
+        Wait-ForUser
+    }
+}
+
 function Show-PrivacyMenu {
     Initialize-Logging -ModuleName privacy
-    $manifest = Get-WinriftPrivacyManifest
     $items = @(
-        'Privacy Setup is one operation. Review its complete scope below.',
-        'Registry changes may affect permissions, telemetry, search, features and application policies.',
-        'App removals affect all users and provisioning for new users.',
-        'App/file/history deletion and external changes are not universally reversible.',
-        'App updater controls are separate. Editor configuration is handled under Configure Your Apps.',
-        'Browser policies are handled by Browser Privacy; Windows AI removal uses the external Remove Windows AI flow.',
-        '--- Registry values ---'
+        '--- Changes telemetry, search and system policies.',
+        '--- Removes selected apps for all users, including new users.',
+        '--- Resets default app associations and changes networking.',
+        '--- Deletes logs and history. Some changes cannot be undone.',
+        '---',
+        'D › View Details',
+        'A › Apply Privacy Setup',
+        'B › Back'
     )
-    $items += @($manifest.Registry | ForEach-Object { "$($_.Path)\$($_.Name) = $($_.Value)" })
-    $items += '--- Registry values removed ---'
-    $items += @($manifest.RegistryDeletes | ForEach-Object { "$($_.Path)\$($_.Name)" })
-    foreach ($section in @('Services','Tasks','Apps','Features','Hosts','HistoryKeys','Files')) {
-        $items += "--- $section ---"; $items += @($manifest[$section])
-    }
-    $items += @(
-        '--- Other material operations ---',
-        'Set machine DOTNET_CLI_TELEMETRY_OPTOUT and POWERSHELL_TELEMETRY_OPTOUT.',
-        'Stop CompatTelRunner, DeviceCensus and software_reporter_tool; set executable restrictions.',
-        'Remove NVIDIA telemetry packages when their installer is present.',
-        'Browser policies use Browser Privacy; retained browser cache and log cleanup paths are listed above.',
-        'Remove defaultuser0; reset default app associations; change Workstation dependencies and NetBIOS options.',
-        'Set DTLS 1.2/TLS 1.3 protocol values. Older policies may be unavailable on this Windows version.',
-        'Cleanup includes Windows/application logs and MRU data; these deletions cannot be undone.',
-        '---', 'Y › Apply Privacy Setup', 'N › Back'
-    )
-    $choice = Show-InteractiveMenu -Title 'Privacy Setup — Review Changes' -Items $items -HideKeys
-    if ($choice -ne 'Y') { return }
+    do {
+        $choice = Show-InteractiveMenu -Title 'Privacy Setup — Review Changes' -Items $items
+        if ($choice -eq 'D') { Show-WinriftPrivacyDetails -Manifest (Get-WinriftPrivacyManifest) }
+    } while ($choice -eq 'D')
+    if ($choice -ne 'A') { return }
     Invoke-PrivacyHardening
     Write-Log 'Privacy operations finished. Inspect individual errors and unsupported items in the log.'
     Wait-ForUser

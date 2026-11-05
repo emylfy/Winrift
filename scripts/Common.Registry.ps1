@@ -16,6 +16,7 @@ function Add-AuditEntry {
 }
 
 function Show-AuditTable {
+    param([switch]$NamesOnly, [string[]]$Notes)
     if ($script:AuditQueue.Count -eq 0) {
         Write-Log -Message "No changes to preview." -Level INFO
         return $false
@@ -30,18 +31,28 @@ function Show-AuditTable {
 
     $items = @()
     foreach ($e in $changed) {
+        if ($NamesOnly) { $items += $e.Message; continue }
         $cur = ($null -eq $e.Current) ? "(not set)" : "$($e.Current)"
         $new = "$($e.Value)"
         $items += "$($e.Message)  $Dim$cur$Reset $Yellow->$Reset $Green$new$Reset"
     }
+    if ($Notes.Count) { $items += '---'; $items += $Notes }
     if ($skipped -gt 0) { $items += "---"; $items += "$Dim$skipped value(s) already match — skipped$Reset" }
-    $items += "---"
-    $items += "$($changed.Count) change(s) to apply"
-    $items += "---"
-    $items += "Y › Apply changes"
-    $items += "N › Cancel"
+    $summary = if ($changed.Count -eq 1) { '1 change to apply' } else { "$($changed.Count) changes to apply" }
+    $actions = @('Y › Apply changes', 'N › Cancel')
+    $review = $items + @('---', $summary, '---') + $actions
+    if ($review.Count -gt ([Console]::WindowHeight - 7)) {
+        $review = @($summary, '---', 'V › View Changes') + $actions
+    }
 
-    $choice = Show-InteractiveMenu -Title "Review Changes" -HideKeys -Items $items
+    do {
+        $choice = Show-InteractiveMenu -Title 'Review Changes' -HideKeys -ActionsOnly -Items $review
+        if ($choice -eq 'V') {
+            Clear-Host
+            Show-InfoBox -Title 'Selected Changes' -Items $items
+            Wait-ForUser
+        }
+    } while ($choice -eq 'V')
     return ($choice -eq "Y")
 }
 
