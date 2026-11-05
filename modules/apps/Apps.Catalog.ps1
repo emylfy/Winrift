@@ -30,6 +30,20 @@ function Save-WinriftAppQueue {
     Write-WinriftAtomicJson -Path (Join-Path (Get-WinriftStateRoot) 'apps\queue.json') -Value @{schemaVersion=1;packages=$deduplicated}
 }
 
+function Get-InstalledAndBrokenIds {
+    $installed=[Collections.Generic.HashSet[string]]::new([StringComparer]::OrdinalIgnoreCase)
+    $broken=[Collections.Generic.HashSet[string]]::new([StringComparer]::OrdinalIgnoreCase)
+    if(Get-Command winget -ErrorAction SilentlyContinue) {
+        $output=& winget list --accept-source-agreements --disable-interactivity 2>&1
+        foreach($line in $output) {
+            if($line -match '^.+?\s{2,}([A-Za-z0-9][\w.-]*\.[A-Za-z0-9][\w.-]*|[A-Za-z0-9]{12,14})\s{2,}\S+') { $null=$installed.Add($Matches[1]) }
+        }
+    }
+    # Unknown version is still installed. No forced reinstall is inferred.
+    Write-Output -NoEnumerate $installed
+    Write-Output -NoEnumerate $broken
+}
+
 function Show-WinriftAppPicker {
     param([string]$Category='All', [string]$Search='')
     $packages=@(Get-WinriftCatalog | Where-Object {
@@ -104,27 +118,6 @@ function Show-WinriftAppQueue {
         $retry=Show-InteractiveMenu -Title 'App Results' -NoClear -Items @('R › Retry Failed Items','N › Back')
         if($retry -eq 'R') { $null=Invoke-WinriftQueuedInstall @($queue | Where-Object { $_.Id -in $failed.Id }); Wait-ForUser }
     } else { Wait-ForUser }
-}
-
-function Export-WinriftQueueToUniGetUI {
-    param([object[]]$Packages)
-    $path=Read-Host 'Save a separate bundle file (full path, .ubundle)'
-    if(-not $path) { return }
-    $resolved=[IO.Path]::GetFullPath($path)
-    $root=[IO.Path]::GetFullPath((Split-Path (Split-Path $PSScriptRoot -Parent) -Parent))
-    if($resolved.StartsWith($root.TrimEnd('\')+'\',[StringComparison]::OrdinalIgnoreCase)) { Write-Log 'Choose a location outside bundled Winrift assets.' -Level WARNING; Wait-ForUser; return }
-    if(Test-Path -LiteralPath $resolved) { Write-Log 'Choose a new file; the existing file is preserved.' -Level WARNING; Wait-ForUser; return }
-    if($env:WINRIFT_DRY_RUN -eq '1') { Write-Log "[DRY-RUN] Save bundle $resolved and open UniGetUI"; Wait-ForUser; return }
-    $bundle=@{export_version=3;packages=@($Packages|ForEach-Object{@{Id=$_.Id;Name=$_.Name;ManagerName='Winget';Source=$(if ($_.Source -eq 'msstore') { 'msstore' } else { 'winget' })}})}
-    [IO.File]::WriteAllText($resolved,($bundle|ConvertTo-Json -Depth 10),[Text.UTF8Encoding]::new($false))
-    $exe=Get-UniGetUIExe
-    if(-not $exe) {
-        $choice=Show-InteractiveMenu -Title 'UniGetUI' -Items @('Y › Install UniGetUI','N › Back')
-        if($choice -eq 'Y') { $null=Install-WingetPackage 'Devolutions.UniGetUI' 'UniGetUI'; $exe=Get-UniGetUIExe }
-    }
-    if($exe) { Start-Process -FilePath $exe -ArgumentList ('--import-bundle "'+$resolved+'"'); Write-Log 'Bundle handed off to UniGetUI. Save your edits to your chosen file.' }
-    else { Write-Log "Bundle saved: $resolved. UniGetUI was not opened." }
-    Wait-ForUser
 }
 
 function Import-WinriftAppBundle {

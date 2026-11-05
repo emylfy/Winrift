@@ -1,6 +1,6 @@
 BeforeAll {
     function global:winget { $global:LASTEXITCODE=0 }
-    . "$PSScriptRoot\..\modules\unigetui\UniGetUI.ps1"
+    . "$PSScriptRoot\..\modules\apps\Apps.ps1"
 }
 Describe 'Shared application queue' {
     BeforeEach {

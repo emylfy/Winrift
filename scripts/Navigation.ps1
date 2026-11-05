@@ -14,7 +14,7 @@ function Show-WinriftMainMenu {
     ) -Actions @{
         '1' = { Show-WinriftUpdates }
         '2' = { Show-WinriftSetup }
-        '3' = { & "$script:Root\modules\unigetui\UniGetUI.ps1" }
+        '3' = { & "$script:Root\modules\apps\Apps.ps1" }
         '4' = { Show-WinriftAppConfiguration }
         '5' = { Show-WinriftSaveRestore }
         '6' = { Show-WinriftUndo }
@@ -81,7 +81,7 @@ function Show-WinriftSetup {
         '2' = { Show-WinriftPrivacy }
         '3' = { Show-WinriftPreferences }
         '4' = { Show-WinriftTools }
-        '5' = { & "$script:Root\modules\unigetui\UniGetUI.ps1" }
+        '5' = { & "$script:Root\modules\apps\Apps.ps1" }
     } -ExitKey '0' -HideKeys
 }
 

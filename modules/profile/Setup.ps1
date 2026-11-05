@@ -164,7 +164,7 @@ function Invoke-WinriftSetupApply {
         $results+=@{Action=$entry.Name;Status=$script:LastActionResult.Status}
     };$null=Save-TweakBackup;$null=Save-DesiredState}
     if('Apps' -in $Sections -and @($Setup.sections.Apps).Count){
-        . "$PSScriptRoot\..\unigetui\UniGetUI.ps1"
+        . "$PSScriptRoot\..\apps\Apps.ps1"
         $appResults=Invoke-WinriftQueuedInstall @($Setup.sections.Apps)
         foreach($result in $appResults){$results+=@{Action=$result.Id;Status=$result.Status}}
     }

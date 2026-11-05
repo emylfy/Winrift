@@ -11,10 +11,10 @@ BeforeAll {
 
 Describe 'Get-InstalledAndBrokenIds' {
     BeforeAll {
-        # Dot-source UniGetUI but stub winget so it doesn't run
+        # Load the apps module with a stub for winget
         $repoRoot = Split-Path $PSScriptRoot -Parent
         function global:winget { }
-        . "$repoRoot\modules\unigetui\UniGetUI.ps1"
+        . "$repoRoot\modules\apps\Apps.ps1"
     }
 
     It 'classifies a package with a real version as installed only' {

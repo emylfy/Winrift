@@ -65,7 +65,7 @@ winrift/
 │   ├── security/           # Security tools
 │   ├── drivers/            # Driver installation
 │   ├── tools/              # Third-party tool integrations
-│   ├── unigetui/           # Package manager integration
+│   ├── apps/               # WinGet catalog and optional UniGetUI integration
 │   └── customize/          # Desktop environment, themes, configs
 ├── docs/                   # Documentation and guides
 └── media/                  # Icons, logos, assets
