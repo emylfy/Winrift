@@ -1,57 +1,6 @@
-﻿# PS7 requirement gate — auto-install portable and relaunch in pwsh.
-# launch.ps1 runs via irm|iex so $PSScriptRoot is empty — inline the installer.
-# Portable zip goes to %LOCALAPPDATA%\Winrift\pwsh — no admin needed.
+﻿# Online entry point. Keep this downloader compatible with Windows PowerShell 5.1.
 if ($PSVersionTable.PSVersion.Major -lt 7) {
-    $pwsh = (Get-Command pwsh.exe -ErrorAction SilentlyContinue).Source
-    if (-not $pwsh) {
-        $pwsh = "$env:ProgramFiles\PowerShell\7\pwsh.exe"
-        if (-not (Test-Path $pwsh)) {
-            $pwsh = "$env:LOCALAPPDATA\Winrift\pwsh\pwsh.exe"
-            if (-not (Test-Path $pwsh)) { $pwsh = $null }
-        }
-    }
-
-    if (-not $pwsh) {
-        Write-Host ""
-        Write-Host "  Winrift requires PowerShell 7. Downloading portable (~50MB)..." -ForegroundColor Yellow
-        $arch = if ([Environment]::Is64BitOperatingSystem) {
-            if ($env:PROCESSOR_ARCHITECTURE -eq "ARM64" -or $env:PROCESSOR_ARCHITEW6432 -eq "ARM64") { "arm64" } else { "x64" }
-        } else { "x86" }
-        # Resolve latest stable PS7 from GitHub; fall back to a known-good pin
-        # if the API is unreachable so the bootstrap never breaks over time.
-        try { [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12 } catch { }
-        $pwshVer = "7.4.7"
-        try {
-            $rel = Invoke-RestMethod -Uri "https://api.github.com/repos/PowerShell/PowerShell/releases/latest" -Headers @{ "User-Agent" = "winrift" } -TimeoutSec 10 -ErrorAction Stop
-            if ($rel.tag_name -match '^v?(\d+\.\d+\.\d+)$') { $pwshVer = $Matches[1] }
-        } catch { }
-        $zipUrl = "https://github.com/PowerShell/PowerShell/releases/download/v$pwshVer/PowerShell-$pwshVer-win-$arch.zip"
-        $zipPath = Join-Path $env:TEMP "pwsh-portable.zip"
-        $destDir = "$env:LOCALAPPDATA\Winrift\pwsh"
-        try {
-            Write-Host "  Downloading..." -ForegroundColor Cyan
-            try { Start-BitsTransfer -Source $zipUrl -Destination $zipPath -DisplayName "PowerShell 7" -ErrorAction Stop }
-            catch { Invoke-WebRequest -Uri $zipUrl -OutFile $zipPath -UseBasicParsing -TimeoutSec 180 -ErrorAction Stop }
-            Write-Host "  Extracting..." -ForegroundColor Cyan
-            $ProgressPreference = 'SilentlyContinue'
-            if (Test-Path $destDir) { Remove-Item $destDir -Recurse -Force -ErrorAction SilentlyContinue }
-            Expand-Archive -Path $zipPath -DestinationPath $destDir -Force
-            Remove-Item $zipPath -Force -ErrorAction SilentlyContinue
-            $pwsh = "$destDir\pwsh.exe"
-            if (-not (Test-Path $pwsh)) { $pwsh = $null }
-        } catch {
-            Write-Host "  Download failed: $($_.Exception.Message)" -ForegroundColor Red
-        }
-        if (-not $pwsh) {
-            Write-Host "  Please install PowerShell 7 manually: https://aka.ms/powershell-release?tag=stable" -ForegroundColor Red
-            $null = Read-Host "  Press Enter to exit"
-            return
-        }
-        Write-Host "  PowerShell 7 ready." -ForegroundColor Green
-    }
-
-    & $pwsh -NoExit -ExecutionPolicy Bypass -Command "irm https://raw.githubusercontent.com/emylfy/winrift/main/scripts/launch.ps1 | iex"
-    return
+    [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 }
 
 $Host.UI.RawUI.WindowTitle = "Launcher"
@@ -109,12 +58,12 @@ if ($needDownload) {
     Write-Progress -Activity "Downloading Winrift" -Status "Initializing..." -PercentComplete 0
 
     try {
-        Start-BitsTransfer -Source $archiveUrl `
-                          -Destination $zipPath `
-                          -DisplayName "Downloading Winrift" `
-                          -Description "Downloading required files..."
+        try {
+            Start-BitsTransfer -Source $archiveUrl -Destination $zipPath -DisplayName "Downloading Winrift" -ErrorAction Stop
+        } catch {
+            Invoke-WebRequest -Uri $archiveUrl -OutFile $zipPath -UseBasicParsing -TimeoutSec 180 -ErrorAction Stop
+        }
 
-        Write-Progress -Activity "Downloading Winrift" -Status "Complete" -PercentComplete 100
         Write-Host "Download complete!" -ForegroundColor Green
 
         Write-Host "Extracting files..." -ForegroundColor Cyan
@@ -153,17 +102,7 @@ Write-Host @"
     \_/\_/  |_|_| |_|_| \_\_|_|  \__|
 "@ -ForegroundColor Cyan
 
-# Spawn Winrift.ps1 with -ExecutionPolicy Bypass so the new process can run
-# regardless of system execution policy. Resolve the current pwsh.exe by full
-# path — portable PS7 installed to %LOCALAPPDATA%\Winrift\pwsh\ is NOT on PATH,
-# so `wt pwsh.exe` / `Start-Process pwsh.exe` would fail with 0x80070002.
-$winriftPath = "$extractPath\Winrift.ps1"
-$pwshPath = (Get-Process -Id $PID).Path
-if (-not $pwshPath -or -not (Test-Path $pwshPath)) { $pwshPath = 'pwsh.exe' }
-# Preserve the complete path through ShellExecute, including portable hosts.
-$inner='& '''+$winriftPath.Replace("'","''")+''''
-$innerEncoded=[Convert]::ToBase64String([Text.Encoding]::Unicode.GetBytes($inner))
-$bridge='& '''+$pwshPath.Replace("'","''")+''' -NoProfile -ExecutionPolicy Bypass -EncodedCommand '''+$innerEncoded+''''
-$bridgeEncoded=[Convert]::ToBase64String([Text.Encoding]::Unicode.GetBytes($bridge))
-$inbox=Join-Path $env:SystemRoot 'System32\WindowsPowerShell\v1.0\powershell.exe'
-Start-Process -FilePath $inbox -ArgumentList @('-NoProfile','-EncodedCommand',$bridgeEncoded) -Verb RunAs
+# Let the local entry point handle elevation and select the interactive host.
+$winriftPath = Join-Path $extractPath 'Winrift.ps1'
+$shellPath = (Get-Process -Id $PID -ErrorAction Stop).Path
+& $shellPath -NoProfile -ExecutionPolicy Bypass -File $winriftPath

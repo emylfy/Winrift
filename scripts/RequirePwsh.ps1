@@ -1,12 +1,35 @@
-function Install-Pwsh {
-    $existing = (Get-Command pwsh.exe -ErrorAction SilentlyContinue).Source
-    if ($existing) { return $existing }
+function Find-InstalledPwsh {
+    $existing = Get-Command pwsh.exe -CommandType Application -ErrorAction SilentlyContinue
+    if ($existing) { return $existing.Source }
 
-    $pwsh = "$env:ProgramFiles\PowerShell\7\pwsh.exe"
-    if (Test-Path $pwsh) { return $pwsh }
+    # The MSI path works before the current process has picked up the new PATH.
+    $programFiles = if ($env:ProgramW6432) { $env:ProgramW6432 } else { $env:ProgramFiles }
+    $pwsh = Join-Path $programFiles 'PowerShell\7\pwsh.exe'
+    if (Test-Path -LiteralPath $pwsh -PathType Leaf) { return $pwsh }
+}
+
+function Install-Pwsh {
+    $installed = Find-InstalledPwsh
+    if ($installed) { return $installed }
 
     $localPwsh = "$env:LOCALAPPDATA\Winrift\pwsh\pwsh.exe"
     if (Test-Path $localPwsh) { return $localPwsh }
+
+    $winget = Get-Command winget.exe -CommandType Application -ErrorAction SilentlyContinue
+    if ($winget) {
+        Write-Host "  Installing PowerShell 7 through WinGet..." -ForegroundColor Cyan
+        try {
+            # Use the MSI to get an executable that the elevated launcher can resolve by path.
+            & $winget.Source install --id Microsoft.PowerShell --exact --source winget --installer-type wix --silent --accept-package-agreements --accept-source-agreements --disable-interactivity | Out-Host
+            if ($LASTEXITCODE -eq 0) {
+                $installed = Find-InstalledPwsh
+                if ($installed) { return $installed }
+            }
+        } catch {
+            Write-Host "  WinGet could not start: $($_.Exception.Message)" -ForegroundColor Yellow
+        }
+        Write-Host "  PowerShell 7 unavailable after WinGet. Trying portable PowerShell." -ForegroundColor Yellow
+    }
 
     Write-Host ""
     Write-Host "  Winrift requires PowerShell 7. Downloading portable (~50MB)..." -ForegroundColor Yellow

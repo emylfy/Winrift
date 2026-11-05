@@ -5,16 +5,20 @@ param(
     [string]$Apply
 )
 
-# Admin elevation — fail fast before any expensive I/O
-# Loads only AdminLaunch.ps1 (~55 lines, no deps) so the non-admin process
-# exits as cheaply as possible without going through Common.ps1 / transcript.
-# Without this, the user sees several [STARTUP] lines flash by before the
-# UAC prompt — looks like the script hung or crashed.
+# Keep the inbox UAC bridge, then select the visible host for interactive sessions.
 . "$PSScriptRoot\AdminLaunch.ps1"
 
-if (-not ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole(
-    [Security.Principal.WindowsBuiltInRole]::Administrator)) {
-    Write-Host "Winrift requires administrator privileges. Requesting elevation..." -ForegroundColor Yellow
+$identity = [Security.Principal.WindowsIdentity]::GetCurrent()
+$isAdmin = ([Security.Principal.WindowsPrincipal]$identity).IsInRole(
+    [Security.Principal.WindowsBuiltInRole]::Administrator)
+$sameUser = -not $env:WINRIFT_ORIGIN_SID -or $env:WINRIFT_ORIGIN_SID -eq $identity.User.Value
+$needsTerminal = $isAdmin -and $sameUser -and -not $Apply -and -not $Uninstall -and
+    -not $env:WT_SESSION -and $env:WINRIFT_HOST_PID -ne [string]$PID
+
+if (-not $isAdmin -or $needsTerminal) {
+    if (-not $isAdmin) {
+        Write-Host "Winrift requires administrator privileges. Requesting elevation..." -ForegroundColor Yellow
+    }
 
     $passthrough = @()
     if ($DryRun)    { $passthrough += "-DryRun" }
@@ -23,9 +27,9 @@ if (-not ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdenti
     if ($Apply)     { $passthrough += @("-Apply", $Apply) }
 
     try {
-        Start-AdminProcess -ScriptPath $PSCommandPath -Arguments $passthrough
+        Start-AdminProcess -ScriptPath $PSCommandPath -Arguments $passthrough -InTerminal:$needsTerminal
     } catch {
-        Write-Host "Elevation cancelled or failed: $($_.Exception.Message)" -ForegroundColor Red
+        Write-Host "Could not launch Winrift: $($_.Exception.Message)" -ForegroundColor Red
         exit 1
     }
     exit 0

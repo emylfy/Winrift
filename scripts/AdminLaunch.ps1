@@ -28,7 +28,9 @@ function Start-AdminProcess {
         [string[]]$Arguments = @(),
 
         [Parameter(Mandatory = $false)]
-        [switch]$NoExit
+        [switch]$NoExit,
+
+        [switch]$InTerminal
     )
     # Resolve the running host, not a PATH-dependent pwsh.exe in a new UAC
     # environment. Encode the invocation so spaces, apostrophes, dollar signs
@@ -53,6 +55,7 @@ function Start-AdminProcess {
     if($originSid -notmatch '^S-\d(-\d+)+$'){throw 'Invalid original Windows user SID.'}
     $command = '$env:WINRIFT_ORIGIN_SID=''' + $originSid + '''; & ' + $literalPath
     if ($literalArgs.Count) { $command += ' ' + ($literalArgs -join ' ') }
+    if ($InTerminal) { $command = '$env:WINRIFT_HOST_PID = $PID; ' + $command }
     $encoded = [Convert]::ToBase64String([Text.Encoding]::Unicode.GetBytes($command))
     $psArgs = @('-NoProfile', '-ExecutionPolicy', 'Bypass')
     if ($NoExit) { $psArgs += '-NoExit' }
@@ -65,5 +68,23 @@ function Start-AdminProcess {
     $argLiterals = @($psArgs | ForEach-Object { "'" + $_.Replace("'", "''") + "'" })
     $bridge = '& ' + $hostLiteral + ' ' + ($argLiterals -join ' ')
     $bridgeEncoded = [Convert]::ToBase64String([Text.Encoding]::Unicode.GetBytes($bridge))
+    if ($InTerminal) {
+        $terminal = Get-Command wt.exe -CommandType Application -ErrorAction SilentlyContinue
+        if ($terminal -and $pwshPath -notlike '*;*') {
+            try {
+                $terminalArgs = @('-w', 'new', 'new-tab', '--title', 'Winrift', ('"' + $pwshPath + '"')) + $psArgs
+                Start-Process -FilePath $terminal.Source -ArgumentList $terminalArgs -ErrorAction Stop
+                return
+            } catch {
+                Write-Warning "Windows Terminal could not start: $($_.Exception.Message)"
+            }
+        }
+
+        # Only the system host and encoded data cross CMD's command-line parser.
+        $cmd = Join-Path $env:SystemRoot 'System32\cmd.exe'
+        $cmdArgs = '/d /s /c "title Winrift & "' + $inbox + '" -NoProfile -EncodedCommand ' + $bridgeEncoded + '"'
+        Start-Process -FilePath $cmd -ArgumentList $cmdArgs -ErrorAction Stop
+        return
+    }
     Start-Process -FilePath $inbox -ArgumentList @('-NoProfile', '-EncodedCommand', $bridgeEncoded) -Verb RunAs -ErrorAction Stop
 }

@@ -91,6 +91,29 @@ Describe 'Quoted UAC argument bridge' {
         $result.Sid|Should -Be ([Security.Principal.WindowsIdentity]::GetCurrent().User.Value)
     }
 }
+Describe 'Interactive terminal host' {
+    BeforeEach {
+        Mock Get-Command { [pscustomobject]@{Source='C:\WindowsApps\wt.exe'} } -ParameterFilter { $Name -eq 'wt.exe' }
+        Mock Start-Process {}
+    }
+    It 'opens an explicit Winrift window in Windows Terminal when available' {
+        Start-AdminProcess -ScriptPath 'C:\Winrift folder\Main.ps1' -InTerminal
+
+        Should -Invoke Start-Process -Times 1 -Exactly -ParameterFilter {
+            $FilePath -like '*\wt.exe' -and $ArgumentList[0] -eq '-w' -and
+                $ArgumentList[1] -eq 'new' -and $ArgumentList -contains '-EncodedCommand' -and -not $Verb
+        }
+    }
+    It 'uses CMD when Windows Terminal fails to start' {
+        Mock Start-Process { throw 'Terminal unavailable' } -ParameterFilter { $FilePath -like '*\wt.exe' }
+
+        Start-AdminProcess -ScriptPath 'C:\Winrift folder\Main.ps1' -InTerminal
+
+        Should -Invoke Start-Process -Times 1 -Exactly -ParameterFilter {
+            $FilePath -like '*\cmd.exe' -and $ArgumentList -like '/d /s /c *-EncodedCommand *' -and -not $Verb
+        }
+    }
+}
 Describe 'Partial native failure Undo' {
     BeforeEach {
         $script:oldRoot=$env:WINRIFT_STATE_ROOT;$script:oldDry=$env:WINRIFT_DRY_RUN
