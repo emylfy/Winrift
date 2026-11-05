@@ -160,14 +160,23 @@ function Show-WinriftAppUpdates {
 function Show-AppCategoryMenu {
     try {
     Invoke-MenuLoop -Title 'Install Your Apps' -Items @(
-        'S › Search Apps                      ›', '---',
+        'S › Search Apps                      ›',
+        'A › Browse All Apps                  ›',
+        '---',
+        'B › Browsers                         ›',
+        'M › Communication                    ›',
+        'P › Productivity                     ›',
+        'U › Utilities                        ›',
+        'V › Media & Creative                 ›',
+        'G › Games                            ›',
+        '---',
+        'D › Developer Apps                   ›',
         'C › Command Line                     ›',
-        'D › Developer Apps                   ›', 'U › Utilities                        ›',
-        'B › Browsers                         ›', 'M › Communication                    ›',
-        'P › Productivity                     ›', 'V › Media & Creative                 ›',
-        'G › Games                            ›', 'F › Fonts                            ›',
-        'A › Browse All Apps                  ›', 'W › Update Installed Apps            ›',
-        'I › Import Bundle                    ›', '---',
+        'F › Fonts                            ›',
+        '---',
+        'W › Update Installed Apps            ›',
+        'I › Import Bundle                    ›',
+        '---',
         'N › Continue to App Configuration    ›'
     ) -Actions @{
         'S'={ $query=Read-Host 'Search curated apps'; if($query){Show-WinriftAppPicker -Search $query} }

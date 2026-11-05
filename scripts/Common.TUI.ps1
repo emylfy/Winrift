@@ -109,11 +109,28 @@ function Get-WinriftMenuFrame {
     $rows.Add('')
     $rows.Add("    ${Bold}${Ice}$(ConvertTo-WinriftLine $Title ([math]::Max(1,$widthBudget - 1)))$Reset")
     $rows.Add('')
-    # Reserve title, context, hint and a final console row to avoid wrapping.
+    $hintLines = @()
+    if (-not $HideHint) {
+        if (-not $Hint) {
+            $Hint = if ($null -ne $Checked) { 'Space toggle  A all  → details  Enter review  Esc back' } else { '↑↓ move  Enter select  Esc back' }
+        }
+        $hintWidth = [math]::Max(1, $Width - 3)
+        $line = ''
+        $parts = $Hint.Trim() -split ' {2,}| · '
+        if ($parts.Count -eq 1 -and $Hint.Length -gt $hintWidth) { $parts = $Hint.Trim() -split ' +' }
+        foreach ($part in $parts) {
+            $candidate = if ($line) { "$line  $part" } else { $part }
+            if ($line -and $candidate.Length -gt $hintWidth) { $hintLines += $line; $line = $part }
+            else { $line = $candidate }
+        }
+        if ($line) { $hintLines += $line }
+    }
+    # Reserve room for the wrapped footer while keeping the active row visible.
+    $hintRows = [math]::Max(0, $hintLines.Count - 1)
     $focusedDescription = if ($FocusedDescriptions) { $FocusedDescriptions[$HighlightIndex] }
     $descriptionRows = if ($focusedDescription) { 1 } else { 0 }
-    $visible = [math]::Max(1, $Height - 9 - $descriptionRows)
-    if ($Items.Count -le $Height - 7 - $descriptionRows -and -not $Descriptions -and -not ($Items -like "*~*")) {
+    $visible = [math]::Max(1, $Height - 9 - $descriptionRows - $hintRows)
+    if ($Items.Count -le $Height - 7 - $descriptionRows - $hintRows -and -not $Descriptions -and -not ($Items -like "*~*")) {
         $visible = $Items.Count
     }
     $topLimit = [math]::Max(0, $Items.Count - $visible)
@@ -170,14 +187,11 @@ function Get-WinriftMenuFrame {
         $rows.Add("     $Dim$(ConvertTo-WinriftLine $context ([math]::Max(1,$widthBudget - 2)))$Reset")
         $rows.Add('')
     }
-    if (-not $HideHint) {
-        if (-not $Hint) {
-            $Hint = if ($null -ne $Checked) { 'Space select · A select applicable · ? details · Enter review · Esc back' } else { '↑↓ move · →/↵ select · ←/Esc back' }
-        }
-        $rows.Add("  $Dim$(ConvertTo-WinriftLine $Hint ([math]::Max(1,$Width - 3)))$Reset")
+    foreach ($line in $hintLines) {
+        $rows.Add("  $Dim$(ConvertTo-WinriftLine $line $hintWidth)$Reset")
     }
     # Very short windows still show the active row; no negative dimensions.
-    if ($Height -lt 9) {
+    if ($Height -lt (9 + $hintRows)) {
         $rows.Clear()
         if ($HighlightIndex -ge 0) {
             $label = $Items[$HighlightIndex] -replace '^\s*[^\s]+\s*[›>]\s*', ''
@@ -367,8 +381,8 @@ function Invoke-MenuLoop {
 function Show-InteractiveMenu {
     # Single-shot arrow-navigable menu — returns the selected key or $null on Escape.
     # Intentional differences from Invoke-MenuLoop and Show-MultiSelect:
-    #   - Up/Down WRAP AROUND (top→bottom, bottom→top). Safe here because no action
-    #     fires on navigation — the user explicitly presses Enter to confirm.
+    #   - Up/Down cycles through actions. Up from the first action can page
+    #     through earlier explanatory text without moving the highlight onto it.
     #   - Returns immediately on Enter/character press; does not loop.
     #   - No action hashtable; no breadcrumb tracking.
     # -NoClear: skip the initial Clear-Host so callers can print prose above the menu.
@@ -376,19 +390,15 @@ function Show-InteractiveMenu {
         [string]$Title,
         [string[]]$Items,
         [switch]$NoClear,
-        [switch]$HideKeys,
-        [switch]$ActionsOnly
+        [switch]$HideKeys
     )
 
     $selectIdx = [System.Collections.Generic.List[int]]::new()
     $keyMap = @{}
     for ($i = 0; $i -lt $Items.Count; $i++) {
-        $t = $Items[$i]
-        if ($t -ne "---" -and $t -notmatch '^---\s+' -and (-not $ActionsOnly -or $t -match '^\s*[^\s]+\s*[›>]')) {
+        if ($Items[$i] -match '^\s*([^\s]+)\s*[›>]' -and $Matches[1] -ne '---') {
             $selectIdx.Add($i)
-            if ($t -match '^\s*([^\s]+)\s*[›>]') {
-                $keyMap[$i] = $Matches[1]
-            }
+            $keyMap[$i] = $Matches[1]
         }
     }
     if ($selectIdx.Count -eq 0) { return $null }
@@ -404,14 +414,15 @@ function Show-InteractiveMenu {
     if (-not $NoClear) { Clear-Host }
     $prevLines = 0
     $vpTop = 0
+    $actionTop = 0
+    $browsing = $false
 
     try {
         while ($true) {
-            if ($HideKeys) {
-                $prevLines = _Draw-InteractiveBox -Title $Title -Items $Items -HighlightIndex $selectIdx[$cursor] -PrevLines $prevLines -VpTop ([ref]$vpTop) -HideKeys
-            } else {
-                $prevLines = _Draw-InteractiveBox -Title $Title -Items $Items -HighlightIndex $selectIdx[$cursor] -PrevLines $prevLines -VpTop ([ref]$vpTop)
-            }
+            $highlight = if ($browsing) { -1 } else { $selectIdx[$cursor] }
+            $hint = if ($browsing) { '↑↓ scroll  Enter actions  Esc back' }
+                    elseif ($cursor -eq 0 -and $selectIdx[0] -ge ([Console]::WindowHeight - 8)) { '↑ earlier text  Enter select  Esc back' }
+            $prevLines = _Draw-InteractiveBox -Title $Title -Items $Items -HighlightIndex $highlight -PrevLines $prevLines -VpTop ([ref]$vpTop) -HideKeys:$HideKeys -Hint $hint
 
             [Console]::TreatControlCAsInput = $true
             $k = Read-WinriftMenuKey
@@ -421,8 +432,21 @@ function Show-InteractiveMenu {
             # Ctrl+C → cancel (same as Esc)
             if ($k.Character -eq [char]3) { return $null }
 
+            $page = [math]::Max(1, [Console]::WindowHeight - 10)
+            if ($browsing) {
+                if ($vk -eq 27 -or $vk -eq 37) { return $null }
+                if ($vk -eq 38) { $vpTop = [math]::Max(0, $vpTop - $page) }
+                if ($vk -eq 40) { $vpTop += $page }
+                if ($vk -eq 13 -or $vpTop -ge $actionTop) { $browsing = $false }
+                continue
+            }
+
             if ($vk -eq 38) {  # Up
-                if ($cursor -gt 0) { $cursor-- } else { $cursor = $selectIdx.Count - 1 }
+                if ($cursor -eq 0 -and $vpTop -gt 0) {
+                    $actionTop = $vpTop
+                    $vpTop = [math]::Max(0, $vpTop - $page)
+                    $browsing = $true
+                } elseif ($cursor -gt 0) { $cursor-- } else { $cursor = $selectIdx.Count - 1 }
                 continue
             }
             if ($vk -eq 40) {  # Down
@@ -468,8 +492,13 @@ function Show-MultiSelect {
         [switch]$NoBox,
         [switch]$DetailsOnly,
         [hashtable]$FocusedDescriptions,
-        [scriptblock]$OnSelectionChanged
+        [scriptblock]$OnSelectionChanged,
+        [ref]$Confirmed,
+        [string]$Hint,
+        [string]$DetailsTitle = 'Current / Proposed / Details'
     )
+
+    if ($null -ne $Confirmed) { $Confirmed.Value = $false }
 
     $selectIdx = [System.Collections.Generic.List[int]]::new()
     $inlineDescriptions = if (-not $DetailsOnly) { $Descriptions }
@@ -491,9 +520,9 @@ function Show-MultiSelect {
     try {
         while ($true) {
             if ($NoBox) {
-                $prevLines = _Draw-InteractiveBox -Title $Title -Items $Items -HighlightIndex $selectIdx[$cursor] -Checked $checked -Markers $Markers -Descriptions $inlineDescriptions -FocusedDescriptions $FocusedDescriptions -PrevLines $prevLines -VpTop ([ref]$vpTop) -NoBox
+                $prevLines = _Draw-InteractiveBox -Title $Title -Items $Items -HighlightIndex $selectIdx[$cursor] -Checked $checked -Markers $Markers -Descriptions $inlineDescriptions -FocusedDescriptions $FocusedDescriptions -Hint $Hint -PrevLines $prevLines -VpTop ([ref]$vpTop) -NoBox
             } else {
-                $prevLines = _Draw-InteractiveBox -Title $Title -Items $Items -HighlightIndex $selectIdx[$cursor] -Checked $checked -Markers $Markers -Descriptions $inlineDescriptions -FocusedDescriptions $FocusedDescriptions -PrevLines $prevLines -VpTop ([ref]$vpTop)
+                $prevLines = _Draw-InteractiveBox -Title $Title -Items $Items -HighlightIndex $selectIdx[$cursor] -Checked $checked -Markers $Markers -Descriptions $inlineDescriptions -FocusedDescriptions $FocusedDescriptions -Hint $Hint -PrevLines $prevLines -VpTop ([ref]$vpTop)
             }
 
             [Console]::TreatControlCAsInput = $true
@@ -518,8 +547,7 @@ function Show-MultiSelect {
                 continue
             }
 
-            if ($ch -eq 'a' -or $ch -eq 'A') {  # Toggle all
-                $allOn = ($selectIdx | ForEach-Object { $checked[$_] }) -notcontains $false
+            if ($vk -eq 65) {  # A — select all applicable
                 foreach ($si in $selectIdx) { if (-not ($Disabled -and $Disabled[$si])) { $checked[$si] = $true } }
                 if ($OnSelectionChanged) {
                     $keys = @()
@@ -529,8 +557,9 @@ function Show-MultiSelect {
                 continue
             }
 
-            if ($ch -eq '?' -and $Descriptions -and $Descriptions.ContainsKey($selectIdx[$cursor])) {
-                Show-InfoBox -Title 'Current / Proposed / Details' -Items @($Descriptions[$selectIdx[$cursor]])
+            if (($vk -eq 39 -or $ch -eq '?') -and $Descriptions -and $Descriptions.ContainsKey($selectIdx[$cursor])) {
+                Clear-Host
+                Show-InfoBox -Title $DetailsTitle -Items @($Descriptions[$selectIdx[$cursor]])
                 Wait-ForUser
                 Clear-Host; $prevLines = 0
                 continue
@@ -543,6 +572,7 @@ function Show-MultiSelect {
                         else { $result += $si.ToString() }
                     }
                 }
+                if ($null -ne $Confirmed) { $Confirmed.Value = $true }
                 return $result
             }
 

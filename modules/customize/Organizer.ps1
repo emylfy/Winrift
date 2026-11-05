@@ -48,11 +48,68 @@ function Get-WinriftOrganizerPlan {
 }
 
 function Invoke-WinriftOrganizer {
-    $roots=@([Environment]::GetFolderPath('Programs'),[Environment]::GetFolderPath('CommonPrograms'))
-    $plan=@(Get-WinriftOrganizerPlan $roots)
-    if(-not $plan.Count){Write-Log 'No movable shortcuts, or destinations already exist.';Wait-ForUser;return}
-    $choice=Show-InteractiveMenu -Title 'Organizer — Preview Changes' -Items (@($plan|ForEach-Object{"$($_.Source) -> $($_.Destination)"})+@('Only shortcuts move. Existing destination conflicts are skipped.','A versioned archive is created before any move.','---','Y › Back Up and Apply','N › Back'))
-    if($choice -ne 'Y'){return}
+    Initialize-Logging -ModuleName organizer 6>$null
+    $currentUser = [Environment]::GetFolderPath('Programs')
+    $allUsers = [Environment]::GetFolderPath('CommonPrograms')
+    $plan = @(Get-WinriftOrganizerPlan @($currentUser, $allUsers) 6>$null)
+    if (-not $plan.Count) { Write-Log 'No shortcuts to move.'; Wait-ForUser; return }
+
+    $folders = @(
+        $plan | Group-Object -Property {
+            $relative = [IO.Path]::GetRelativePath($_.Root, $_.Source)
+            Join-Path $_.Root ($relative.Split([IO.Path]::DirectorySeparatorChar)[0])
+        } | ForEach-Object {
+            [pscustomobject]@{
+                Name = [IO.Path]::GetFileName($_.Name)
+                Scope = if ($_.Group[0].Root -eq $currentUser) { 'Current user' } else { 'All users' }
+                Shortcuts = $_.Group
+            }
+        } | Sort-Object Name, Scope
+    )
+    $sameName = $folders | Group-Object -Property Name -AsHashTable -AsString
+    $items = @('--- Move shortcuts to the top level of the Start menu.', '---')
+    $defaults = @($false, $false)
+    $details = @{}
+    for ($i = 0; $i -lt $folders.Count; $i++) {
+        $folder = $folders[$i]
+        $label = $folder.Name
+        if ($sameName[$folder.Name].Count -gt 1) { $label += " ($($folder.Scope))" }
+        $count = $folder.Shortcuts.Count
+        $unit = if ($count -eq 1) { 'shortcut' } else { 'shortcuts' }
+        $details[$items.Count] = @(
+            $folder.Scope
+            $folder.Shortcuts | ForEach-Object { [IO.Path]::GetFileNameWithoutExtension($_.Source) } | Sort-Object
+        )
+        $items += "$i › $label  ($count $unit)"
+        $defaults += ($count -le 5 -and $folder.Name -notlike 'Parallels Shared Applications*')
+    }
+
+    do {
+        $picker = @{
+            Title = 'Organize Start Menu Shortcuts'
+            Items = $items
+            Defaults = $defaults
+            Descriptions = $details
+            DetailsOnly = $true
+            DetailsTitle = 'Shortcuts in Folder'
+            Hint = 'Space toggle  → view shortcuts  Enter review  Esc back'
+        }
+        $selected = @(Show-MultiSelect @picker)
+        if (-not $selected.Count) { return }
+        $plan = @(foreach ($key in $selected) { $folders[[int]$key].Shortcuts })
+        $counts = @(foreach ($group in ($plan | Group-Object -Property Root)) {
+            $scope = if ($group.Name -eq $currentUser) { 'Current user' } else { 'All users' }
+            "$($scope): $($group.Count)"
+        })
+        $description = if ($plan.Count -eq 1) { 'Move 1 shortcut to the top level.' } else { "Move $($plan.Count) shortcuts to the top level." }
+        $review = @($description) + $counts + @('A backup is created before moving shortcuts.', '---', 'A › Back Up and Apply', 'E › Edit Selection')
+        $choice = Show-InteractiveMenu -Title 'Review Shortcut Moves' -Items $review
+        if ($choice -eq 'E') {
+            for ($i = 0; $i -lt $folders.Count; $i++) { $defaults[$i + 2] = [string]$i -in $selected }
+        }
+    } while ($choice -eq 'E')
+    if ($choice -ne 'A') { return }
+    Clear-Host
     if($env:WINRIFT_DRY_RUN -eq '1'){Write-Log "[DRY-RUN] Archive and move $($plan.Count) shortcuts";Wait-ForUser;return}
     $id=[guid]::NewGuid().ToString('N')
     $archiveDir=Join-Path (Get-WinriftStateRoot) "organizer\$id"
@@ -85,8 +142,13 @@ function Invoke-WinriftOrganizer {
     $record.status=if($errors.Count){'Failed'}else{'Applied'}
     $record.error=$errors -join "`n";$record.verification='Moved shortcuts checked by hash; archive retained.'
     Save-WinriftActionRecord $record
-    Write-Log "Organizer finished. Planned: $($manifest.Count). Errors: $($errors.Count). Archive: $zip"
-    foreach($errorText in $errors){Write-Log $errorText -Level ERROR}
+    Write-Log "Organizer finished. Planned: $($manifest.Count). Errors: $($errors.Count). Archive: $zip" -Quiet
+    foreach ($errorText in $errors) { Write-Log $errorText -Level ERROR -Quiet }
+    $moved = $manifest.Count - $errors.Count
+    $summary = if ($moved -eq 1) { '1 shortcut moved.' } else { "$moved shortcuts moved." }
+    $items = @($summary, 'Undo Changes → Action History')
+    if ($errors.Count) { $items += "$($errors.Count) moves need review. See Help → Open Logs." }
+    Show-InfoBox -Title 'Organizer Results' -Items $items
     Wait-ForUser
 }
 
