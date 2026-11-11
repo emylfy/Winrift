@@ -3,10 +3,12 @@ name: CI
 on:
   push:
     branches: [main]
-    paths: ['**.ps1', '**.psm1', '**.psd1', 'config/**', 'tests/**']
   pull_request:
     branches: [main]
-    paths: ['**.ps1', '**.psm1', '**.psd1', 'config/**', 'tests/**']
+    paths: ['**.ps1', '**.psm1', '**.psd1', 'config/**', 'tests/**', '.github/workflows/lint.yml']
+
+permissions:
+  contents: read
 
 jobs:
   lint:
@@ -83,3 +85,41 @@ jobs:
         with:
           name: test-results
           path: ./testresults.xml
+
+  release:
+    name: Publish Winrift Release
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: [lint, test]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Publish untagged version
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          version=$(jq -er '.version | strings' config/version.json)
+          if [[ ! "$version" =~ ^[0-9]+\.[0-9]+(\.[0-9]+)?$ ]]; then
+            echo "::error::Invalid release version: $version"
+            exit 1
+          fi
+
+          tag="v$version"
+          existing_tag=$(git ls-remote --refs origin "refs/tags/$tag")
+          if [[ -n "$existing_tag" ]]; then
+            echo "$tag already exists. Skipping release."
+            exit 0
+          fi
+
+          # A later push may have finished its checks before this run.
+          main=$(git ls-remote --refs origin refs/heads/main)
+          if [[ "${main%%$'\t'*}" != "$GITHUB_SHA" ]]; then
+            echo "main moved since this run started. Skipping release."
+            exit 0
+          fi
+
+          gh release create "$tag" --repo "$GITHUB_REPOSITORY" \
+            --target "$GITHUB_SHA" --title "$tag" --generate-notes
