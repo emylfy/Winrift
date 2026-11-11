@@ -36,7 +36,7 @@ function Get-WinriftSupportedRegistryTargets {
         foreach($name in @('ShowFrequent','ShowRecent')){$null=$targets.Add("HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer|$name");$script:SupportedRegistryTypes["HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer|$name"]='DWord'}
         foreach($name in @('sShortDate','sShortTime','sTimeFormat')){$null=$targets.Add("HKCU:\Control Panel\International|$name");$script:SupportedRegistryTypes["HKCU:\Control Panel\International|$name"]='String'}
     }finally{$script:AuditQueue=$savedQueue;$script:CollectMode=$savedMode}
-    Write-Output -NoEnumerate $targets
+    Write-Output -NoEnumerate -InputObject $targets
 }
 
 function ConvertTo-WinriftSetup {

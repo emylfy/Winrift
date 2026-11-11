@@ -40,8 +40,8 @@ function Get-InstalledAndBrokenIds {
         }
     }
     # Unknown version is still installed. No forced reinstall is inferred.
-    Write-Output -NoEnumerate $installed
-    Write-Output -NoEnumerate $broken
+    Write-Output -NoEnumerate -InputObject $installed
+    Write-Output -NoEnumerate -InputObject $broken
 }
 
 function Show-WinriftAppPicker {
