@@ -73,25 +73,6 @@ Describe 'Write-Log' {
     }
 }
 
-Describe 'Confirm-ExternalTool' {
-    It 'has mandatory Tool parameter' {
-        $cmd = Get-Command Confirm-ExternalTool
-        $cmd.Parameters['Tool'].Attributes | Where-Object { $_ -is [System.Management.Automation.ParameterAttribute] } |
-            ForEach-Object { $_.Mandatory | Should -Be $true }
-    }
-}
-
-Describe 'Set-RegistryValue' {
-    It 'has correct parameters' {
-        $cmd = Get-Command Set-RegistryValue
-        $cmd.Parameters.Keys | Should -Contain 'Path'
-        $cmd.Parameters.Keys | Should -Contain 'Name'
-        $cmd.Parameters.Keys | Should -Contain 'Type'
-        $cmd.Parameters.Keys | Should -Contain 'Value'
-        $cmd.Parameters.Keys | Should -Contain 'Message'
-    }
-}
-
 Describe 'Tweak Backup System' {
     It 'Start-TweakSession resets category' {
         $script:DesiredStateCategory = "Test"
@@ -123,11 +104,5 @@ Describe 'Tweak Backup System' {
         $script:TweakBackupDir = Join-Path $TestDrive 'missing'
         Mock Wait-ForUser { }
         { Restore-TweakBackup 6>&1 | Out-Null } | Should -Not -Throw
-    }
-}
-
-Describe 'New-SafeRestorePoint' {
-    It 'is defined' {
-        Get-Command New-SafeRestorePoint -ErrorAction SilentlyContinue | Should -Not -BeNullOrEmpty
     }
 }

@@ -60,4 +60,35 @@ Describe 'External tool collections' {
         Show-WinriftToolCollectionImport -Source $script:source
         [IO.File]::Exists((Get-WinriftToolCollectionPath $script:source)) | Should -BeFalse
     }
+    It 'does not save a collection during dry-run' {
+        $env:WINRIFT_DRY_RUN = '1'
+        Show-WinriftToolCollectionImport -Source $script:source
+        [IO.File]::Exists((Get-WinriftToolCollectionPath $script:source)) | Should -BeFalse
+    }
+
+    It 'does not open a tool when launch is declined' {
+        Mock Read-Host { 'N' }
+        Mock Clear-Host {}
+        Mock Start-Process {}
+        $tool = @{ name = 'Example'; type = 'url'; target = 'https://example.com/' }
+        Start-WinriftCollectionTool $tool $script:source.AbsoluteUri
+        Should -Invoke Start-Process -Times 0 -Exactly
+    }
+
+    It 'does not open a tool during dry-run even when confirmed' {
+        $env:WINRIFT_DRY_RUN = '1'
+        Mock Read-Host { 'Y' }
+        Mock Clear-Host {}
+        Mock Start-Process {}
+        $tool = @{ name = 'Example'; type = 'url'; target = 'https://example.com/' }
+        Start-WinriftCollectionTool $tool $script:source.AbsoluteUri
+        Should -Invoke Start-Process -Times 0 -Exactly
+    }
+
+    It 'rejects an unsupported tool instead of saving it' {
+        $script:json = $script:json.Replace('"type":"powershell"', '"type":"unknown"')
+        { Show-WinriftToolCollectionImport -Source $script:source } | Should -Throw
+        [IO.File]::Exists((Get-WinriftToolCollectionPath $script:source)) | Should -BeFalse
+    }
+
 }
