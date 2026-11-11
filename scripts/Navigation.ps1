@@ -19,7 +19,11 @@ function Show-WinriftMainMenu {
         '5' = { Show-WinriftSaveRestore }
         '6' = { Show-WinriftUndo }
         '7' = { Show-WinriftHelp }
-    } -ExitKey '0' -HideKeys -HideHint
+    } -ExitKey '0' -HideKeys -HideHint -FocusedDescriptions @{
+        1 = 'Review Windows settings before applying.'
+        5 = 'Save settings and apps, or restore a saved setup.'
+        6 = 'Review recorded changes and available backups.'
+    }
 }
 
 function Show-WinriftSetupStages {
@@ -91,7 +95,11 @@ function Show-WinriftSetup {
         '2' = { Show-WinriftPrivacy }
         '3' = { Show-WinriftPreferences }
         '4' = { Show-WinriftTools }
-    } -ExitKey '0' -NextKey '5' -HideKeys
+    } -ExitKey '0' -NextKey '5' -HideKeys -FocusedDescriptions @{
+        0 = 'Review system, graphics and power settings.'
+        1 = 'Review privacy settings and app update controls.'
+        3 = 'DNS, disk cleanup and your tool collections.'
+    }
 }
 
 function Show-WinriftPrivacy {
@@ -114,7 +122,7 @@ function Show-WinriftPreferences {
 }
 
 function Show-WinriftTools {
-    . "$script:Root\modules\security\SecurityMenu.ps1"
+    . "$script:Root\modules\security\DnsBenchmark.ps1"
     . "$script:Root\modules\system\Tweaks.Cleanup.ps1"
     . "$PSScriptRoot\ToolCollections.ps1"
 

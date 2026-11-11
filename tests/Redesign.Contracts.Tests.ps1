@@ -105,3 +105,23 @@ Describe 'Registry results and conflict-safe Undo' {
         Test-WinriftRegistrySnapshot @{Exists=$true;Type='DWord';Value=-1} @{Exists=$true;Type='DWord';Value='4294967295'} | Should -BeTrue
     }
 }
+Describe 'Operation result summaries' {
+    It 'counts unavailable operations separately from failed operations' {
+        $results = @(
+            @{ Status = 'Applied' }
+            @{ Status = 'Unsupported' }
+            @{ Status = 'Unsupported' }
+            @{ Status = 'Failed' }
+        )
+        $summary = @(Get-WinriftOperationSummary $results)
+        $summary | Should -Contain 'Applied · 1'
+        $summary | Should -Contain 'Skipped (unavailable) · 2'
+        $summary | Should -Contain 'Failed · 1'
+    }
+
+    It 'reports a preview without claiming changes were applied' {
+        $summary = @(Get-WinriftOperationSummary @(@{ Status = 'DryRun' }))
+        $summary | Should -Contain 'Would apply · 1'
+        $summary | Should -Not -Contain 'Applied · 1'
+    }
+}

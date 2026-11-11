@@ -91,4 +91,62 @@ Describe 'External tool collections' {
         [IO.File]::Exists((Get-WinriftToolCollectionPath $script:source)) | Should -BeFalse
     }
 
+    It 'retains the exact saved bytes when the network fails during update' {
+        Show-WinriftToolCollectionImport -Source $script:source
+        $path = Get-WinriftToolCollectionPath $script:source
+        $previous = [IO.File]::ReadAllText($path)
+        Mock Get-WinriftToolCollectionText { throw 'network unavailable' }
+        { Show-WinriftToolCollectionImport -Source $script:source } | Should -Throw '*network unavailable*'
+        [IO.File]::ReadAllText($path) | Should -BeExactly $previous
+    }
+
+    It 'previews description changes and saves an update with the previous catalog preserved' {
+        Show-WinriftToolCollectionImport -Source $script:source
+        $path = Get-WinriftToolCollectionPath $script:source
+        $script:json = $script:json.Replace('An example action.', 'Updated description.')
+        Show-WinriftToolCollectionImport -Source $script:source
+        (Read-WinriftJson $path).catalog.tools[0].description | Should -Be 'Updated description.'
+        (Read-WinriftJson "$path.previous").catalog.tools[0].description | Should -Be 'An example action.'
+        Should -Invoke Show-InteractiveMenu -Times 1 -Exactly -ParameterFilter { $Items -contains 'Changed: Example' }
+    }
+
+    It 'removes the confirmed collection and its saved previous version' {
+        Show-WinriftToolCollectionImport -Source $script:source
+        Show-WinriftToolCollectionImport -Source $script:source
+        $path = Get-WinriftToolCollectionPath $script:source
+        Mock Show-InteractiveMenu { 'R' }
+        Show-WinriftToolCollection $path
+        [IO.File]::Exists($path) | Should -BeFalse
+        [IO.File]::Exists("$path.previous") | Should -BeFalse
+    }
+
+    It 'keeps the collection when removal is canceled' {
+        Show-WinriftToolCollectionImport -Source $script:source
+        $path = Get-WinriftToolCollectionPath $script:source
+        $script:choices = [Collections.Generic.Queue[object]]::new()
+        @('R', 'N', $null) | ForEach-Object { $script:choices.Enqueue($_) }
+        Mock Show-InteractiveMenu { $script:choices.Dequeue() }
+        Show-WinriftToolCollection $path
+        [IO.File]::Exists($path) | Should -BeTrue
+    }
+
+    It 'does not remove a collection during dry-run and supplies tool descriptions' {
+        Show-WinriftToolCollectionImport -Source $script:source
+        $path = Get-WinriftToolCollectionPath $script:source
+        $env:WINRIFT_DRY_RUN = '1'
+        $script:choices = [Collections.Generic.Queue[object]]::new()
+        @('R', 'R', $null) | ForEach-Object { $script:choices.Enqueue($_) }
+        Mock Show-InteractiveMenu { $script:choices.Dequeue() }
+        Show-WinriftToolCollection $path
+        [IO.File]::Exists($path) | Should -BeTrue
+        Should -Invoke Show-InteractiveMenu -Times 2 -Exactly -ParameterFilter { $FocusedDescriptions -and $FocusedDescriptions[0] -eq 'An example action.' }
+    }
+
+    It 'cancels a PowerShell command without starting a child process' {
+        Mock Read-Host { 'N' }
+        Mock Clear-Host {}
+        $tool = @{ name = 'Example'; type = 'powershell'; target = "throw 'must never execute'" }
+        { Start-WinriftCollectionTool $tool $script:source.AbsoluteUri } | Should -Not -Throw
+    }
+
 }

@@ -905,18 +905,7 @@ function Show-PrivacyMenu {
     }
 
     $summary = @(if ($interrupted) { 'Privacy Setup stopped early. Earlier changes may still be applied.' })
-    foreach ($status in @('Applied', 'AlreadyMatches', 'Unsupported', 'Failed', 'DryRun')) {
-        $matching = @($results | Where-Object { $_.Status -eq $status })
-        if (-not $matching.Count) { continue }
-        $label = switch ($status) {
-            'Applied' { 'Applied' }
-            'AlreadyMatches' { 'Already matched or absent' }
-            'Unsupported' { 'Skipped' }
-            'Failed' { 'Failed' }
-            'DryRun' { 'Would apply' }
-        }
-        $summary += "$label · $($matching.Count)"
-    }
+    $summary += @(Get-WinriftOperationSummary -Results $results)
     $failures = @($results | Where-Object { $_.Status -eq 'Failed' } | Select-Object -ExpandProperty Name -Unique)
     if ($failures.Count) {
         $summary += '--- Could not complete ---'

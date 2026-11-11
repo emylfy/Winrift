@@ -1,3 +1,10 @@
+# Console access is kept separate from menu decisions for headless verification.
+function _Get-WinriftConsoleHeight { return [Console]::WindowHeight }
+function _Set-WinriftControlCMode {
+    param([bool]$Enabled)
+    [Console]::TreatControlCAsInput = $Enabled
+}
+
 function _Enter-RawUI {
     if ($IsWindows -and -not ('Winrift.ConsoleInput' -as [type])) {
         try {
@@ -112,7 +119,7 @@ function Get-WinriftMenuFrame {
     $hintLines = @()
     if (-not $HideHint) {
         if (-not $Hint) {
-            $Hint = if ($null -ne $Checked) { 'Space toggle  A all  → details  Enter review  Esc back' } else { '↑↓ move  Enter select  Esc back' }
+            $Hint = if ($null -ne $Checked) { 'Space toggle  A all  → details  Enter review  ←/Esc back' } else { '↑↓ move  Enter open  ←/Esc back' }
         }
         $hintWidth = [math]::Max(1, $Width - 3)
         $line = ''
@@ -269,7 +276,8 @@ function Invoke-MenuLoop {
         [switch]$HideKeys,
         [scriptblock]$OnTab, [scriptblock]$HintProvider,
         [string]$NextKey,
-        [switch]$HideHint
+        [switch]$HideHint,
+        [hashtable]$FocusedDescriptions
     )
 
     # Parse selectable items
@@ -298,21 +306,21 @@ function Invoke-MenuLoop {
         while ($true) {
             $drawHint = if ($HintProvider) { & $HintProvider } else { $null }
             $drawRight = $TitleSuffix ? (& $TitleSuffix) : $null
-            $prevLines = _Draw-InteractiveBox -Title $Title -Items $Items -HighlightIndex $selectIdx[$cursor] -PrevLines $prevLines -VpTop ([ref]$vpTop) -Descriptions $Descriptions -SplitAt $SplitAt -TitleRight $drawRight -HideKeys:$HideKeys -Hint $drawHint -HideHint:$HideHint
+            $prevLines = _Draw-InteractiveBox -Title $Title -Items $Items -HighlightIndex $selectIdx[$cursor] -PrevLines $prevLines -VpTop ([ref]$vpTop) -Descriptions $Descriptions -SplitAt $SplitAt -TitleRight $drawRight -HideKeys:$HideKeys -Hint $drawHint -HideHint:$HideHint -FocusedDescriptions $FocusedDescriptions
 
             # Wait for keypress. When TitleSuffix is set, poll periodically to
             # redraw live stats. Otherwise just block on ReadKey (no CPU waste).
-            [Console]::TreatControlCAsInput = $true
+            _Set-WinriftControlCMode $true
             if ($TitleSuffix) {
                 while (-not [Console]::KeyAvailable) {
                     Start-Sleep -Milliseconds 500
                     if ([Console]::WindowWidth -ne $script:WinriftFrameWidth -or [Console]::WindowHeight -ne $script:WinriftFrameHeight) { break }
                     $drawRight = & $TitleSuffix
-                    $prevLines = _Draw-InteractiveBox -Title $Title -Items $Items -HighlightIndex $selectIdx[$cursor] -PrevLines $prevLines -VpTop ([ref]$vpTop) -Descriptions $Descriptions -SplitAt $SplitAt -TitleRight $drawRight -HideKeys:$HideKeys -Hint $drawHint -HideHint:$HideHint
+                    $prevLines = _Draw-InteractiveBox -Title $Title -Items $Items -HighlightIndex $selectIdx[$cursor] -PrevLines $prevLines -VpTop ([ref]$vpTop) -Descriptions $Descriptions -SplitAt $SplitAt -TitleRight $drawRight -HideKeys:$HideKeys -Hint $drawHint -HideHint:$HideHint -FocusedDescriptions $FocusedDescriptions
                 }
             }
             $k = Read-WinriftMenuKey
-            [Console]::TreatControlCAsInput = $_ui.CtrlC
+            _Set-WinriftControlCMode $_ui.CtrlC
             $vk = $k.VirtualKeyCode
 
             # Ctrl+C → treat as "back" (same as Escape)
@@ -381,7 +389,7 @@ function Invoke-MenuLoop {
 function Show-InteractiveMenu {
     # Single-shot arrow-navigable menu — returns the selected key or $null on Escape.
     # Intentional differences from Invoke-MenuLoop and Show-MultiSelect:
-    #   - Up/Down cycles through actions. Up from the first action can page
+    #   - Up/Down stops at the first and last actions. Up from the first can page
     #     through earlier explanatory text without moving the highlight onto it.
     #   - Returns immediately on Enter/character press; does not loop.
     #   - No action hashtable; no breadcrumb tracking.
@@ -421,19 +429,19 @@ function Show-InteractiveMenu {
     try {
         while ($true) {
             $highlight = if ($browsing) { -1 } else { $selectIdx[$cursor] }
-            $hint = if ($browsing) { '↑↓ scroll  Enter actions  Esc back' }
-                    elseif ($cursor -eq 0 -and $selectIdx[0] -ge ([Console]::WindowHeight - 8)) { '↑ earlier text  Enter select  Esc back' }
+            $hint = if ($browsing) { '↑↓ scroll  Enter actions  ←/Esc back' }
+                    elseif ($cursor -eq 0 -and $selectIdx[0] -ge ((_Get-WinriftConsoleHeight) - 8)) { '↑ earlier text  Enter open  ←/Esc back' }
             $prevLines = _Draw-InteractiveBox -Title $Title -Items $Items -HighlightIndex $highlight -PrevLines $prevLines -VpTop ([ref]$vpTop) -HideKeys:$HideKeys -Hint $hint -FocusedDescriptions $FocusedDescriptions
 
-            [Console]::TreatControlCAsInput = $true
+            _Set-WinriftControlCMode $true
             $k = Read-WinriftMenuKey
-            [Console]::TreatControlCAsInput = $_ui.CtrlC
+            _Set-WinriftControlCMode $_ui.CtrlC
             $vk = $k.VirtualKeyCode
 
             # Ctrl+C → cancel (same as Esc)
             if ($k.Character -eq [char]3) { return $null }
 
-            $page = [math]::Max(1, [Console]::WindowHeight - 10)
+            $page = [math]::Max(1, (_Get-WinriftConsoleHeight) - 10)
             if ($browsing) {
                 if ($vk -eq 27 -or $vk -eq 37) { return $null }
                 if ($vk -eq 38) { $vpTop = [math]::Max(0, $vpTop - $page) }
@@ -447,11 +455,11 @@ function Show-InteractiveMenu {
                     $actionTop = $vpTop
                     $vpTop = [math]::Max(0, $vpTop - $page)
                     $browsing = $true
-                } elseif ($cursor -gt 0) { $cursor-- } else { $cursor = $selectIdx.Count - 1 }
+                } elseif ($cursor -gt 0) { $cursor-- }
                 continue
             }
             if ($vk -eq 40) {  # Down
-                if ($cursor -lt $selectIdx.Count - 1) { $cursor++ } else { $cursor = 0 }
+                if ($cursor -lt $selectIdx.Count - 1) { $cursor++ }
                 continue
             }
 
@@ -526,9 +534,9 @@ function Show-MultiSelect {
                 $prevLines = _Draw-InteractiveBox -Title $Title -Items $Items -HighlightIndex $selectIdx[$cursor] -Checked $checked -Markers $Markers -Descriptions $inlineDescriptions -FocusedDescriptions $FocusedDescriptions -Hint $Hint -PrevLines $prevLines -VpTop ([ref]$vpTop)
             }
 
-            [Console]::TreatControlCAsInput = $true
+            _Set-WinriftControlCMode $true
             $k = Read-WinriftMenuKey
-            [Console]::TreatControlCAsInput = $_ui.CtrlC
+            _Set-WinriftControlCMode $_ui.CtrlC
             $vk = $k.VirtualKeyCode
             $ch = $k.Character
 
@@ -605,4 +613,22 @@ function Show-InfoBox {
         }
     }
     Write-Host ""
+}
+
+function Get-WinriftOperationSummary {
+    param([object[]]$Results)
+
+    if (-not $Results.Count) { return 'No changes needed.' }
+    foreach ($status in @('Applied', 'AlreadyMatches', 'Unsupported', 'Failed', 'DryRun')) {
+        $matching = @($Results | Where-Object Status -EQ $status)
+        if (-not $matching.Count) { continue }
+        $label = switch ($status) {
+            'Applied' { 'Applied' }
+            'AlreadyMatches' { 'Already matched or absent' }
+            'Unsupported' { 'Skipped (unavailable)' }
+            'Failed' { 'Failed' }
+            'DryRun' { 'Would apply' }
+        }
+        "$label · $($matching.Count)"
+    }
 }

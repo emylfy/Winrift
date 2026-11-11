@@ -90,19 +90,8 @@ function Invoke-WinriftTweakApplyWithResults {
         Write-Log "Could not save tweak backup or state: $($_.Exception.Message)" -Level ERROR -Quiet
     }
 
-    $summary = @()
-    if ($results.Count -eq 0) { $summary += 'No changes needed.' }
-    foreach ($status in @('Applied', 'AlreadyMatches', 'DryRun')) {
-        $count = @($results | Where-Object Status -EQ $status).Count
-        if (-not $count) { continue }
-        $label = switch ($status) {
-            'Applied' { 'Applied' }
-            'AlreadyMatches' { 'Already matched' }
-            'DryRun' { 'Would apply' }
-        }
-        $summary += "$label · $count"
-    }
-    $failed = @($results | Where-Object { $_.Status -notin @('Applied', 'AlreadyMatches', 'DryRun') })
+    $summary = @(Get-WinriftOperationSummary -Results $results)
+    $failed = @($results | Where-Object { $_.Status -notin @('Applied', 'AlreadyMatches', 'Unsupported', 'DryRun') })
     if ($failed.Count) { $summary += @('--- Could not apply ---') + @($failed.Name) }
     if ($saveFailed) { $summary += 'Could not save backup or state.' }
     if ($failed.Count -or $saveFailed) { $summary += 'See Help → Open Logs for details.' }

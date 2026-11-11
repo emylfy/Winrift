@@ -1,7 +1,6 @@
 . "$PSScriptRoot\..\..\scripts\Common.ps1"
-$Host.UI.RawUI.WindowTitle = "Security & Privacy Tools"
 
-Initialize-Logging -ModuleName "security"
+Initialize-Logging -ModuleName "dns"
 
 $script:DnsProviders = @(
     @{ Name = "Cloudflare";     Primary = "1.1.1.1";         Secondary = "1.0.0.1" }
@@ -128,23 +127,4 @@ function Invoke-DnsBenchmark {
             Set-WinriftBenchmarkDns -Provider $ranked[[int]$choice].Provider
         }
     }
-}
-
-function Show-SecurityMenu {
-    $menuRoot = $PSScriptRoot
-    Invoke-MenuLoop -Title "Security & Privacy Tools" -Items @(
-        "3 › Privacy Hardening - Enforce privacy and security",
-        "4 › DNS Benchmark - Compare DNS lookup times",
-        "5 › Just the Browser - Remove AI & telemetry from browsers",
-        "---",
-        "6 › Back to menu"
-    ) -Actions @{
-        "3" = { Start-AdminProcess -ScriptPath "$menuRoot\Privacy.ps1" }
-        "4" = { Invoke-DnsBenchmark }
-        "5" = { Start-AdminProcess -ScriptPath "$menuRoot\JustTheBrowser.ps1" }
-    } -ExitKey "6"
-}
-
-if ($MyInvocation.InvocationName -ne '.') {
-    Show-SecurityMenu
 }

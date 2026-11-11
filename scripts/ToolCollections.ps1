@@ -219,7 +219,7 @@ function Show-WinriftAddToolCollection {
     $configPath = Join-Path $PSScriptRoot '..\config\tools.json'
     $author = (Get-Content -LiteralPath $configPath -Raw -ErrorAction Stop | ConvertFrom-Json -ErrorAction Stop).authorCollectionUrl
     $items = @()
-    if ($author) { $items += 'B › Browse the Author’s Collection ↗' }
+    if ($author) { $items += "B › Browse the Author’s Collection ↗" }
     $items += @('A › Add from a Link', '0 › Back')
     $choice = Show-InteractiveMenu -Title 'Add a Tool Collection' -Items $items -HideKeys
     if ($choice -eq 'B' -and $env:WINRIFT_DRY_RUN -ne '1') {
