@@ -5,7 +5,7 @@ param(
     [string]$Apply
 )
 
-# Keep the inbox UAC bridge, then select the visible host for interactive sessions.
+# Use Windows Terminal for interactive sessions; keep an existing elevated tab.
 . "$PSScriptRoot\AdminLaunch.ps1"
 
 $identity = [Security.Principal.WindowsIdentity]::GetCurrent()
@@ -27,7 +27,8 @@ if (-not $isAdmin -or $needsTerminal) {
     if ($Apply)     { $passthrough += @("-Apply", $Apply) }
 
     try {
-        Start-AdminProcess -ScriptPath $PSCommandPath -Arguments $passthrough -InTerminal:$needsTerminal
+        $launchExit = Start-AdminProcess -ScriptPath $PSCommandPath -Arguments $passthrough -InTerminal:$needsTerminal
+        if ($null -ne $launchExit) { exit $launchExit }
     } catch {
         Write-Host "Could not launch Winrift: $($_.Exception.Message)" -ForegroundColor Red
         exit 1

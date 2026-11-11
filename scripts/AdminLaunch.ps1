@@ -1,3 +1,20 @@
+function ConvertTo-WinriftLaunchPath {
+    param([string]$Path)
+
+    if ($Path -notmatch '^(?:[A-Za-z]:[\\/]|\\\\)') {
+        $Path = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($Path)
+    }
+    # Drive mappings (including Parallels Y:) belong to the unelevated token.
+    # ShellExecute can start successfully even though the child cannot see Y:.
+    if ($Path -match '^([A-Za-z]):[\\/]') {
+        $drive = Get-PSDrive -Name $Matches[1] -PSProvider FileSystem -ErrorAction SilentlyContinue
+        if ($drive.DisplayRoot -like '\\*') {
+            return $drive.DisplayRoot.TrimEnd('\') + '\' + $Path.Substring(3)
+        }
+    }
+    return $Path
+}
+
 function Start-UserProcess {
     param (
         [Parameter(Mandatory = $true)]
@@ -39,6 +56,8 @@ function Start-AdminProcess {
     if (-not $pwshPath -or -not (Test-Path -LiteralPath $pwshPath)) {
         throw 'Cannot resolve the running PowerShell executable.'
     }
+    $pwshPath = ConvertTo-WinriftLaunchPath $pwshPath
+    $ScriptPath = ConvertTo-WinriftLaunchPath $ScriptPath
     $literalPath = "'" + $ScriptPath.Replace("'", "''") + "'"
     $literalArgs = @()
     $expectValue = $false
@@ -47,6 +66,7 @@ function Start-AdminProcess {
             $literalArgs += $argument
             $expectValue = $argument -eq '-Apply'
         } else {
+            if ($expectValue) { $argument = ConvertTo-WinriftLaunchPath $argument }
             $literalArgs += "'" + $argument.Replace("'", "''") + "'"
             $expectValue = $false
         }
@@ -66,10 +86,34 @@ function Start-AdminProcess {
     $inbox = Join-Path $env:SystemRoot 'System32\WindowsPowerShell\v1.0\powershell.exe'
     $hostLiteral = "'" + $pwshPath.Replace("'", "''") + "'"
     $argLiterals = @($psArgs | ForEach-Object { "'" + $_.Replace("'", "''") + "'" })
-    $bridge = '& ' + $hostLiteral + ' ' + ($argLiterals -join ' ')
+    # Start diagnostics before invoking the downloaded host or shared-folder script.
+    # Native child failures do not throw in Windows PowerShell 5.1.
+    $bridge = @'
+$ErrorActionPreference = 'Stop'
+$transcriptStarted = $false
+try {
+    $logDir = Join-Path ([Environment]::GetFolderPath('LocalApplicationData')) 'Winrift\logs'
+    New-Item -ItemType Directory -Path $logDir -Force | Out-Null
+    $log = Join-Path $logDir ('elevation_{0}_{1}.log' -f (Get-Date -Format 'yyyy-MM-dd_HH-mm-ss'), $PID)
+    Start-Transcript -Path $log -ErrorAction Stop | Out-Null
+    $transcriptStarted = $true
+'@
+    $bridge += "`n& " + $hostLiteral + ' ' + ($argLiterals -join ' ') + "`n"
+    $bridge += @'
+    if ($LASTEXITCODE) { throw "PowerShell exited with code $LASTEXITCODE." }
+} catch {
+    Write-Host "Winrift could not start: $($_.Exception.Message)" -ForegroundColor Red
+    Write-Host $_.ScriptStackTrace
+    if ($log) { Write-Host "Startup log: $log" }
+    $null = Read-Host 'Press Enter to exit'
+    exit 1
+} finally {
+    if ($transcriptStarted) { Stop-Transcript | Out-Null }
+}
+'@
     $bridgeEncoded = [Convert]::ToBase64String([Text.Encoding]::Unicode.GetBytes($bridge))
     if ($InTerminal) {
-        $terminal = Get-Command wt.exe -CommandType Application -ErrorAction SilentlyContinue
+        $terminal = Get-Command wt.exe -CommandType Application -ErrorAction SilentlyContinue | Select-Object -First 1
         if ($terminal -and $pwshPath -notlike '*;*') {
             try {
                 $terminalArgs = @('-w', 'new', 'new-tab', '--title', 'Winrift', ('"' + $pwshPath + '"')) + $psArgs
@@ -86,5 +130,6 @@ function Start-AdminProcess {
         Start-Process -FilePath $cmd -ArgumentList $cmdArgs -ErrorAction Stop
         return
     }
-    Start-Process -FilePath $inbox -ArgumentList @('-NoProfile', '-EncodedCommand', $bridgeEncoded) -Verb RunAs -ErrorAction Stop
+    $child = Start-Process -FilePath $inbox -ArgumentList @('-NoProfile', '-EncodedCommand', $bridgeEncoded) -Verb RunAs -Wait -PassThru -ErrorAction Stop
+    if ($child) { return $child.ExitCode }
 }

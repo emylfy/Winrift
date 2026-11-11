@@ -1,5 +1,5 @@
 function Find-InstalledPwsh {
-    $existing = Get-Command pwsh.exe -CommandType Application -ErrorAction SilentlyContinue
+    $existing = Get-Command pwsh.exe -CommandType Application -ErrorAction SilentlyContinue | Select-Object -First 1
     if ($existing) { return $existing.Source }
 
     # The MSI path works before the current process has picked up the new PATH.
@@ -15,7 +15,7 @@ function Install-Pwsh {
     $localPwsh = "$env:LOCALAPPDATA\Winrift\pwsh\pwsh.exe"
     if (Test-Path $localPwsh) { return $localPwsh }
 
-    $winget = Get-Command winget.exe -CommandType Application -ErrorAction SilentlyContinue
+    $winget = Get-Command winget.exe -CommandType Application -ErrorAction SilentlyContinue | Select-Object -First 1
     if ($winget) {
         Write-Host "  Installing PowerShell 7 through WinGet..." -ForegroundColor Cyan
         try {
