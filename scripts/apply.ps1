@@ -6,6 +6,29 @@
 # Profile resolution: $env:WINRIFT_PROFILE, then
 # C:\Windows\Setup\Scripts\winrift-profile.json, then C:\Winrift\profile.json.
 
+function Get-WinriftApplyRoot {
+    param([string]$ScriptDirectory)
+
+    # An extracted checkout or embedded copy must apply its own reviewed version.
+    if ($ScriptDirectory) {
+        $localRoot = Split-Path -Path $ScriptDirectory -Parent
+        if ((Test-Path -LiteralPath (Join-Path $localRoot 'Winrift.ps1') -PathType Leaf) -and
+            (Test-Path -LiteralPath (Join-Path $localRoot 'scripts\Main.ps1') -PathType Leaf)) {
+            return $localRoot
+        }
+    }
+
+    # The standalone online path shares the release resolver, validation, locking,
+    # and rollback implementation with the interactive launcher. Never reuse main.
+    $launcher = Invoke-RestMethod -Uri 'https://github.com/emylfy/winrift/releases/latest/download/launch.ps1' -TimeoutSec 60 -ErrorAction Stop
+    $root = & ([scriptblock]::Create([string]$launcher)) -DownloadOnly -Channel stable
+    if (-not ($root -is [string]) -or -not $root -or
+        -not (Test-Path -LiteralPath (Join-Path $root 'Winrift.ps1') -PathType Leaf)) {
+        throw 'The stable launcher did not return a usable Winrift installation.'
+    }
+    return $root
+}
+
 $ErrorActionPreference = 'Continue'
 try { [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12 } catch { }
 
@@ -20,29 +43,11 @@ if (-not $profilePath -or -not (Test-Path $profilePath)) {
     return
 }
 
-$repo        = "emylfy/winrift"
-$tempPath    = "$env:TEMP\winrift"
-$extractPath = Join-Path $tempPath "winrift-main"
-$zipPath     = Join-Path $tempPath "winrift.zip"
-$archiveUrl  = "https://github.com/$repo/archive/refs/heads/main.zip"
-
-if (-not (Test-Path "$extractPath\Winrift.ps1")) {
-    if (-not (Test-Path $tempPath)) { New-Item -ItemType Directory -Path $tempPath | Out-Null }
-    Write-Host "Downloading Winrift..." -ForegroundColor Cyan
-    try {
-        Start-BitsTransfer -Source $archiveUrl -Destination $zipPath -ErrorAction Stop
-        if (Test-Path $extractPath) { Remove-Item $extractPath -Recurse -Force -ErrorAction SilentlyContinue }
-        Expand-Archive -Path $zipPath -DestinationPath $tempPath -Force
-        Remove-Item $zipPath -Force -ErrorAction SilentlyContinue
-    } catch {
-        Write-Host "Failed to download Winrift: $($_.Exception.Message)" -ForegroundColor Red
-        return
-    }
-}
-
-if (-not (Test-Path "$extractPath\Winrift.ps1")) {
-    Write-Host "Winrift.ps1 not found after download." -ForegroundColor Red
-    return
+try {
+    $extractPath = Get-WinriftApplyRoot -ScriptDirectory $PSScriptRoot
+} catch {
+    Write-Error "Winrift apply: $($_.Exception.Message)"
+    throw
 }
 
 Write-Host "Applying Winrift profile: $profilePath" -ForegroundColor Cyan

@@ -29,6 +29,8 @@ Describe 'Add-WinriftProfileToAnswerFile' {
         ($profileNode.InnerText | ConvertFrom-Json).name | Should -Be 'example'
         $applyNode.InnerText | Should -Match 'apply\.ps1'
         $applyNode.InnerText | Should -Match 'WINRIFT_PROFILE'
+        $applyNode.InnerText | Should -Match 'releases/latest/download/apply\.ps1'
+        $applyNode.InnerText | Should -Not -Match 'raw\.githubusercontent\.com|refs/heads/main'
     }
 
     It 'appends a FirstLogon command in every component' {

@@ -5,12 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project uses [Calendar Versioning](https://calver.org/) (YY.M.patch format).
 
-## [26.11.1] - Unreleased
+## [26.11.1] - 2026-11-15
 
 ### Changed
 
+- The legacy headless/answer-file path uses the shared stable-release downloader; local headless apply uses its own checkout.
 - Online launch defaults to the latest published stable release, resolved to a commit. Development `main` requires explicit opt-in and has a separate cache.
-- Releases include the launcher, shortcut installer, and icon; online shortcuts use those release assets.
+- Releases include the launcher, shortcut installer, headless apply bootstrap, and icon; online shortcuts use those release assets.
 - README focuses on saving and restoring a Windows environment, includes the existing menu demo, and explains backup and compatibility limits.
 - GPU/DirectX presets and advanced power overrides are explicitly experimental; source matching is not performance validation.
 - Replaced retired benchmark instructions with current test commands and a manual save/restore validation procedure.

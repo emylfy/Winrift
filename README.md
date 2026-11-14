@@ -6,7 +6,7 @@
 
 Set up, save, and restore your Windows environment — apps, settings, and configs.
 
-![Winrift terminal menu demonstration](media/demo.gif)
+<a href="media/demo.gif"><img src="media/demo.gif" alt="Winrift terminal menu demonstration" width="420"></a>
 
 <a href="https://github.com/emylfy/winrift/stargazers"><img src="https://img.shields.io/github/stars/emylfy/winrift?style=for-the-badge&logo=starship&color=C9CBFF&logoColor=C9CBFF&labelColor=302D41" alt="GitHub Stars"></a>&nbsp;&nbsp;
 <a href="https://github.com/emylfy/winrift/blob/main/LICENSE"><img src="https://img.shields.io/github/license/emylfy/winrift?style=for-the-badge&logo=apache&color=CBA6F7&logoColor=CBA6F7&labelColor=302D41&label=License" alt="GitHub License"></a>&nbsp;&nbsp;

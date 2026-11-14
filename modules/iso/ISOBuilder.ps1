@@ -114,7 +114,7 @@ function Add-WinriftProfileToAnswerFile {
     $bootstrap = @'
 $env:WINRIFT_PROFILE = 'C:\Windows\Setup\Scripts\winrift-profile.json'
 Set-ExecutionPolicy Bypass -Scope Process -Force
-irm https://raw.githubusercontent.com/emylfy/winrift/main/scripts/apply.ps1 | iex
+irm https://github.com/emylfy/winrift/releases/latest/download/apply.ps1 | iex
 '@
 
     $newFile = {

@@ -39,7 +39,7 @@ CI applies the repository's configured rule exclusions and also checks enabled w
 In **Windows PowerShell 5.1**, check the bootstrap syntax without launching Winrift:
 
 ```powershell
-$files = 'Winrift.ps1', 'scripts/RequirePwsh.ps1', 'scripts/Start-Winrift.ps1', 'scripts/launch.ps1', 'scripts/install.ps1'
+$files = 'Winrift.ps1', 'scripts/RequirePwsh.ps1', 'scripts/Start-Winrift.ps1', 'scripts/launch.ps1', 'scripts/install.ps1', 'scripts/apply.ps1'
 foreach ($file in $files) {
     $errors = $null
     [void][Management.Automation.Language.Parser]::ParseFile(
@@ -64,7 +64,7 @@ See [validation and known limits](validation.md) for the recorded environment, a
 
 The online launcher defaults to `stable`: it reads GitHub's latest non-prerelease release, resolves its version tag to a commit, and downloads that commit's archive. A failed update retains the previous working cache **from the same channel**. If no stable release or stable cache is available, it stops rather than using `main`.
 
-Release assets (`launch.ps1`, `install.ps1`, and `icon.ico`) are attached by CI starting with the next release after 26.11. The README's release-asset commands become available when that release is published. Existing releases remain downloadable as source archives.
+Release assets (`launch.ps1`, `install.ps1`, `apply.ps1`, and `icon.ico`) are attached by CI starting with 26.11.1. Older releases remain downloadable as source archives.
 
 To test development explicitly in PowerShell:
 
@@ -87,3 +87,5 @@ Caches are separate: `%TEMP%\winrift\winrift-stable` and `%TEMP%\winrift\winrift
 4. Verify the release-asset links and stable launch from a clean Windows environment. Preserve previous releases; do not move an existing tag to make a fix.
 
 Changes to repository About/topics are GitHub settings, separate from files in this checkout.
+
+The standalone headless `apply.ps1` uses the same validated stable cache as the launcher, without opening the menu. It explicitly selects stable even if `WINRIFT_CHANNEL` is set to `main`. When run from an extracted checkout, it uses that checkout instead of downloading another version. The legacy answer-file bootstrap fetches the release asset `apply.ps1`; the current ISO builder embeds its local checkout.

@@ -1,4 +1,9 @@
 # Standalone online entry point; compatible with Windows PowerShell 5.1.
+param(
+    [switch]$DownloadOnly,
+    [ValidateSet('stable', 'main')][string]$Channel = 'stable'
+)
+
 if ($PSVersionTable.PSVersion.Major -lt 7) {
     [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 }
@@ -80,7 +85,7 @@ function Update-WinriftLauncherCache {
             # Parse every script before replacing a working cache.
             foreach ($file in (Get-ChildItem -LiteralPath $candidate -Recurse -File -Include *.ps1,*.psm1,*.psd1)) {
                 # PS7 scripts cannot be parsed by the inbox PS5.1 launcher.
-                if ($PSVersionTable.PSVersion.Major -lt 7 -and $file.Name -notin @('Winrift.ps1', 'Start-Winrift.ps1', 'RequirePwsh.ps1', 'launch.ps1')) { continue }
+                if ($PSVersionTable.PSVersion.Major -lt 7 -and $file.Name -notin @('Winrift.ps1', 'Start-Winrift.ps1', 'RequirePwsh.ps1', 'launch.ps1', 'apply.ps1', 'install.ps1')) { continue }
                 $parseErrors = $null
                 [void][Management.Automation.Language.Parser]::ParseFile($file.FullName, [ref]$null, [ref]$parseErrors)
                 if ($parseErrors) { throw "Invalid downloaded script: $($file.Name): $($parseErrors[0].Message)" }
@@ -113,13 +118,17 @@ function Update-WinriftLauncherCache {
 
 $Host.UI.RawUI.WindowTitle = 'Winrift Launcher'
 try {
-    $channel = if ($env:WINRIFT_CHANNEL) { $env:WINRIFT_CHANNEL } else { 'stable' }
+    if (-not $PSBoundParameters.ContainsKey('Channel') -and $env:WINRIFT_CHANNEL) { $Channel = $env:WINRIFT_CHANNEL }
     $extractPath = Update-WinriftLauncherCache -CacheRoot (Join-Path $env:TEMP 'winrift') -Channel $channel
 } catch {
     Write-Host "Winrift download failed: $($_.Exception.Message)" -ForegroundColor Red
     Write-Host 'Download manually from https://github.com/emylfy/winrift' -ForegroundColor Yellow
+    if ($DownloadOnly) { throw }
     return
 }
+
+# Headless provisioning reuses the validated cache without opening the menu.
+if ($DownloadOnly) { return $extractPath }
 
 # Use the same diagnostic entry point as Winrift.cmd.
 $shellPath = (Get-Process -Id $PID -ErrorAction Stop).Path
