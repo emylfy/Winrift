@@ -15,11 +15,15 @@ function Test-WinriftLauncherCache {
 }
 
 function Update-WinriftLauncherCache {
-    param([string]$CacheRoot, [string]$Repository = 'emylfy/winrift')
+    param(
+        [string]$CacheRoot,
+        [string]$Repository = 'emylfy/winrift',
+        [ValidateSet('stable', 'main')][string]$Channel = 'stable'
+    )
 
     $CacheRoot = [IO.Path]::GetFullPath($CacheRoot)
     [IO.Directory]::CreateDirectory($CacheRoot) | Out-Null
-    $current = Join-Path $CacheRoot 'winrift-main'
+    $current = Join-Path $CacheRoot ('winrift-' + $Channel)
     $stage = Join-Path $CacheRoot ('.download-' + [guid]::NewGuid().ToString('N'))
     $previous = Join-Path $CacheRoot ('.previous-' + [guid]::NewGuid().ToString('N'))
     $lock = $null
@@ -36,9 +40,19 @@ function Update-WinriftLauncherCache {
         $usable = Test-WinriftLauncherCache $current
         $revisionFile = Join-Path $current '.winrift-revision'
         try {
-            $remote = Invoke-RestMethod -Uri "https://api.github.com/repos/$Repository/commits/main" -Headers @{
+            $headers = @{
                 'User-Agent' = 'Winrift'; Accept = 'application/vnd.github+json'; 'Cache-Control' = 'no-cache'
-            } -TimeoutSec 10 -ErrorAction Stop
+            }
+            $ref = 'main'
+            if ($Channel -eq 'stable') {
+                $release = Invoke-RestMethod -Uri "https://api.github.com/repos/$Repository/releases/latest" -Headers $headers -TimeoutSec 10 -ErrorAction Stop
+                if ($release.draft -or $release.prerelease -or $release.tag_name -notmatch '^v[0-9]+\.[0-9]+(\.[0-9]+)?$') {
+                    throw 'GitHub did not return a supported stable release.'
+                }
+                $ref = $release.tag_name
+            }
+            # Resolve tags (including annotated tags) to a commit before downloading.
+            $remote = Invoke-RestMethod -Uri "https://api.github.com/repos/$Repository/commits/$ref" -Headers $headers -TimeoutSec 10 -ErrorAction Stop
             $revision = [string]$remote.sha
             if ($revision -notmatch '^[0-9a-f]{40}$') { throw 'GitHub returned an invalid commit ID.' }
         } catch {
@@ -48,14 +62,14 @@ function Update-WinriftLauncherCache {
         }
         if ($usable -and (Test-Path -LiteralPath $revisionFile) -and
             (Get-Content -LiteralPath $revisionFile -Raw -ErrorAction Stop).Trim() -eq $revision) {
-            Write-Host 'Winrift is up to date.' -ForegroundColor Green
+            Write-Host "Winrift ($Channel) is up to date." -ForegroundColor Green
             return $current
         }
 
         try {
             [IO.Directory]::CreateDirectory($stage) | Out-Null
             $archive = Join-Path $stage 'winrift.zip'
-            # Pin the archive to the checked commit, even if main moves meanwhile.
+            # Pin the archive to the checked commit, even if the selected ref moves.
             $url = "https://github.com/$Repository/archive/$revision.zip"
             Write-Host 'Downloading Winrift...' -ForegroundColor Cyan
             try { Start-BitsTransfer -Source $url -Destination $archive -DisplayName 'Winrift' -ErrorAction Stop }
@@ -99,7 +113,8 @@ function Update-WinriftLauncherCache {
 
 $Host.UI.RawUI.WindowTitle = 'Winrift Launcher'
 try {
-    $extractPath = Update-WinriftLauncherCache -CacheRoot (Join-Path $env:TEMP 'winrift')
+    $channel = if ($env:WINRIFT_CHANNEL) { $env:WINRIFT_CHANNEL } else { 'stable' }
+    $extractPath = Update-WinriftLauncherCache -CacheRoot (Join-Path $env:TEMP 'winrift') -Channel $channel
 } catch {
     Write-Host "Winrift download failed: $($_.Exception.Message)" -ForegroundColor Red
     Write-Host 'Download manually from https://github.com/emylfy/winrift' -ForegroundColor Yellow

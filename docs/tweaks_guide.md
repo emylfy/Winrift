@@ -16,6 +16,8 @@ Winrift brings Windows settings into one menu so you can see what each tweak cha
 
 ## Before You Start
 
+Winrift verifies supported configuration writes. It does not promise FPS, latency, RAM, or startup improvements. GPU/DirectX presets and advanced power overrides are experimental: their source values are compared in tests, but their benefit and stability have not been established on a hardware matrix.
+
 Start with **Review Recommended Preset** if you're setting up a fresh install. Use **All Tweaks** if you came for a specific setting. The preview shows the current and proposed values before you apply anything.
 
 On a laptop, pay particular attention to the idle and power settings. Disabling idle states can increase heat and battery drain. Shorter shutdown timeouts give apps less time to save their work. For GPU changes, compare the same game or app on the same driver before and after.
@@ -359,7 +361,7 @@ If you want a Windows restore point before applying tweaks, open **Create a rest
 - [denis-g/windows10-latency-optimization](https://github.com/denis-g/windows10-latency-optimization)
 - [ancel1x/Ancels-Performance-Batch](https://github.com/ancel1x/Ancels-Performance-Batch)
 
-## Pinned source comparison
+## Pinned source comparison (not performance validation)
 
 The upstream snapshot is [AlchemyTweaks/Verified-Tweaks at 9b8d96d](https://github.com/AlchemyTweaks/Verified-Tweaks/tree/9b8d96d2d60eac53fc688f718726006321818d62). `tests/fixtures/alchemy-approved.json` records the compared values and source identifiers.
 
@@ -367,4 +369,4 @@ The upstream snapshot is [AlchemyTweaks/Verified-Tweaks at 9b8d96d](https://gith
 - [AMD Melody](https://github.com/AlchemyTweaks/Verified-Tweaks/blob/9b8d96d2d60eac53fc688f718726006321818d62/AMD%20Radeon/AMD%20Tweak%20Melody/AMD%20Tweak%20Melody.reg): all 30 names/types/values match, with the fixed 0000 source path replaced by an actually present AMD driver key.
 - [DirectX](https://github.com/AlchemyTweaks/Verified-Tweaks/blob/9b8d96d2d60eac53fc688f718726006321818d62/DirectX/D3D11%20-%20D3D12%20Tweaks/D3D11%20-%20D3D12%20Tweaks.bat): all 14 existing writes match.
 
-The comparison checks the entries in the presets. See [validation notes](validation.md) for the test environment and outstanding hardware checks.
+The comparison checks only the paths, names, types, and values in the presets. It does not prove that Windows or a driver uses an override, or that it improves a workload. See [validation notes](validation.md) for the test environment and outstanding hardware checks.

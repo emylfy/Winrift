@@ -1,4 +1,6 @@
-# 🪟 Windows Installation Media
+# 🪟 Windows Installation Media (experimental)
+
+The complete build → boot → install → restore cycle has not yet been validated for this version. Test the generated image in a disposable VM before relying on it. [Validation procedure](setup.md#manual-validation).
 
 <div align="center">
   <p><em>Build a Windows ISO with your tweaks, apps, and configs ready for first sign-in.</em></p>

@@ -5,7 +5,7 @@ $shortcutPath = Join-Path -Path $startMenuPath -ChildPath "Winrift.lnk"
 $wshShell = New-Object -ComObject WScript.Shell
 $shortcut = $wshShell.CreateShortcut($shortcutPath)
 $shortcut.TargetPath = Join-Path $env:SystemRoot 'System32\WindowsPowerShell\v1.0\powershell.exe'
-$shortcut.Arguments = '-NoProfile -ExecutionPolicy Bypass -Command "irm https://raw.githubusercontent.com/emylfy/winrift/main/scripts/launch.ps1 | iex"'
+$shortcut.Arguments = '-NoProfile -ExecutionPolicy Bypass -Command "irm https://github.com/emylfy/winrift/releases/latest/download/launch.ps1 | iex"'
 if($PSScriptRoot -and (Test-Path -LiteralPath (Join-Path $PSScriptRoot 'Start-Winrift.ps1'))){
     $shortcut.Arguments='-NoProfile -ExecutionPolicy Bypass -File "'+(Join-Path $PSScriptRoot 'Start-Winrift.ps1')+'"'
 }
@@ -18,7 +18,7 @@ if (-not (Test-Path $icoDir)) {
 }
 
 try {
-    Invoke-WebRequest -Uri "https://raw.githubusercontent.com/emylfy/winrift/refs/heads/main/media/icon.ico" -OutFile "$icoDir\icon.ico" -ErrorAction Stop
+    Invoke-WebRequest -Uri "https://github.com/emylfy/winrift/releases/latest/download/icon.ico" -OutFile "$icoDir\icon.ico" -ErrorAction Stop
 } catch {
     Write-Host "Warning: Could not download icon. Shortcut will use default icon." -ForegroundColor Yellow
 }

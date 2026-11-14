@@ -5,7 +5,35 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project uses [Calendar Versioning](https://calver.org/) (YY.M.patch format).
 
-## [26.7.0] - 2026-07-03
+## [26.11.1] - Unreleased
+
+### Changed
+
+- Online launch defaults to the latest published stable release, resolved to a commit. Development `main` requires explicit opt-in and has a separate cache.
+- Releases include the launcher, shortcut installer, and icon; online shortcuts use those release assets.
+- README focuses on saving and restoring a Windows environment, includes the existing menu demo, and explains backup and compatibility limits.
+- GPU/DirectX presets and advanced power overrides are explicitly experimental; source matching is not performance validation.
+- Replaced retired benchmark instructions with current test commands and a manual save/restore validation procedure.
+- Corrected contributor setup, validation provenance, and bug-report log paths.
+
+### Tests
+
+- Added release-channel selection, channel isolation, and invalid-release coverage.
+- Added a Windows registry/configuration round trip through Save Setup, restore, dry-run, selective restore, and conflict-safe Undo.
+
+## [26.11] - 2026-11-11
+
+- Redesigned menus and review-before-apply selection.
+- Save / Restore Setup for supported Windows settings, app lists, and configuration files.
+- Persistent app queues, bundle imports, and retry of failed items.
+- Action History and Undo with versioned backups and later-change conflict checks.
+- External tool collections; DefendNot and RemoveWindowsAI are no longer bundled.
+- Startup and cache-update fixes, including PowerShell host detection, elevation, and Parallels paths.
+- Retired the legacy System Audit and system performance benchmark screens. DNS Benchmark remains available.
+
+### Earlier development notes — 2026-07-03
+
+These notes were previously labeled 26.7.0; no corresponding published tag exists in this repository. They describe development between the 26.4.2 and 26.11 releases.
 
 ### One-pass provisioning (headless profiles)
 

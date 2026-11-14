@@ -61,6 +61,17 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
+      - name: Check Windows PowerShell 5.1 bootstrap syntax
+        shell: powershell
+        run: |
+          $files = 'Winrift.ps1', 'scripts/RequirePwsh.ps1', 'scripts/Start-Winrift.ps1', 'scripts/launch.ps1', 'scripts/install.ps1'
+          foreach ($file in $files) {
+            $errors = $null
+            [void][Management.Automation.Language.Parser]::ParseFile(
+              (Join-Path $PWD $file), [ref]$null, [ref]$errors)
+            if ($errors) { throw ($errors | Out-String) }
+          }
+
       - name: Install Pester
         shell: pwsh
         run: |
@@ -122,4 +133,5 @@ jobs:
           fi
 
           gh release create "$tag" --repo "$GITHUB_REPOSITORY" \
-            --target "$GITHUB_SHA" --title "$tag" --generate-notes
+            --target "$GITHUB_SHA" --title "$tag" --generate-notes \
+            scripts/launch.ps1 scripts/install.ps1 media/icon.ico

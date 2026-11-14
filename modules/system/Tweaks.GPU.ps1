@@ -42,8 +42,9 @@ function Show-WinriftGpuPreset {
     Clear-AuditQueue
     if (-not $entries.Count) { Write-Log 'No applicable preset for detected hardware.'; Wait-ForUser; return }
     $choice = Show-InteractiveMenu -Title "Review $Vendor Preset" -Items @(
-        "Compatibility varies by driver version.",
-        'May change stability, power use or rendering behavior. No guaranteed performance gain.',
+        'Experimental preset: hardware benefit and stability have not been established.',
+        'Source matching verifies preset values, not driver support or performance gain.',
+        'May change stability, power use or rendering behavior.',
         $(if ($Vendor -eq 'NVIDIA') { 'One logical per-CPU DPC action, written to five locations.' } elseif ($Vendor -eq 'DirectX') { 'Changes 14 D3D11 and D3D12 settings.' } else { 'Changes 30 AMD driver settings from the Melody preset.' }),
         '---', 'Y › Apply Preset', 'V › View Details', 'I › Individual Tweaks', 'N › Back'
     )

@@ -9,7 +9,7 @@ function Invoke-PowerMenu {
     ) -Actions @{
         '1' = { Enable-WinriftUltimatePerformance }
         '2' = { Show-WinriftTweakSelection 'Background Throttling & Energy Tracking' { Invoke-PowerTweaks } }
-        '3' = { Show-WinriftTweakSelection 'Advanced Power — heat and battery trade-offs' { Invoke-AggressivePowerTweaks } }
+        '3' = { Show-WinriftTweakSelection 'Experimental Power — heat and battery trade-offs' { Invoke-AggressivePowerTweaks } }
         '4' = {
             if ($env:WINRIFT_DRY_RUN -eq '1') { Write-Log '[DRY-RUN] Open Windows Power Plans' -Quiet; return }
             Start-Process control.exe -ArgumentList '/name Microsoft.PowerOptions'
