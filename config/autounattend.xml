@@ -481,7 +481,7 @@ $shortcut = $wshShell.CreateShortcut($shortcutPath)
 $shortcut.TargetPath = "powershell.exe"
 
 # Set the arguments to execute the command
-$shortcut.Arguments = '-NoProfile -ExecutionPolicy Bypass -Command "irm https://raw.githubusercontent.com/emylfy/winrift/main/scripts/launch.ps1 | iex"'
+$shortcut.Arguments = '-NoProfile -ExecutionPolicy Bypass -Command "irm https://github.com/emylfy/winrift/releases/latest/download/launch.ps1 | iex"'
 
 # Set the shortcut description
 $shortcut.Description = "Launch Winrift"

@@ -19,7 +19,7 @@ Thanks for your interest in contributing to Winrift! This guide will help you ge
 Winrift is a PowerShell-based project. You'll need:
 
 - Windows 11 (for testing) — [Download Windows 11 ISO](https://www.microsoft.com/software-download/windows11)
-- PowerShell 5.1+ (included with Windows)
+- PowerShell 7.4+ for application code and Pester tests; Windows PowerShell 5.1 for bootstrap compatibility checks
 - A code editor (VS Code recommended with the PowerShell extension)
 - **Recommended:** [PSScriptAnalyzer](https://github.com/PowerShell/PSScriptAnalyzer) for linting
 
@@ -58,7 +58,7 @@ Testing tweaks on a live system can cause irreversible changes. Use a Windows 11
 ```
 winrift/
 ├── Winrift.ps1          # Main entry point
-├── version.json            # Version metadata
+├── config/version.json     # Version metadata
 ├── scripts/                # Core scripts (admin launch, common utilities)
 ├── modules/
 │   ├── system/             # System tweaks
@@ -66,6 +66,8 @@ winrift/
 │   ├── drivers/            # Driver installation
 │   ├── tools/              # Third-party tool integrations
 │   ├── apps/               # WinGet catalog and optional UniGetUI integration
+│   ├── profile/            # Save / Restore Setup
+│   ├── iso/                # Experimental installation media builder
 │   └── customize/          # Desktop environment, themes, configs
 ├── docs/                   # Documentation and guides
 └── media/                  # Icons, logos, assets
@@ -88,7 +90,7 @@ winrift/
 1. Add your tweak function to the appropriate file in `modules/`
 2. Include source links as comments above registry modifications
 3. Test thoroughly on a clean Windows 11 installation
-4. Document what the tweak does and why
+4. Document what is written, the supporting source, compatibility limits, and how to undo it. Source matching alone is not evidence of performance benefit. Keep unvalidated GPU/driver/power changes explicitly experimental.
 
 **Template for a new tweak function:**
 
@@ -96,23 +98,17 @@ winrift/
 function Invoke-MyNewTweak {
     # Source: https://example.com/source-of-this-tweak
     # What it does: Brief description of the effect on the system
-    Write-Log -Message "Applying My New Tweak..." -Level INFO -LogFile $script:LogFile
-
-    try {
-        Set-RegistryValue -Path "HKCU:\Software\Example" `
+    Set-RegistryValue -Path "HKCU:\Software\Example" `
                           -Name "SettingName" `
                           -Value 1 `
                           -Type DWord `
-                          -Description "Enables example behavior"
-
-        Write-Log -Message "My New Tweak applied successfully." -Level SUCCESS -LogFile $script:LogFile
-    } catch {
-        Write-Log -Message "Failed to apply My New Tweak: $($_.Exception.Message)" -Level ERROR -LogFile $script:LogFile
-    }
+                          -Message "Set example behavior"
 }
 ```
 
-Then register it in the tweak map inside `Invoke-UniversalTweaks` in `modules/system/Tweaks.Universal.ps1`.
+The shared setter handles preview collection, journaling, verification, and failures; do not report unconditional success after calling it.
+
+Then add it to the collector inside `Invoke-UniversalTweaks` in `modules/system/Tweaks.Universal.ps1`.
 
 ### Commit Messages
 
@@ -122,6 +118,8 @@ Write clear, concise commit messages:
 - `docs: update README with compatibility table`
 
 ## Testing
+
+Use the current commands in [Development tests](docs/tests.md). For changes to setup export/import, also follow the [round-trip validation procedure](docs/setup.md#manual-validation).
 
 Before submitting a PR:
 
